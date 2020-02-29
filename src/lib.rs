@@ -22,10 +22,23 @@ mod tests {
     fn map() {
         use crate::iter::map;
         let arr: &mut Vec<usize> = &mut vec![1,2,3,1];
-        let f: &dyn Fn(usize) -> bool = &|a: usize| -> bool { a <= 2 };
-        let actual: Vec<bool> = map(arr, f);
+        let f: &dyn Fn(usize) -> usize = &|a: usize| -> usize { if a <= 2  {1} else {0} };
+        let actual: Vec<usize> = map(arr, f);
 
-        let expected: Vec<bool> = vec![true, true, false, true];
+        let expected: Vec<usize> = vec![1, 1, 0, 1];
+
+        println!("actual={:?}, expected={:?}", actual, expected);
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn filter() {
+        use crate::iter::filter;
+        let arr: &mut Vec<usize> = &mut vec![1,2,3,1];
+        let f: &dyn Fn(usize) -> bool = &|a: usize| -> bool {a < 3 };
+        let actual: Vec<usize> = filter(arr, f);
+
+        let expected: Vec<usize> = vec![1, 2, 1];
 
         println!("actual={:?}, expected={:?}", actual, expected);
         assert_eq!(actual, expected);
