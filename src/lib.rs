@@ -50,7 +50,7 @@ mod tests {
     fn qsort() {
         use crate::sort::qsort;
         let arr: &mut Vec<i32> = &mut vec![1,7,16,0,-4,-7,2,3,64,-1,9,1];
-        let actual: Vec<i32> = qsort(arr);
+        let actual: Vec<i32> = qsort(arr, &|a: i32, b: i32| -> i32 { a-b });
 
         let expected: Vec<i32> = vec![-7,-4,-1,0,1,1,2,3,7,9,16,64];
 
