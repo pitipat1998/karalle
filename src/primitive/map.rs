@@ -1,7 +1,7 @@
-pub fn map(seq: &mut Vec<i32>, func: &dyn Fn(i32) -> i32) -> Vec<i32> {
-    let mut ret: Vec<i32> = Vec::new();
-    for item in seq {
-        ret.push(func(*item))
+pub fn map<T, U>(seq: &mut Vec<T>, func: &dyn Fn(usize, &T) -> U) -> Vec<U> {
+    let mut ret: Vec<U> = Vec::new();
+    for (i, item) in seq.iter().enumerate() {
+        ret.push(func(i, item));
     }
-    Vec::from(ret)
+    ret
 }
