@@ -7,6 +7,9 @@ pub use self::map::map;
 mod filter;
 pub use self::filter::filter;
 
+mod par_map;
+pub use self::par_map::par_map;
+
 #[cfg(test)]
 mod tests {
     #[test]
