@@ -90,6 +90,18 @@ mod tests {
     }
 
     #[test]
+    fn par_filter() {
+        use crate::primitive::par_filter;
+        let arr: Vec<i32> = vec![1, 2, 3, 1, 2];
+        let actual: Vec<i32> = par_filter(&arr, |_i: usize, a: &i32| -> bool { *a < 3 });
+
+        let expected: Vec<i32> = vec![1, 2, 1, 2];
+
+        println!("actual={:?}, expected={:?}", actual, expected);
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
     fn flatten() {
         use crate::primitive::flatten;
         let arr: &mut Vec<i32> = &mut vec![1, 2, 3, 4];

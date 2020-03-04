@@ -10,6 +10,9 @@ pub use self::map::map;
 mod filter;
 pub use self::filter::filter;
 
+mod par_filter;
+pub use self::par_filter::par_filter;
+
 mod flatten;
 pub use self::flatten::flatten;
 
