@@ -1,2 +1,2 @@
-mod quicksort;
-pub use self::quicksort::quick_sort;
+mod quick_sort;
+pub use self::quick_sort::quick_sort;
