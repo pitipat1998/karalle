@@ -55,11 +55,11 @@ mod tests {
 
     #[test]
     fn qsort() {
-        use crate::sort::qsort;
+        use crate::sort::quick_sort;
         let arr: &mut Vec<i32> = &mut vec![1, 7, 16, 0, -4, -7, 2, 3, 64, -1, 9, 1];
         let arr2: &mut Vec<(i32, f32)> = &mut vec![(1, 0.2), (2, 0.1), (-1, 9.0), (2, 0.1), (2, 0.2)];
-        let actual: Vec<i32> = qsort(arr, &|a: &i32, b: &i32| -> i32 { *a - *b });
-        let actual2: Vec<(i32, f32)> = qsort(arr2, &|a: &(i32, f32), b: &(i32, f32)| -> i32 {
+        let actual: Vec<i32> = quick_sort(arr, |a: &i32, b: &i32| -> i32 { *a - *b });
+        let actual2: Vec<(i32, f32)> = quick_sort(arr2, |a: &(i32, f32), b: &(i32, f32)| -> i32 {
             let (a1, a2): (i32, f32) = *a;
             let (b1, b2): (i32, f32) = *b;
             if a1 == b1 {
