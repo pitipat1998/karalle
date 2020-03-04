@@ -14,11 +14,13 @@ pub use self::par_map::par_map;
 mod tests {
     #[test]
     fn plus_scan() {
-        use crate::primitive::scan;
+        use crate::primitive::plus_scan::scan;
         let arr: &mut Vec<i32> = &mut vec![1,2,1,1];
-        let f: &dyn Fn(i32, i32) -> i32 = &|a: i32, b: i32| -> i32 { a + b };
-        let s: i32 = 0;
-        let (actual_arr, actual_tot): (Vec<i32>, i32) = scan(arr, f, s);
+        let (actual_arr, actual_tot): (Vec<i32>, i32) = scan(
+            arr,
+            |a: &i32, b: &i32| -> i32 { *a + *b },
+            &0
+        );
 
         let expected_arr: Vec<i32> = vec![0, 1, 3, 4];
         let expected_tot: i32 = 5;

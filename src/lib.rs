@@ -36,7 +36,7 @@ mod tests {
                                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0];
 
         println!("actual={:?}, expected={:?}", actual, expected);
-//        assert_eq!(actual, expected);
+        assert_eq!(actual, expected);
     }
 
     #[test]
