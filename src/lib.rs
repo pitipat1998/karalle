@@ -23,6 +23,25 @@ mod tests {
     }
 
     #[test]
+    fn par_scan() {
+        use crate::primitive::par_scan::par_scan;
+        let arr: &mut Vec<i32> = &mut vec![1,2,1,1,9];
+        let (actual_arr, actual_tot): (Vec<i32>, i32) = par_scan(
+            arr,
+            |a: &i32, b: &i32| -> i32 { *a + *b },
+            &0
+        );
+
+        let expected_arr: Vec<i32> = vec![0, 1, 3, 4, 5];
+        let expected_tot: i32 = 14;
+
+        println!("actual={:?}, expected={:?}", actual_arr, expected_arr);
+        assert_eq!(actual_arr, expected_arr);
+        println!("actual={:?}, expected={:?}", actual_tot, expected_tot);
+        assert_eq!(actual_tot, expected_tot);
+    }
+
+    #[test]
     fn map() {
         use crate::primitive::map;
         let arr: &mut Vec<i32> = &mut vec![1, 2, 3, 1];

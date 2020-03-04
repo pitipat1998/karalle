@@ -1,5 +1,8 @@
-pub(crate) mod scan;
+pub mod scan;
 pub use self::scan::scan;
+
+pub mod par_scan;
+pub use self::par_scan::par_scan;
 
 mod map;
 pub use self::map::map;
