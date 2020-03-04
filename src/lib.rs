@@ -27,7 +27,7 @@ mod tests {
                                            57, 66, 67, 9, 75, 9, 49, 61, 68, 11, 25, 39, 90, 86, 48, 91];
 
         println!("{:?}", arr);
-        let actual: Vec<i32> = par_map(arr, &mut |_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
+        let actual: Vec<i32> = par_map(arr, |_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
 
         let expected: Vec<i32> = vec![1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1,
                                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
