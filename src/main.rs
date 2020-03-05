@@ -55,6 +55,15 @@ fn benchmark_v3<V>(file: &str, func: V) -> Duration
     now.elapsed()
 }
 
+fn benchmark_v4<V>(file: &str, func: V) -> Duration
+    where V: Sync + Send + (Fn(usize, &u128) -> u128)
+{
+    let v: Vec<u128> = read_csv(file);
+    let now = Instant::now();
+    par_map_v4(&v, func);
+    now.elapsed()
+}
+
 fn get_files() -> Vec<String> {
     fs::read_dir("data").unwrap()
         .into_iter()
@@ -92,6 +101,10 @@ fn main() {
             let key3 = format!("{}, {}, v3", name, &d);
             let dur = benchmark_v3(&d, f);
             result.entry(key3).or_insert(dur);
+
+            let key4 = format!("{}, {}, v4", name, &d);
+            let dur = benchmark_v4(&d, f);
+            result.entry(key4).or_insert(dur);
         }
     }
     println!("{:?}", result);

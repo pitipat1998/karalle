@@ -26,7 +26,7 @@ impl<T,U> Benchmark<T,U>
     const NUM_LOOP: u32 = 1_000;
     pub(crate) fn run(&self) -> HashMap<String, Duration>
     {
-        let mut ret: HashMap<String, Duration> = HashMap::new();
+        let ret: HashMap<String, Duration> = HashMap::new();
         // for f in self.files.iter() {
         //     let v: Vec<u128> = read_csv(f);
         //     let now = Instant::now();

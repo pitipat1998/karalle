@@ -10,6 +10,7 @@ mod par_map;
 pub use self::par_map::par_map_v1;
 pub use self::par_map::par_map_v2;
 pub use self::par_map::par_map_v3;
+pub use self::par_map::par_map_v4;
 
 mod filter;
 pub use self::filter::filter;
