@@ -11,7 +11,7 @@ pub fn par_filter<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
     where T: Sync + Send + Copy,
           U: Sync + Send + Fn(usize, &T) -> bool
 {
-    let mapped: Vec<i32> = par_map(seq, &|i: usize, elt: &T| -> i32 { if func(i, elt) {1} else {0}});
+    let mapped: Vec<i32> = par_map_v1(seq, &|i: usize, elt: &T| -> i32 { if func(i, elt) {1} else {0}});
     let (x, tot): (Vec<i32>, i32) = par_scan(&mapped,
                                          &|elt1: &i32, elt2: &i32| -> i32 { *elt1 + *elt2 },
                                          &0);

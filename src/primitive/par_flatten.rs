@@ -1,10 +1,10 @@
 use crate::primitive::par_scan::par_scan;
-use crate::primitive::par_map::par_map;
+use crate::primitive::par_map::par_map_v1;
 
 pub fn par_flatten<T>(seqs: &Vec<&Vec<T>>) -> Vec<T>
     where T: Sync + Send + Copy
 {
-    let sizes: Vec<usize> = par_map(seqs, |_i, &elt| -> usize { elt.len() });
+    let sizes: Vec<usize> = par_map_v1(seqs, |_i, &elt| -> usize { elt.len() });
 //    let mut sizes: Vec<usize> = Vec::with_capacity(seqs.len());
 //    unsafe { sizes.set_len(seqs.len()) }
 //    rayon::scope(|s| {
