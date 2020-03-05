@@ -2,17 +2,17 @@ extern crate rayon;
 
 use self::rayon::prelude::*;
 
-const THRESHOLD: usize = 100;
+const THRESHOLD: usize = 5;
 
 fn par_map_utils<T, U, V>(seq: &[T], ret: &mut [U], func: &V, _s: usize, _e: usize)
-where T: Sync + Send,
-      U: Sync + Send,
-      V: Sync + Send + (Fn(usize, &T) -> U)
+    where T: Sync + Send,
+          U: Sync + Send,
+          V: Sync + Send + (Fn(usize, &T) -> U)
 {
     let n = _e - _s;
     if n <= THRESHOLD {
         for i in _s.._e {
-            ret[i- _s] = func(i, &seq[i]);
+            ret[i - _s] = func(i, &seq[i]);
         }
     } else {
         let sqrt: usize = (n as f64).sqrt().ceil() as usize;
@@ -20,24 +20,25 @@ where T: Sync + Send,
 
         rayon::scope(|s| {
             for (i, chunk) in ret.chunks_mut(sqrt).enumerate() {
-                if i < num_chunks-1 {
-                        s.spawn(move |_| {
-                            par_map_utils(
-                                seq,
-                                chunk,
-                                func,
-                                i * sqrt,
-                                (i + 1) * sqrt
-                            );
-                        });
-                } else {
+                if i < num_chunks - 1 {
                     s.spawn(move |_| {
                         par_map_utils(
                             seq,
                             chunk,
                             func,
                             i * sqrt,
-                            seq.len()
+                            (i + 1) * sqrt
+                        );
+                    });
+                } else {
+                    let x = i * sqrt;
+                    s.spawn(move |_| {
+                        par_map_utils(
+                            seq,
+                            chunk,
+                            func,
+                            x,
+                            x + chunk.len()
                         );
                     });
                 }
