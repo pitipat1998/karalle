@@ -1,19 +1,16 @@
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
+use std::fs::File;
 use std::process::exit;
 use std::time::{Duration, Instant};
 
-use rayon::prelude::*;
+use serde_json::json;
 
 use crate::primitive::*;
 use crate::util::file_reader::read_csv;
 
 pub mod util;
 pub mod primitive;
-//
-// fn small_compute(i: usize, e: &u128) -> u128 {
-//     *e + *e
-// }
 
 fn fac(i: &u128) -> u128 {
     if (*i) <= 1 {
@@ -27,40 +24,12 @@ fn fac(i: &u128) -> u128 {
 // fn huge_compute(i: usize, e: &u128) -> u128 {
 //     fac(e)
 // }
-
-fn benchmark_v1<V>(file: &str, func: V) -> Duration
-    where V: Sync + Send + (Fn(usize, &u128) -> u128)
+fn benchmark_map<T, V, K>(vec: &Vec<T>, func: V, map: K) -> Duration
+    where V: Sync + Send + (Fn(usize, &u128) -> u128),
+          K: Sync + Send + (Fn(&Vec<T>, V) -> Vec<T>)
 {
-    let v = read_csv(file);
     let now = Instant::now();
-    par_map_v1(&v, func);
-    now.elapsed()
-}
-
-fn benchmark_v2<V>(file: &str, func: V) -> Duration
-    where V: Sync + Send + (Fn(usize, &u128) -> u128)
-{
-    let v: Vec<u128> = read_csv(file);
-    let now = Instant::now();
-    par_map_v2(&v, func);
-    now.elapsed()
-}
-
-fn benchmark_v3<V>(file: &str, func: V) -> Duration
-    where V: Sync + Send + (Fn(usize, &u128) -> u128)
-{
-    let v: Vec<u128> = read_csv(file);
-    let now = Instant::now();
-    par_map_v3(&v, func);
-    now.elapsed()
-}
-
-fn benchmark_v4<V>(file: &str, func: V) -> Duration
-    where V: Sync + Send + (Fn(usize, &u128) -> u128)
-{
-    let v: Vec<u128> = read_csv(file);
-    let now = Instant::now();
-    par_map_v4(&v, func);
+    map(&vec, func);
     now.elapsed()
 }
 
@@ -80,32 +49,61 @@ fn get_files() -> Vec<String> {
 fn main() {
     let files: Vec<String> = get_files();
     if files.is_empty() {
-        println!("No data to be testing on, put .csc files in data/");
+        println!("No data to be testing on, put .csv files in data/");
         exit(-1);
     }
+
     let mut func: HashMap<&str, &(dyn Sync + Send + Fn(usize, &u128) -> u128)> = HashMap::new();
     func.insert("Multiply", &|_, x| { *x * *x });
     func.insert("Fac", &|_, x| { fac(x) });
 
+    // let mut par_map_zip: HashMap<&str, &dyn Fn(&Vec<u128>, u128) -> Vec<u128>> = HashMap::new();
+    // par_map_zip.insert("v1", &par_map_v1);
+    // par_map_zip.insert("v2", &par_map_v2);
+    // par_map_zip.insert("v3", &par_map_v3);
+
     let mut result: HashMap<String, Duration> = HashMap::new();
-    for (&name, &f) in &func {
-        for d in files.iter() {
-            let key = format!("{}, {}, v1", name, &d);
-            let dur = benchmark_v1(&d, f);
-            result.entry(key).or_insert(dur);
+    for d in files.iter() {
+        let v: Vec<u128> = read_csv(&d);
+        for (&fname, &f) in &func {
+            let key = format!("{}, {}, sqrt_n", fname, &d);
+            let duration = benchmark_map(&v, f, par_map_v1);
+            result.entry(key).or_insert(duration);
 
-            let key2 = format!("{}, {}, v2", name, &d);
-            let dur = benchmark_v2(&d, f);
-            result.entry(key2).or_insert(dur);
+            let key = format!("{}, {}, n_spawn", fname, &d);
+            let duration = benchmark_map(&v, f, par_map_v2);
+            result.entry(key).or_insert(duration);
 
-            let key3 = format!("{}, {}, v3", name, &d);
-            let dur = benchmark_v3(&d, f);
-            result.entry(key3).or_insert(dur);
+            let key = format!("{}, {}, par_iter", fname, &d);
+            let duration = benchmark_map(&v, f, par_map_v3);
+            result.entry(key).or_insert(duration);
 
-            let key4 = format!("{}, {}, v4", name, &d);
-            let dur = benchmark_v4(&d, f);
-            result.entry(key4).or_insert(dur);
+            let key = format!("{}, {}, 4nproc", fname, &d);
+            let duration = benchmark_map(&v, f, par_map_v4);
+            result.entry(key).or_insert(duration);
         }
     }
-    println!("{:?}", result);
+    // for (&name, &f) in &func {
+    //     let v: Vec<u128> = read_csv(&d);
+    //     for d in files.iter() {
+    //         let key = format!("{}, {}, v1", name, &d);
+    //         let dur = benchmark_v1(&d, f);
+    //         result.entry(key).or_insert(dur);
+    //
+    //         let key2 = format!("{}, {}, v2", name, &d);
+    //         let dur = benchmark_v2(&d, f);
+    //         result.entry(key2).or_insert(dur);
+    //
+    //         let key3 = format!("{}, {}, v3", name, &d);
+    //         let dur = benchmark_v3(&d, f);
+    //         result.entry(key3).or_insert(dur);
+    //
+    //         let key4 = format!("{}, {}, v4", name, &d);
+    //         let dur = benchmark_v4(&d, f);
+    //         result.entry(key4).or_insert(dur);
+    //     }
+    // }
+    let s = json!(result);
+    let _ = serde_json::to_writer(&File::create("data.json").unwrap(), &s);
+    // println!("{:?}", result);
 }
