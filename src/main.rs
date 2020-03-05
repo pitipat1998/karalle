@@ -8,11 +8,11 @@ use crate::util::file_reader::read_csv;
 pub mod util;
 pub mod primitive;
 
-fn small_compute(i: usize, e: &i32) -> i32 {
+fn small_compute(i: usize, e: &i64) -> i64 {
     *e + *e
 }
 
-fn fac(i: &i32) -> i32 {
+fn fac(i: &i64) -> i64 {
     if (*i) <= 1 {
         1
     } else {
@@ -20,12 +20,12 @@ fn fac(i: &i32) -> i32 {
     }
 }
 
-fn huge_compute(i: usize, e: &i32) -> i32 {
+fn huge_compute(i: usize, e: &i64) -> i64 {
     fac(e)
 }
 
 fn benchmark_v1<V>(file: &str, func: V) -> Duration
-    where V: Sync + Send + (Fn(usize, &i32) -> i32)
+    where V: Sync + Send + (Fn(usize, &i64) -> i64)
 {
     let v = read_csv(file);
     let now = Instant::now();
@@ -34,7 +34,7 @@ fn benchmark_v1<V>(file: &str, func: V) -> Duration
 }
 
 fn benchmark_v2<V>(file: &str, func: V) -> Duration
-    where V: Sync + Send + (Fn(usize, &i32) -> i32)
+    where V: Sync + Send + (Fn(usize, &i64) -> i64)
 {
     let v = read_csv(file);
     let now = Instant::now();
@@ -45,7 +45,7 @@ fn benchmark_v2<V>(file: &str, func: V) -> Duration
 fn main() {
     let files = vec!["../data_small.csv"];
     // let files = vec!["../data_small.csv", "../data_medium.csv", "../data_large.csv"];
-    let mut func: HashMap<&str, &(dyn Sync + Send + Fn(usize, &i32) -> i32)> = HashMap::new();
+    let mut func: HashMap<&str, &(dyn Sync + Send + Fn(usize, &i64) -> i64)> = HashMap::new();
     func.insert("Small_C", &small_compute);
     func.insert("Huge_C", &huge_compute);
 
