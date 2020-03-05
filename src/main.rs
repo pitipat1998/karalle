@@ -13,8 +13,8 @@ fn small_compute(i: usize, e: &i32) -> i32 {
 }
 
 fn fac(i: &i32) -> i32 {
-    if (*i) == 2 {
-        2
+    if (*i) <= 1 {
+        1
     } else {
         (*i) * fac(&(i - 1))
     }
