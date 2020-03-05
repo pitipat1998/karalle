@@ -43,20 +43,21 @@ fn benchmark_v2<V>(file: &str, func: V) -> Duration
 }
 
 fn main() {
-    let files = vec!["../data_small.csv", "../data_medium.csv", "../data_large.csv"];
-    let mut func: HashMap<&str, &dyn Fn(usize, &i32) -> i32> = HashMap::new();
+    let files = vec!["../data_small.csv"];
+    // let files = vec!["../data_small.csv", "../data_medium.csv", "../data_large.csv"];
+    let mut func: HashMap<&str, &(dyn Sync + Send + Fn(usize, &i32) -> i32)> = HashMap::new();
     func.insert("Small_C", &small_compute);
     func.insert("Huge_C", &huge_compute);
 
     let mut result: HashMap<String, Duration> = HashMap::new();
     for (&name, &f) in &func {
-        for d in files {
-            let key = format!("{},{},1", name, d);
-            let dur = benchmark_v1(d, f);
+        for d in files.iter() {
+            let key = format!("{},{},1", name, &d);
+            let dur = benchmark_v1(&d, f);
             result.entry(key).or_insert(dur);
 
-            let key2 = format!("{},{},2", name, d);
-            let dur = benchmark_v2(d, f);
+            let key2 = format!("{},{},2", name,& d);
+            let dur = benchmark_v2(&d, f);
             result.entry(key2).or_insert(dur);
         }
     }
