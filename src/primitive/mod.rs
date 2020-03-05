@@ -1,21 +1,21 @@
 pub mod scan;
 pub use self::scan::scan;
-
 pub mod par_scan;
 pub use self::par_scan::par_scan;
 
 mod map;
 pub use self::map::map;
+mod par_map;
+pub use self::par_map::par_map;
 
 mod filter;
 pub use self::filter::filter;
-
 mod par_filter;
 pub use self::par_filter::par_filter;
 
 mod flatten;
 pub use self::flatten::flatten;
+mod par_flatten;
+pub use self::par_flatten::par_flatten;
 
-mod par_map;
-pub use self::par_map::par_map;
 

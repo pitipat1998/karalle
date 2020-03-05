@@ -1,31 +1,48 @@
 extern crate rayon;
+
+use scoped_threadpool::Pool;
+
 const THRESHOLD: usize = 100;
 
-fn par_map_recurse<T, U, V>(seq: &[T], ret: &mut [U], func: &V)
+fn par_map_utils<T, U, V>(seq: &[T], ret: &mut [U], func: &V, s: usize, e: usize)
 where T: Sync + Send,
       U: Sync + Send,
       V: Sync + Send + (Fn(usize, &T) -> U)
 {
-    if seq.len() <= THRESHOLD {
-        for (i, item) in seq.iter().enumerate() {
-            ret[i] = func(i, item);
+    let n = e - s;
+    if n <= THRESHOLD {
+        for i in s..e {
+            ret[i-s] = func(i, &seq[i]);
         }
     } else {
-        let half: usize = seq.len() / 2;
-        let (seq_l, seq_r) = seq.split_at(half);
-        let (ret_l, ret_r) = ret.split_at_mut(half);
-        rayon::join(
-                || par_map_recurse(
-                    seq_l,
-                    ret_l,
-                    func
-                ),
-                || par_map_recurse(
-                    seq_r,
-                    ret_r,
-                   func
-                )
-        );
+        let sqrt: usize = (n as f64).sqrt().ceil() as usize;
+        let num_chunks: usize = ((n as f64) / (sqrt as f64)).ceil() as usize;
+
+        rayon::scope(|s| {
+            for (i, chunk) in ret.chunks_mut(sqrt).enumerate() {
+                if i < num_chunks-1 {
+                        s.spawn(move |_| {
+                            par_map_utils(
+                                seq,
+                                chunk,
+                                func,
+                                i * sqrt,
+                                (i + 1) * sqrt
+                            );
+                        });
+                } else {
+                    s.spawn(move |_| {
+                        par_map_utils(
+                            seq,
+                            chunk,
+                            func,
+                            i * sqrt,
+                            seq.len()
+                        );
+                    });
+                }
+            }
+        })
     }
 }
 
@@ -36,6 +53,6 @@ pub fn par_map<'p, T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
 {
     let mut ret: Vec<U> = Vec::with_capacity(seq.len());
     unsafe { ret.set_len(seq.len()) }
-    par_map_recurse(seq, &mut ret, &func);
+    par_map_utils(seq, &mut ret, &func, 0, seq.len());
     ret
 }

@@ -1,7 +1,5 @@
 extern crate rayon;
 
-use rayon::prelude::*;
-
 use super::map;
 use super::scan;
 
