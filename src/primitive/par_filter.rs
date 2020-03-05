@@ -2,8 +2,7 @@ extern crate rayon;
 
 use rayon::prelude::*;
 
-use super::par_map;
-use super::par_scan;
+use super::*;
 
 const THRESHOLD: usize = 100;
 
