@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 csv = "1.1"
+num = "0.2.1"
 rand = "0.7.3"
 rayon = "1.1"
 scoped_threadpool = "0.1.9"

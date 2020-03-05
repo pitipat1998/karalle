@@ -17,7 +17,8 @@ fn fac(i: &u128) -> u128 {
     if (*i) <= 1 {
         1
     } else {
-        (*i) * fac(&(i - 1))
+        let f = &fac(&(*i - 1));
+        (*i) * (*f)
     }
 }
 
@@ -37,7 +38,7 @@ fn benchmark_v1<V>(file: &str, func: V) -> Duration
 fn benchmark_v2<V>(file: &str, func: V) -> Duration
     where V: Sync + Send + (Fn(usize, &u128) -> u128)
 {
-    let v = read_csv(file);
+    let v:Vec<u128> = read_csv(file);
     let now = Instant::now();
     par_map_v2(&v, func);
     now.elapsed()
