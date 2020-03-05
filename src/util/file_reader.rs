@@ -5,6 +5,7 @@ use num::{PrimInt, Unsigned};
 use std::iter::Product;
 use std::str::FromStr;
 
+#[allow(dead_code)]
 pub fn read_csv<T>(path: &str) -> Vec<T>
 where T: PrimInt + Unsigned + Product + FromStr,
       <T as std::str::FromStr>::Err: std::fmt::Debug,

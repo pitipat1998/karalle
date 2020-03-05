@@ -4,6 +4,7 @@ use super::super::primitive::filter;
 use super::super::primitive::flatten;
 use rand::prelude::ThreadRng;
 
+#[allow(dead_code)]
 fn quick_sort_utils<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
     where T: Copy,
           U: Fn(&T, &T) -> i32
@@ -21,6 +22,7 @@ fn quick_sort_utils<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
     }
 }
 
+#[allow(dead_code)]
 pub fn quick_sort<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
     where T: Copy,
           U: Fn(&T, &T) -> i32
