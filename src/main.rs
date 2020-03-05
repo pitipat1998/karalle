@@ -1,12 +1,10 @@
+use std::{fs};
 use std::collections::HashMap;
-use std::{fs,io};
+use std::process::exit;
 use std::time::{Duration, Instant};
 
 use crate::primitive::*;
 use crate::util::file_reader::read_csv;
-use std::path::{PathBuf, Path};
-use std::fmt::Error;
-use std::process::exit;
 
 pub mod util;
 pub mod primitive;
@@ -61,17 +59,17 @@ fn main() {
         exit(-1);
     }
     let mut func: HashMap<&str, &(dyn Sync + Send + Fn(usize, &u128) -> u128)> = HashMap::new();
-    func.insert("Small_C", &|i, x| { *x * *x });
-    func.insert("Huge_C", &|i, x| { fac(x) });
+    func.insert("Multiply", &|_, x| { *x * *x });
+    func.insert("Fac", &|_, x| { fac(x) });
 
     let mut result: HashMap<String, Duration> = HashMap::new();
     for (&name, &f) in &func {
         for d in files.iter() {
-            let key = format!("{},{},1", name, &d);
+            let key = format!("{}, {}, v1", name, &d);
             let dur = benchmark_v1(&d, f);
             result.entry(key).or_insert(dur);
 
-            let key2 = format!("{},{},2", name,& d);
+            let key2 = format!("{}, {}, v2", name,& d);
             let dur = benchmark_v2(&d, f);
             result.entry(key2).or_insert(dur);
         }

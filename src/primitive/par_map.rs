@@ -1,18 +1,16 @@
 extern crate rayon;
 
-use scoped_threadpool::Pool;
-
 const THRESHOLD: usize = 100;
 
-fn par_map_utils<T, U, V>(seq: &[T], ret: &mut [U], func: &V, s: usize, e: usize)
+fn par_map_utils<T, U, V>(seq: &[T], ret: &mut [U], func: &V, _s: usize, _e: usize)
 where T: Sync + Send,
       U: Sync + Send,
       V: Sync + Send + (Fn(usize, &T) -> U)
 {
-    let n = e - s;
+    let n = _e - _s;
     if n <= THRESHOLD {
-        for i in s..e {
-            ret[i-s] = func(i, &seq[i]);
+        for i in _s.._e {
+            ret[i- _s] = func(i, &seq[i]);
         }
     } else {
         let sqrt: usize = (n as f64).sqrt().ceil() as usize;
@@ -57,7 +55,7 @@ pub fn par_map_v1<'p, T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
     ret
 }
 
-fn par_map_util_v2<T, U, V>(seq: &[T], ret: &mut [U], func: &V, s: usize, e: usize)
+fn par_map_util_v2<T, U, V>(seq: &[T], ret: &mut [U], func: &V)
     where T: Sync + Send,
           U: Sync + Send,
           V: Sync + Send + (Fn(usize, &T) -> U)
@@ -78,6 +76,6 @@ pub fn par_map_v2<'p, T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
 {
     let mut ret: Vec<U> = Vec::with_capacity(seq.len());
     unsafe { ret.set_len(seq.len()) }
-    par_map_util_v2(seq, &mut ret, &func,0, seq.len());
+    par_map_util_v2(seq, &mut ret, &func);
     ret
 }

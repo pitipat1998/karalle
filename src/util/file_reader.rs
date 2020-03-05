@@ -1,5 +1,4 @@
 extern crate csv;
-
 pub fn read_csv(path: &str) -> Vec<u128> {
     let rdr = csv::Reader::from_path(path);
     // let mut rdr = csv::Reader::from_reader(io::stdin());
