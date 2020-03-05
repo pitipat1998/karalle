@@ -1,16 +1,17 @@
 pub mod primitive;
 mod sort;
+mod util;
 
 #[cfg(test)]
 mod tests {
     #[test]
     fn scan() {
         use crate::primitive::scan::scan;
-        let arr: &mut Vec<i32> = &mut vec![1,2,1,1];
+        let arr: &mut Vec<i32> = &mut vec![1, 2, 1, 1];
         let (actual_arr, actual_tot): (Vec<i32>, i32) = scan(
             arr,
             |a: &i32, b: &i32| -> i32 { *a + *b },
-            &0
+            &0,
         );
 
         let expected_arr: Vec<i32> = vec![0, 1, 3, 4];
@@ -25,11 +26,11 @@ mod tests {
     #[test]
     fn par_scan() {
         use crate::primitive::par_scan::par_scan;
-        let arr: &mut Vec<i32> = &mut vec![1,2,1,1,9];
+        let arr: &mut Vec<i32> = &mut vec![1, 2, 1, 1, 9];
         let (actual_arr, actual_tot): (Vec<i32>, i32) = par_scan(
             arr,
             |a: &i32, b: &i32| -> i32 { *a + *b },
-            &0
+            &0,
         );
 
         let expected_arr: Vec<i32> = vec![0, 1, 3, 4, 5];
@@ -44,7 +45,8 @@ mod tests {
     #[test]
     fn map() {
         use crate::primitive::map;
-        let arr: &mut Vec<i32> = &mut vec![1, 2, 3, 1];
+        use crate::util::read_csv;
+        let arr: &mut Vec<i32> = &mut vec![1, 2, 3, 4];
         let f: &dyn Fn(usize, &i32) -> i32 = &|_i: usize, a: &i32| -> i32 { if *a <= 2 { 1 } else { 0 } };
         let actual: Vec<i32> = map(arr, f);
 
@@ -59,11 +61,11 @@ mod tests {
 
         use crate::primitive::par_map;
         let arr: &Vec<i32> = &vec![61, 81, 50, 59, 7, 31, 11, 36, 93, 15, 36, 72, 96, 34, 2, 32, 83,
-                                           24, 81, 76, 22, 60, 9, 54, 72, 13, 90, 75, 47, 7, 7, 17, 68, 90,
-                                           86, 32, 54, 67, 50, 69, 93, 89, 30, 47, 99, 73, 18, 74, 49, 77, 53,
-                                           40, 70, 65, 35, 53, 19, 73, 52, 14, 93, 66, 71, 87, 72, 90, 12, 12,
-                                           81, 75, 79, 18, 63, 46, 40, 92, 31, 94, 64, 94, 8, 1, 4, 44, 5,
-                                           57, 66, 67, 9, 75, 9, 49, 61, 68, 11, 25, 39, 90, 86, 48, 91];
+                                   24, 81, 76, 22, 60, 9, 54, 72, 13, 90, 75, 47, 7, 7, 17, 68, 90,
+                                   86, 32, 54, 67, 50, 69, 93, 89, 30, 47, 99, 73, 18, 74, 49, 77, 53,
+                                   40, 70, 65, 35, 53, 19, 73, 52, 14, 93, 66, 71, 87, 72, 90, 12, 12,
+                                   81, 75, 79, 18, 63, 46, 40, 92, 31, 94, 64, 94, 8, 1, 4, 44, 5,
+                                   57, 66, 67, 9, 75, 9, 49, 61, 68, 11, 25, 39, 90, 86, 48, 91];
 
         let actual: Vec<i32> = par_map(arr, |_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
 
@@ -107,9 +109,9 @@ mod tests {
         let arr: &mut Vec<i32> = &mut vec![1, 2, 3, 4];
         let arr2: &mut Vec<i32> = &mut vec![5, 6, 7, 8];
         let arr3: &mut Vec<i32> = &mut vec![9, 10, 11, 12];
-        let actual= flatten(&vec![&arr, &arr2, &arr3]);
+        let actual = flatten(&vec![&arr, &arr2, &arr3]);
 
-        let expected: Vec<i32> = vec![1,2,3,4,5,6,7,8,9,10,11,12];
+        let expected: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
         println!("actual={:?}, expected={:?}", actual, expected);
         assert_eq!(actual, expected);
