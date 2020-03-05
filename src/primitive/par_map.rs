@@ -1,5 +1,7 @@
 extern crate rayon;
 
+use self::rayon::prelude::*;
+
 const THRESHOLD: usize = 100;
 
 fn par_map_utils<T, U, V>(seq: &[T], ret: &mut [U], func: &V, _s: usize, _e: usize)
@@ -78,4 +80,12 @@ pub fn par_map_v2<'p, T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
     unsafe { ret.set_len(seq.len()) }
     par_map_util_v2(seq, &mut ret, &func);
     ret
+}
+
+pub fn par_map_v3<'p, T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
+    where T: Sync + Send,
+          U: Sync + Send,
+          V: Sync + Send + (Fn(usize, &T) -> U)
+{
+    seq.par_iter().map(|x| func(1, x)).collect()
 }

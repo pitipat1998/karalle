@@ -1,7 +1,9 @@
-use std::{fs};
+use std::fs;
 use std::collections::HashMap;
 use std::process::exit;
 use std::time::{Duration, Instant};
+
+use rayon::prelude::*;
 
 use crate::primitive::*;
 use crate::util::file_reader::read_csv;
@@ -38,23 +40,36 @@ fn benchmark_v1<V>(file: &str, func: V) -> Duration
 fn benchmark_v2<V>(file: &str, func: V) -> Duration
     where V: Sync + Send + (Fn(usize, &u128) -> u128)
 {
-    let v:Vec<u128> = read_csv(file);
+    let v: Vec<u128> = read_csv(file);
     let now = Instant::now();
     par_map_v2(&v, func);
     now.elapsed()
 }
 
-fn main() {
-    let files: Vec<String> = fs::read_dir("data").unwrap()
+fn benchmark_v3<V>(file: &str, func: V) -> Duration
+    where V: Sync + Send + (Fn(usize, &u128) -> u128)
+{
+    let v: Vec<u128> = read_csv(file);
+    let now = Instant::now();
+    par_map_v3(&v, func);
+    now.elapsed()
+}
+
+fn get_files() -> Vec<String> {
+    fs::read_dir("data").unwrap()
         .into_iter()
         .map(|res| {
             res.unwrap().path().into_os_string()
         })
-        .filter(|e|{
+        .filter(|e| {
             e.to_os_string().into_string().unwrap().ends_with(".csv")
         })
-        .map(|e|e.into_string().unwrap())
-        .collect();
+        .map(|e| e.into_string().unwrap())
+        .collect()
+}
+
+fn main() {
+    let files: Vec<String> = get_files();
     if files.is_empty() {
         println!("No data to be testing on, put .csc files in data/");
         exit(-1);
@@ -70,9 +85,13 @@ fn main() {
             let dur = benchmark_v1(&d, f);
             result.entry(key).or_insert(dur);
 
-            let key2 = format!("{}, {}, v2", name,& d);
+            let key2 = format!("{}, {}, v2", name, &d);
             let dur = benchmark_v2(&d, f);
             result.entry(key2).or_insert(dur);
+
+            let key3 = format!("{}, {}, v3", name, &d);
+            let dur = benchmark_v3(&d, f);
+            result.entry(key3).or_insert(dur);
         }
     }
     println!("{:?}", result);
