@@ -44,7 +44,7 @@ fn benchmark_v2<V>(file: &str, func: V) -> Duration
 
 fn main() {
     let files = vec!["../data_small.csv", "../data_medium.csv", "../data_large.csv"];
-    let mut func: HashMap<&str, &dyn Fn(usize, &T) -> U> = HashMap::new();
+    let mut func: HashMap<&str, &dyn Fn(usize, &i32) -> i32> = HashMap::new();
     func.insert("Small_C", &small_compute);
     func.insert("Huge_C", &huge_compute);
 
