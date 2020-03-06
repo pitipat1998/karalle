@@ -4,9 +4,67 @@ extern crate rayon;
 use self::num_cpus::get;
 use self::rayon::prelude::*;
 
-const THRESHOLD: usize = 5;
+const THRESHOLD: usize = 1000;
 
-fn par_map_utils<T, U, V>(
+// Version sqrt(n) splits
+pub fn par_map_v1<T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
+    where T: Sync + Send,
+          U: Sync + Send,
+          V: Sync + Send + (Fn(usize, &T) -> U)
+{
+    let mut ret: Vec<U> = Vec::with_capacity(seq.len());
+    unsafe { ret.set_len(seq.len()) }
+    par_map_util_v1(seq, &mut ret, &func, 0, seq.len());
+    ret
+}
+
+// Version n splits
+pub fn par_map_v2<T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
+    where T: Sync + Send,
+          U: Sync + Send,
+          V: Sync + Send + (Fn(usize, &T) -> U)
+{
+    let mut ret: Vec<U> = Vec::with_capacity(seq.len());
+    unsafe { ret.set_len(seq.len()) }
+    par_map_util_v2(seq, &mut ret, &func);
+    ret
+}
+
+// Version half split
+pub fn par_map_v3<T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
+    where T: Sync + Send,
+          U: Sync + Send,
+          V: Sync + Send + (Fn(usize, &T) -> U)
+{
+    let mut ret: Vec<U> = Vec::with_capacity(seq.len());
+    unsafe { ret.set_len(seq.len()) }
+    par_map_utils_v3(seq, &mut ret, &func);
+    ret
+}
+
+// Version 4*nprocs splits
+pub fn par_map_v4<T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
+    where T: Sync + Send,
+          U: Sync + Send,
+          V: Sync + Send + (Fn(usize, &T) -> U)
+{
+    let mut ret: Vec<U> = Vec::with_capacity(seq.len());
+    unsafe { ret.set_len(seq.len()) }
+    par_map_utils_v4(seq, &mut ret, &func, 0, seq.len(), get());
+    ret
+}
+
+// Version rayon
+pub fn par_map_v5<T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
+    where T: Sync + Send,
+          U: Sync + Send,
+          V: Sync + Send + (Fn(usize, &T) -> U)
+{
+    seq.par_iter().map(|x| func(1, x)).collect()
+}
+
+
+fn par_map_util_v1<T, U, V>(
     seq: &[T], ret: &mut [U],
     func: &V, _s: usize, _e: usize,
 )
@@ -27,7 +85,7 @@ fn par_map_utils<T, U, V>(
             for (i, chunk) in ret.chunks_mut(sqrt).enumerate() {
                 if i < num_chunks - 1 {
                     s.spawn(move |_| {
-                        par_map_utils(
+                        par_map_util_v1(
                             seq,
                             chunk,
                             func,
@@ -38,7 +96,7 @@ fn par_map_utils<T, U, V>(
                 } else {
                     let x = i * sqrt;
                     s.spawn(move |_| {
-                        par_map_utils(
+                        par_map_util_v1(
                             seq,
                             chunk,
                             func,
@@ -50,17 +108,6 @@ fn par_map_utils<T, U, V>(
             }
         })
     }
-}
-
-pub fn par_map_v1<'p, T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
-    where T: Sync + Send,
-          U: Sync + Send,
-          V: Sync + Send + (Fn(usize, &T) -> U)
-{
-    let mut ret: Vec<U> = Vec::with_capacity(seq.len());
-    unsafe { ret.set_len(seq.len()) }
-    par_map_utils(seq, &mut ret, &func, 0, seq.len());
-    ret
 }
 
 fn par_map_util_v2<T, U, V>(seq: &[T], ret: &mut [U], func: &V)
@@ -77,23 +124,26 @@ fn par_map_util_v2<T, U, V>(seq: &[T], ret: &mut [U], func: &V)
     })
 }
 
-pub fn par_map_v2<'p, T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
+fn par_map_utils_v3<T, U, V>(seq: &[T], ret: &mut [U], func: &V)
     where T: Sync + Send,
           U: Sync + Send,
           V: Sync + Send + (Fn(usize, &T) -> U)
 {
-    let mut ret: Vec<U> = Vec::with_capacity(seq.len());
-    unsafe { ret.set_len(seq.len()) }
-    par_map_util_v2(seq, &mut ret, &func);
-    ret
-}
+    if seq.len() <= THRESHOLD {
+        for i in 0..seq.len() {
+            ret[i] = func(i, &seq[i]);
+        }
+    } else {
+        let half: usize = ret.len()/2;
+        let (seq_l, seq_r) = seq.split_at(half);
+        let (ret_l, ret_r) = ret.split_at_mut(half);
 
-pub fn par_map_v3<'p, T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
-    where T: Sync + Send,
-          U: Sync + Send,
-          V: Sync + Send + (Fn(usize, &T) -> U)
-{
-    seq.par_iter().map(|x| func(1, x)).collect()
+        rayon::join(
+            || { par_map_utils_v3(seq_l, ret_l, func) },
+            || { par_map_utils_v3(seq_r, ret_r, func) }
+        );
+
+    }
 }
 
 fn par_map_utils_v4<T, U, V>(
@@ -144,13 +194,3 @@ fn par_map_utils_v4<T, U, V>(
     }
 }
 
-pub fn par_map_v4<'p, T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
-    where T: Sync + Send,
-          U: Sync + Send,
-          V: Sync + Send + (Fn(usize, &T) -> U)
-{
-    let mut ret: Vec<U> = Vec::with_capacity(seq.len());
-    unsafe { ret.set_len(seq.len()) }
-    par_map_utils_v4(seq, &mut ret, &func, 0, seq.len(), get());
-    ret
-}
