@@ -8,10 +8,11 @@ fn scan_up<T, U>(seq: &[T], left: &mut [T], func: &U) -> T
         let m: usize = seq.len() / 2;
         let mut l: T = seq[m];
         let mut r: T = seq[m];
+        let (seq_l, seq_r) = seq.split_at(m);
         let (left_l, left_r) = left.split_at_mut(m);
         rayon::join(
-            || { l = scan_up(&seq[..m], left_l, func); },
-            || { r = scan_up(&seq[m..], left_r, func); }
+            || { l = scan_up(seq_l, left_l, func); },
+            || { r = scan_up(seq_r, left_r, func); }
         );
         left_l[m-1] = l;
         func(&l, &r)

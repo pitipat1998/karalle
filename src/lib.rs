@@ -50,7 +50,7 @@ mod tests {
         let f: &dyn Fn(usize, &i32) -> i32 = &|_i: usize, a: &i32| -> i32 { if *a <= 2 { 1 } else { 0 } };
         let actual: Vec<i32> = map(arr, f);
 
-        let expected: Vec<i32> = vec![1, 1, 0, 1];
+        let expected: Vec<i32> = vec![1, 1, 0, 0];
 
         println!("actual={:?}, expected={:?}", actual, expected);
         assert_eq!(actual, expected);
@@ -60,6 +60,9 @@ mod tests {
     fn par_map() {
 
         use crate::primitive::par_map_v1;
+        use crate::primitive::par_map_v2;
+        use crate::primitive::par_map_v3;
+        use crate::primitive::par_map_v4;
         let arr: &Vec<i32> = &vec![61, 81, 50, 59, 7, 31, 11, 36, 93, 15, 36, 72, 96, 34, 2, 32, 83,
                                    24, 81, 76, 22, 60, 9, 54, 72, 13, 90, 75, 47, 7, 7, 17, 68, 90,
                                    86, 32, 54, 67, 50, 69, 93, 89, 30, 47, 99, 73, 18, 74, 49, 77, 53,
@@ -68,6 +71,9 @@ mod tests {
                                    57, 66, 67, 9, 75, 9, 49, 61, 68, 11, 25, 39, 90, 86, 48, 91];
 
         let actual: Vec<i32> = par_map_v1(arr, |_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
+        let actual2: Vec<i32> = par_map_v2(arr, |_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
+        let actual3: Vec<i32> = par_map_v3(arr, |_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
+        let actual4: Vec<i32> = par_map_v4(arr, |_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
 
         let expected: Vec<i32> = vec![1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1,
                                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -77,6 +83,12 @@ mod tests {
 
         println!("actual={:?}, expected={:?}", actual, expected);
         assert_eq!(actual, expected);
+        println!("actual2={:?}, expected={:?}", actual2, expected);
+        assert_eq!(actual2, expected);
+        println!("actual3={:?}, expected={:?}", actual3, expected);
+        assert_eq!(actual3, expected);
+        println!("actual4={:?}, expected={:?}", actual4, expected);
+        assert_eq!(actual4, expected);
     }
 
     #[test]
@@ -93,14 +105,17 @@ mod tests {
 
     #[test]
     fn par_filter() {
-        use crate::primitive::par_filter;
+        use crate::primitive::par_filter_v1;
+//        use crate::primitive::par_filter_v2;
         let arr: Vec<i32> = vec![1, 2, 3, 1, 2];
-        let actual: Vec<i32> = par_filter(&arr, |_i: usize, a: &i32| -> bool { *a < 3 });
+        let actual: Vec<i32> = par_filter_v1(&arr, |_i: usize, a: &i32| -> bool { *a < 3 });
+//        let actual2: Vec<i32> = par_filter_v2(&arr, |_i: usize, a: &i32| -> bool { *a < 3 });
 
         let expected: Vec<i32> = vec![1, 2, 1, 2];
-
         println!("actual={:?}, expected={:?}", actual, expected);
         assert_eq!(actual, expected);
+//        println!("actual2={:?}, expected={:?}", actual2, expected);
+//        assert_eq!(actual2, expected);
     }
 
     #[test]
