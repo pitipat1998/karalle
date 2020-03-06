@@ -15,4 +15,4 @@ if __name__ == "__main__":
 #     fn = args.name
 #     fn = fn + ".csv" if ".csv" not in fn else fn
 
-    np.savetxt(f"data/size-{size}.py", np.random.randint(min_val, max_val, size), delimiter=",", fmt="%d")
+    np.savetxt(f"data/size-{size}.csv", np.random.randint(min_val, max_val, size), delimiter=",", fmt="%d")
