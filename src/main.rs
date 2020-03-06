@@ -83,27 +83,8 @@ fn main() {
             result.entry(key).or_insert(duration);
         }
     }
-    // for (&name, &f) in &func {
-    //     let v: Vec<u128> = read_csv(&d);
-    //     for d in files.iter() {
-    //         let key = format!("{}, {}, v1", name, &d);
-    //         let dur = benchmark_v1(&d, f);
-    //         result.entry(key).or_insert(dur);
-    //
-    //         let key2 = format!("{}, {}, v2", name, &d);
-    //         let dur = benchmark_v2(&d, f);
-    //         result.entry(key2).or_insert(dur);
-    //
-    //         let key3 = format!("{}, {}, v3", name, &d);
-    //         let dur = benchmark_v3(&d, f);
-    //         result.entry(key3).or_insert(dur);
-    //
-    //         let key4 = format!("{}, {}, v4", name, &d);
-    //         let dur = benchmark_v4(&d, f);
-    //         result.entry(key4).or_insert(dur);
-    //     }
-    // }
     let s = json!(result);
-    let _ = serde_json::to_writer(&File::create("data.json").unwrap(), &s);
+    let _ = fs::create_dir("output/");
+    let _ = serde_json::to_writer(&File::create("output/data.json").unwrap(), &s);
     // println!("{:?}", result);
 }
