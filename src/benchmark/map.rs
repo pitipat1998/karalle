@@ -54,13 +54,17 @@ pub fn run_map_benchmark(d: &String, v: Vec<u128>) -> HashMap<String, Duration> 
         let duration = benchmark_map(&v, f, par_map_v2);
         result.entry(key).or_insert(duration);
 
-        let key = format!("{}, {}, par_iter", fname, &d);
+        let key = format!("{}, {}, half_split", fname, &d);
         let duration = benchmark_map(&v, f, par_map_v3);
         result.entry(key).or_insert(duration);
 
         // let key = format!("{}, {}, 4nproc", fname, &d);
         // let duration = benchmark_map(&v, f, par_map_v4);
         // result.entry(key).or_insert(duration);
+
+        let key = format!("{}, {}, rayon_par_iter", fname, &d);
+        let duration = benchmark_map(&v, f, par_map_v5);
+        result.entry(key).or_insert(duration);
     }
     result
 }
