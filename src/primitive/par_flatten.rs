@@ -39,7 +39,7 @@ pub fn par_flatten_util<T: Copy + Sync + Send>(
     s: usize,
     e: usize
 ) {
-     println!("x:{:?}, ret:{:?}, seq:{}, s:{}, e:{}", x, ret.len(), seq.len(), s, e);
+     // println!("x:{:?}, ret:{:?}, seq:{}, s:{}, e:{}", x, ret.len(), seq.len(), s, e);
     if seq.len() <= THRESHOLD {
         if seq.len() > 0 {
             let mut n = 0;
@@ -48,7 +48,7 @@ pub fn par_flatten_util<T: Copy + Sync + Send>(
                 let off = n;
                 n = x[i] - r;
                 r = x[i];
-                println!("x[i]:{}, seq[i]:{}", off, seq[i].len());
+                // println!("x[i]:{}, seq[i]:{}", off, seq[i].len());
                 for j in 0..seq[i].len() {
                     ret[off + j] = seq[i][j];
                 }
@@ -62,7 +62,7 @@ pub fn par_flatten_util<T: Copy + Sync + Send>(
 
         let l_size = *x_l.last().unwrap_or(&0) - s;
         let (ret_l, ret_r) = ret.split_at_mut(l_size);
-        println!("x_l:{:?}, x_r:{:?}, ret_l:{:?}, ret_r:{}, seq_l:{}, seq_r:{}", x_l, x_r, ret_l.len(), ret_r.len(), seq_l.len(), seq_r.len());
+        // println!("x_l:{:?}, x_r:{:?}, ret_l:{:?}, ret_r:{}, seq_l:{}, seq_r:{}", x_l, x_r, ret_l.len(), ret_r.len(), seq_l.len(), seq_r.len());
         rayon::join(
             || { par_flatten_util(seq_l, ret_l, x_l, s,  s+l_size) },
             || { par_flatten_util(seq_r, ret_r, x_r, s+l_size, e) },
