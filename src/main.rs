@@ -1,37 +1,15 @@
-use std::collections::HashMap;
+use crate::benchmark::{run_map_benchmark, run_flatten_benchmark};
+use std::process::exit;
 use std::fs;
 use std::fs::File;
-use std::process::exit;
-use std::time::{Duration, Instant};
-
-use serde_json::json;
-
-use crate::primitive::*;
-use crate::util::file_reader::read_csv;
+use serde_json::*;
+use util::file_reader::*;
+use std::collections::HashMap;
+use std::time::Duration;
 
 pub mod util;
+pub mod benchmark;
 pub mod primitive;
-
-fn fac(i: &u128) -> u128 {
-    if (*i) <= 1 {
-        1
-    } else {
-        let f = &fac(&(*i - 1));
-        (*i) * (*f)
-    }
-}
-
-// fn huge_compute(i: usize, e: &u128) -> u128 {
-//     fac(e)
-// }
-fn benchmark_map<T, V, K>(vec: &Vec<T>, func: V, map: K) -> Duration
-    where V: Sync + Send + (Fn(usize, &u128) -> u128),
-          K: Sync + Send + (Fn(&Vec<T>, V) -> Vec<T>)
-{
-    let now = Instant::now();
-    map(&vec, func);
-    now.elapsed()
-}
 
 fn get_files() -> Vec<String> {
     fs::read_dir("data").unwrap()
@@ -52,39 +30,27 @@ fn main() {
         println!("No data to be testing on, put .csv files in data/");
         exit(-1);
     }
-
-    let mut func: HashMap<&str, &(dyn Sync + Send + Fn(usize, &u128) -> u128)> = HashMap::new();
-    func.insert("Multiply", &|_, x| { *x * *x });
-    func.insert("Fac", &|_, x| { fac(x) });
-
-    // let mut par_map_zip: HashMap<&str, &dyn Fn(&Vec<u128>, u128) -> Vec<u128>> = HashMap::new();
-    // par_map_zip.insert("v1", &par_map_v1);
-    // par_map_zip.insert("v2", &par_map_v2);
-    // par_map_zip.insert("v3", &par_map_v3);
-
-    let mut result: HashMap<String, Duration> = HashMap::new();
+    let _ = fs::create_dir("output/");
     for d in files.iter() {
         let v: Vec<u128> = read_csv(&d);
-        for (&fname, &f) in &func {
-            let key = format!("{}, {}, sqrt_n", fname, &d);
-            let duration = benchmark_map(&v, f, par_map_v1);
-            result.entry(key).or_insert(duration);
+        let map_res = run_map_benchmark(d, v);
+        let _ = serde_json::to_writer(
+            &File::create("output/map_result.json").unwrap(), &json!(map_res));
 
-            let key = format!("{}, {}, n_spawn", fname, &d);
-            let duration = benchmark_map(&v, f, par_map_v2);
-            result.entry(key).or_insert(duration);
+        let arr:  & Vec<i32> = &vec![1, 2, 3, 4];
+        let arr2: & Vec<i32> = & vec![5, 6, 7, 8];
+        let arr3: & Vec<i32> = & vec![9, 10, 11, 12];
+        let vv = vec![
+            arr,
+            arr2,
+            arr3,
+        ];
+        println!("input: {:?}", vv);
+        let (flat_dur, flat) : (HashMap<String, Duration>, Vec<i32>) = run_flatten_benchmark(d, &vv);
+        println!("{:?}", flat);
+        let _ = serde_json::to_writer(
+            &File::create("output/flatten_result.json").unwrap(), &json!(flat_dur));
 
-            let key = format!("{}, {}, par_iter", fname, &d);
-            let duration = benchmark_map(&v, f, par_map_v3);
-            result.entry(key).or_insert(duration);
-
-            let key = format!("{}, {}, 4nproc", fname, &d);
-            let duration = benchmark_map(&v, f, par_map_v4);
-            result.entry(key).or_insert(duration);
-        }
     }
-    let s = json!(result);
-    let _ = fs::create_dir("output/");
-    let _ = serde_json::to_writer(&File::create("output/data.json").unwrap(), &s);
-    // println!("{:?}", result);
+
 }
