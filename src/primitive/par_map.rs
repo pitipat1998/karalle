@@ -55,6 +55,7 @@ pub fn par_map_v4<T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
 }
 
 // Version rayon
+#[allow(dead_code)]
 pub fn par_map_v5<T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
     where T: Sync + Send,
           U: Sync + Send,
@@ -73,41 +74,44 @@ fn par_map_util_v1<T, U, V>(
           V: Sync + Send + (Fn(usize, &T) -> U)
 {
     let n = _e - _s;
-    if n <= THRESHOLD {
-        for i in _s.._e {
-            ret[i - _s] = func(i, &seq[i]);
-        }
-    } else {
-        let sqrt: usize = (n as f64).sqrt().ceil() as usize;
-        let num_chunks: usize = ((n as f64) / (sqrt as f64)).ceil() as usize;
-
-        rayon::scope(|s| {
-            for (i, chunk) in ret.chunks_mut(sqrt).enumerate() {
-                if i < num_chunks - 1 {
-                    s.spawn(move |_| {
-                        par_map_util_v1(
-                            seq,
-                            chunk,
-                            func,
-                            i * sqrt,
-                            (i + 1) * sqrt,
-                        );
-                    });
-                } else {
-                    let x = i * sqrt;
-                    s.spawn(move |_| {
-                        par_map_util_v1(
-                            seq,
-                            chunk,
-                            func,
-                            x,
-                            x + chunk.len(),
-                        );
-                    });
-                }
+    match n {
+        _ if n <= THRESHOLD => {
+            for i in _s.._e {
+                ret[i - _s] = func(i, &seq[i]);
             }
-        })
-    }
+        }
+        _ => {
+            let sqrt: usize = (n as f64).sqrt().ceil() as usize;
+            let num_chunks: usize = ((n as f64) / (sqrt as f64)).ceil() as usize;
+
+            rayon::scope(|s| {
+                for (i, chunk) in ret.chunks_mut(sqrt).enumerate() {
+                    if i < num_chunks - 1 {
+                        s.spawn(move |_| {
+                            par_map_util_v1(
+                                seq,
+                                chunk,
+                                func,
+                                i * sqrt,
+                                (i + 1) * sqrt,
+                            );
+                        });
+                    } else {
+                        let x = i * sqrt;
+                        s.spawn(move |_| {
+                            par_map_util_v1(
+                                seq,
+                                chunk,
+                                func,
+                                x,
+                                x + chunk.len(),
+                            );
+                        });
+                    }
+                }
+            })
+        }
+    };
 }
 
 fn par_map_util_v2<T, U, V>(seq: &[T], ret: &mut [U], func: &V)
@@ -134,22 +138,21 @@ fn par_map_utils_v3<T, U, V>(seq: &[T], ret: &mut [U], func: &V)
             ret[i] = func(i, &seq[i]);
         }
     } else {
-        let half: usize = ret.len()/2;
+        let half: usize = ret.len() / 2;
         let (seq_l, seq_r) = seq.split_at(half);
         let (ret_l, ret_r) = ret.split_at_mut(half);
 
         rayon::join(
             || { par_map_utils_v3(seq_l, ret_l, func) },
-            || { par_map_utils_v3(seq_r, ret_r, func) }
+            || { par_map_utils_v3(seq_r, ret_r, func) },
         );
-
     }
 }
 
 fn par_map_utils_v4<T, U, V>(
     seq: &[T], ret: &mut [U],
     func: &V, _s: usize, _e: usize,
-    cpu: usize
+    cpu: usize,
 )
     where T: Sync + Send,
           U: Sync + Send,
@@ -173,7 +176,7 @@ fn par_map_utils_v4<T, U, V>(
                             func,
                             i * size,
                             (i + 1) * size,
-                            cpu
+                            cpu,
                         );
                     });
                 } else {
@@ -185,7 +188,7 @@ fn par_map_utils_v4<T, U, V>(
                             func,
                             x,
                             x + chunk.len(),
-                            cpu
+                            cpu,
                         );
                     });
                 }
