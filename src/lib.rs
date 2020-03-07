@@ -1,6 +1,7 @@
 pub mod primitive;
 mod sort;
 mod util;
+mod benchmark;
 
 #[cfg(test)]
 mod tests {
