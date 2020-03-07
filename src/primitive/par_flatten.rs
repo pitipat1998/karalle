@@ -50,7 +50,6 @@ pub fn par_flatten_util<T: Copy + Sync + Send>(
         let (x_l, x_r) = x.split_at(half);
 
         let l_size = *x_l.last().unwrap_or(&0);
-        let r_size = tot - x_r[0];
         let (ret_l, ret_r) = ret.split_at_mut(l_size);
         // println!("XL: {:?}, XR:{:?}", x_l, x_r);
         rayon::join(
