@@ -41,11 +41,17 @@ pub fn par_flatten_util<T: Copy + Sync + Send>(
 ) {
      println!("x:{:?}, ret:{:?}, seq:{}, s:{}, e:{}", x, ret.len(), seq.len(), s, e);
     if seq.len() <= THRESHOLD {
-        for i in 0..seq.len() {
-            let off = x[i] - e;
-            println!("x[i]:{}, seq[i]:{}", off, seq[i].len());
-            for j in 0..seq[i].len() {
-                ret[off + j] = seq[i][j];
+        if seq.len() > 0 {
+            let mut n = 0;
+            let mut r = s;
+            for i in 0..seq.len() {
+                let off = n;
+                n = x[i] - r;
+                r = x[i];
+                println!("x[i]:{}, seq[i]:{}", off, seq[i].len());
+                for j in 0..seq[i].len() {
+                    ret[off + j] = seq[i][j];
+                }
             }
         }
     } else {
