@@ -16,14 +16,18 @@ fn fac(i: &u128) -> u128 {
 // fn huge_compute(i: usize, e: &u128) -> u128 {
 //     fac(e)
 // }
+const ROUNDS: u32 = 1000;
+
 #[allow(dead_code)]
 fn benchmark_map<T, V, K>(vec: &Vec<T>, func: V, map: K) -> Duration
-    where V: Sync + Send + (Fn(usize, &u128) -> u128),
+    where V: Sync + Send + Copy + (Fn(usize, &u128) -> u128),
           K: Sync + Send + (Fn(&Vec<T>, V) -> Vec<T>)
 {
     let now = Instant::now();
-    map(&vec, func);
-    now.elapsed()
+    for i in 0..ROUNDS {
+        map(&vec, func.clone());
+    }
+    now.elapsed().div_f32(ROUNDS as f32)
 }
 
 type MapFunc = (dyn Sync + Send + Fn(usize, &u128) -> u128);
