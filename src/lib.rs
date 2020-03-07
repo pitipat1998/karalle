@@ -133,6 +133,19 @@ mod tests {
         assert_eq!(actual, expected);
     }
 
+    #[test]
+    fn par_flatten() {
+        use crate::primitive::par_flatten;
+        let arr: &mut Vec<i32> = &mut vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+        let arr2: &mut Vec<i32> = &mut vec![15, 16];
+        let arr3: &mut Vec<i32> = &mut vec![];
+        let actual = par_flatten(&vec![&arr, &arr2, &arr3]);
+
+        let expected: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+
+        println!("actual={:?}, expected={:?}", actual, expected);
+        assert_eq!(actual, expected);
+    }
 
     #[test]
     fn quick_sort() {
