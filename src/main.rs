@@ -11,8 +11,8 @@ pub mod util;
 pub mod benchmark;
 pub mod primitive;
 
-fn get_files() -> Vec<String> {
-    fs::read_dir("data").unwrap()
+fn get_files(dir: &str) -> Vec<String> {
+    fs::read_dir(dir).unwrap()
         .into_iter()
         .map(|res| {
             res.unwrap().path().into_os_string()
@@ -25,31 +25,27 @@ fn get_files() -> Vec<String> {
 }
 
 fn main() {
-    let files: Vec<String> = get_files();
-    if files.is_empty() {
+    let map_files: Vec<String> = get_files("data/map");
+    let flatten_files: Vec<String> = get_files("data/flatten");
+    if map_files.is_empty()  && flatten_files.is_empty() {
         println!("No data to be testing on, put .csv files in data/");
         exit(-1);
     }
     let _ = fs::create_dir("output/");
-    for d in files.iter() {
+    // Map
+    for d in map_files.iter() {
         let v: Vec<u128> = read_csv(&d);
         let map_res = run_map_benchmark(d, v);
         let _ = serde_json::to_writer(
             &File::create("output/map_result.json").unwrap(), &json!(map_res));
-
-        let arr:  & Vec<i32> = &vec![1, 2, 3, 4];
-        let arr2: & Vec<i32> = & vec![5, 6, 7, 8];
-        let arr3: & Vec<i32> = & vec![9, 10, 11, 12];
-        let vv = vec![
-            arr,
-            arr2,
-            arr3,
-        ];
-        println!("input: {:?}", vv);
-        let (flat_dur, flat) : (HashMap<String, Duration>, Vec<i32>) = run_flatten_benchmark(d, &vv);
+    }
+    // Flatten
+    for d in flatten_files.iter() {
+        let v: Vec<Vec<u128>> = read_nested::<u128>(&d);
+        let v_r: Vec<&Vec<u128>> = v.iter().map(|f| f).collect();
+        let (flat_dur, flat) = run_flatten_benchmark(d, &v_r);
         println!("{:?}", flat);
         let _ = serde_json::to_writer(
             &File::create("output/flatten_result.json").unwrap(), &json!(flat_dur));
-
     }
 }
