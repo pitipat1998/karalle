@@ -25,14 +25,17 @@ if __name__ == "__main__":
     if gen_type in ["map", "filter"]:
         if gen_type not in data_dir:
             mkdir(f"data/{gen_type}")
-            np.savetxt(f"data/{gen_type}/size-{size}.csv", np.random.randint(min_val, max_val, size), delimiter=",",
-                       fmt="%d")
+        fn = f"data/{gen_type}/size-{size}.csv"
+        np.savetxt(fn, np.random.randint(min_val, max_val, size), delimiter=",",
+                   fmt="%d")
+        print("File saved to ", fn)
     elif gen_type == "flatten":
         if "flatten" not in data_dir:
             mkdir("data/flatten")
         ret = [[np.random.randint(min_val, max_val) for i in range(np.random.randint(3, 20))] for x in range(size)]
-        print(ret)
-        with open(f"data/{gen_type}/size-{size}.csv", "w") as f:
+        fn = f"data/{gen_type}/size-{size}.csv"
+        with open(fn, "w") as f:
             for line in ret:
                 to_write = ",".join(str(i) for i in line) + "\n"
                 f.write(to_write)
+        print("File saved to ", fn)
