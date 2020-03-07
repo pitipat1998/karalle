@@ -52,5 +52,4 @@ fn main() {
             &File::create("output/flatten_result.json").unwrap(), &json!(flat_dur));
 
     }
-
 }

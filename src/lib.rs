@@ -138,10 +138,12 @@ mod tests {
         use crate::primitive::par_flatten;
         let arr: &mut Vec<i32> = &mut vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
         let arr2: &mut Vec<i32> = &mut vec![15, 16];
-        let arr3: &mut Vec<i32> = &mut vec![];
-        let actual = par_flatten(&vec![&arr, &arr2, &arr3]);
+        let arr3: &mut Vec<i32> = &mut vec![1, 2];
+        let arr4: &mut Vec<i32> = &mut vec![1, 2, 3, 4, 5, 6, 7, 8];
+        let arr5: &mut Vec<i32> = &mut vec![1, 2, 10 , 20];
+        let actual = par_flatten(&vec![&arr, &arr2, &arr3, &arr4, &arr5]);
 
-        let expected: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+        let expected: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,1, 2, 1, 2, 3, 4, 5 ,6, 7, 8, 1, 2, 10, 20];
 
         println!("actual={:?}, expected={:?}", actual, expected);
         assert_eq!(actual, expected);
