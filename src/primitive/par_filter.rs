@@ -1,13 +1,11 @@
 extern crate rayon;
 
 use crate::primitive::par_map::par_map_v3;
-use crate::primitive::par_scan::par_scan;
-use rayon::prelude::*;
 
 const THRESHOLD: usize = 1000;
 
 // TODO: more versions of filter
-
+#[allow(dead_code)]
 pub fn par_filter_v1<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
     where T: Sync + Send + Copy,
           U: Sync + Send + Fn(usize, &T) -> bool
@@ -30,8 +28,8 @@ pub fn par_filter_v1<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
 //    par_filter_util_v2(seq, &mut ret, &mapped, &x, &func);
 //    ret
 //}
-
-pub fn par_filter_v3<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
+#[allow(dead_code)]
+pub fn par_filter_v3<T, U>(seq: &Vec<T>, _func: U) -> Vec<T>
     where T: Sync + Send + Copy,
           U: Sync + Send + Fn(usize, &T) -> bool
 {
