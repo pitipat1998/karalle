@@ -1,6 +1,8 @@
 use crate::primitive::par_map::par_map_v3;
 use crate::primitive::par_scan::par_scan;
 
+const THRESHOLD: usize = 5;
+
 pub fn par_flatten<T>(seqs: &Vec<&Vec<T>>) -> Vec<T>
     where T: Sync + Send + Copy
 {
@@ -11,7 +13,7 @@ pub fn par_flatten<T>(seqs: &Vec<&Vec<T>>) -> Vec<T>
     let mut ret = Vec::with_capacity(tot);
     unsafe { ret.set_len(tot) }
     // println!("_x:{:?}, tot:{}", _x, tot);
-    par_flatten_util(seqs, &mut ret, &_x, tot);
+    par_flatten_util(seqs, &mut ret, &_x);
     // TODO: parallelize this code
 //    rayon::scope(|s| {
 //        for i in 0..seqs.len() {
@@ -31,33 +33,29 @@ pub fn par_flatten<T>(seqs: &Vec<&Vec<T>>) -> Vec<T>
 pub fn par_flatten_util<T: Copy + Sync + Send>(
     seq: &[&Vec<T>],
     ret: &mut [T],
-    x: &[usize],
-    tot: usize,
+    x: &[usize]
 ) {
     // println!("x:{:?}, tot:{}", x, tot);
-    match tot {
-        _ if tot <= 1 => {
-            for i in 0..tot {
-                let off = x[i];
-                for j in 0..seq[i].len() {
-                    ret[off + j] = seq[i][j];
-                }
+    if ret.len() <= THRESHOLD {
+        for i in 0..seq.len() {
+            let off = x[i];
+            for j in 0..seq[i].len() {
+                ret[off + j] = seq[i][j];
             }
         }
-        _ => {
-            let half: usize = (seq.len() / 2) as usize;
-            let (seq_l, seq_r) = seq.split_at(half);
+    } else {
+        let half: usize = (seq.len() / 2) as usize;
+        let (seq_l, seq_r) = seq.split_at(half);
 
-            let (x_l, x_r) = x.split_at(half);
+        let (x_l, x_r) = x.split_at(half);
 
-            let l_size = *x_l.last().unwrap_or(&0);
-            let r_size = tot - x_r[0];
-            let (ret_l, ret_r) = ret.split_at_mut(half);
-            // println!("XL: {:?}, XR:{:?}", x_l, x_r);
-            rayon::join(
-                || { par_flatten_util(seq_l, ret_l, x_l, l_size) },
-                || { par_flatten_util(seq_r, ret_r, x_r, r_size) },
-            );
-        }
+        let l_size = *x_l.last().unwrap_or(&0);
+        let r_size = tot - x_r[0];
+        let (ret_l, ret_r) = ret.split_at_mut(l_size);
+        // println!("XL: {:?}, XR:{:?}", x_l, x_r);
+        rayon::join(
+            || { par_flatten_util(seq_l, ret_l, x_l) },
+            || { par_flatten_util(seq_r, ret_r, x_r) },
+        );
     }
 }
