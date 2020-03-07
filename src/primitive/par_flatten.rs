@@ -28,7 +28,7 @@ pub fn par_flatten<T>(seqs: &Vec<&Vec<T>>) -> Vec<T>
     ret
 }
 
-pub fn par_flatten_util<T: Clone + Sync + Send>(
+pub fn par_flatten_util<T: Copy + Sync + Send>(
     seq: &[&Vec<T>],
     ret: &mut [T],
     x: &[usize],
@@ -40,19 +40,23 @@ pub fn par_flatten_util<T: Clone + Sync + Send>(
             for i in 0..tot {
                 let off = x[i];
                 for j in 0..seq[i].len() {
-                    ret[off + j] = seq[i][j].clone();
+                    ret[off + j] = seq[i][j];
                 }
             }
         }
         _ => {
             let half: usize = (seq.len() / 2) as usize;
             let (seq_l, seq_r) = seq.split_at(half);
-            let (ret_l, ret_r) = ret.split_at_mut(half);
+
             let (x_l, x_r) = x.split_at(half);
+
+            let l_size = *x_l.last().unwrap_or(&0);
+            let r_size = tot - x_r[0];
+            let (ret_l, ret_r) = ret.split_at_mut(half);
             // println!("XL: {:?}, XR:{:?}", x_l, x_r);
             rayon::join(
-                || { par_flatten_util(seq_l, ret_l, x_l, *x_l.last().unwrap_or(&0)) },
-                || { par_flatten_util(seq_r, ret_r, x_r, tot - x_r[0]) },
+                || { par_flatten_util(seq_l, ret_l, x_l, l_size) },
+                || { par_flatten_util(seq_r, ret_r, x_r, r_size) },
             );
         }
     }
