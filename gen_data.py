@@ -19,11 +19,11 @@ def do_gen(size, gen_type, min_val, max_val):
         if "flatten" not in data_dir:
             mkdir("data/flatten")
         print("Generating data for size : ", size)
-        ret = [[np.random.randint(min_val, max_val) for i in range(np.random.randint(3, 20))] for x in range(size)]
         fn = f"data/{gen_type}/size-{size}.csv"
         with open(fn, "w") as f:
-            for line in ret:
-                to_write = ",".join(str(i) for i in line) + "\n"
+            for line in range(size):
+                lst = [np.random.randint(min_val, max_val) for i in range(np.random.randint(3, 20))]
+                to_write = ",".join(str(i) for i in lst) + "\n"
                 f.write(to_write)
         print("File saved to ", fn)
 
