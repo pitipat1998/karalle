@@ -30,7 +30,7 @@ def do_gen(size, gen_type, min_val, max_val):
 def gen(t, ifrom=0, ito=0, size=0):
     if ito > 0:
         p = Pool(min(cpu_count() - 1, ito - ifrom))
-        p.map(partial(do_gen, gen_type=t, min_val=min_val, max_val=max_val), [2 ** i for i in range(ifrom, ito)])
+        p.map(partial(do_gen, gen_type=t, min_val=min_val, max_val=max_val), [2 ** i for i in range(ito, ifrom, -1)])
     else:
         do_gen(t, min_val, max_val, size)
 
