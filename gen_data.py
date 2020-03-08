@@ -3,10 +3,9 @@ from os import listdir, mkdir
 
 import numpy as np
 
-data_dir = listdir("data")
-
 
 def do_gen(gen_type, min_val, max_val, size):
+    data_dir = listdir("data")
     if gen_type not in ["map", "flatten", "filter"]:
         print("Only these types supported: map, flatten, filter")
         exit(1)
