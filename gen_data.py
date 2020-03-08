@@ -6,9 +6,6 @@ import numpy as np
 
 def do_gen(gen_type, min_val, max_val, size):
     data_dir = listdir("data")
-    if gen_type not in ["map", "flatten", "filter"]:
-        print("Only these types supported: map, flatten, filter")
-        exit(1)
     if gen_type in ["map", "filter"]:
         if gen_type not in data_dir:
             mkdir(f"data/{gen_type}")
@@ -28,12 +25,20 @@ def do_gen(gen_type, min_val, max_val, size):
         print("File saved to ", fn)
 
 
+def gen(t):
+    if ito > 0:
+        for i in range(args.ifrom, args.ito):
+            do_gen(t, min_val, max_val, 2 ** i)
+    else:
+        do_gen(t, min_val, max_val, size)
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(description="Generate Data")
     parser.add_argument("--min", type=int, metavar="min value", default=0)
     parser.add_argument("--max", type=int, metavar="max value", default=100)
     parser.add_argument("--size", type=int, metavar="number of output", default=0)
-    parser.add_argument("--type", type=str, metavar="<map | flatten | filter>", default="map")
+    parser.add_argument("--type", type=str, metavar="<map | flatten | filter | all>", default="map")
     parser.add_argument("-a", "--all", default=False, action='store_true')
     parser.add_argument("--ifrom", type=int, metavar="from 2^<from>", default=0)
     parser.add_argument("--ito", type=int, metavar="to 2^<to>", default=0)
@@ -53,8 +58,12 @@ if __name__ == "__main__":
         print("Please specify size or provide --ifrom --ito")
         exit(1)
 
-    if ito > 0:
-        for i in range(args.ifrom, args.ito):
-            do_gen(gen_type, min_val, max_val, 2 ** i)
+    if gen_type not in ["map", "flatten", "filter", "all"]:
+        print("Only these types supported: map, flatten, filter, all")
+        exit(1)
+
+    if gen_type == "all":
+        for i in ["map", "flatten", "filter"]:
+            gen(i)
     else:
-        do_gen(gen_type, min_val, max_val, size)
+        gen(gen_type)
