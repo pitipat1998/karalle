@@ -1,10 +1,12 @@
 from argparse import ArgumentParser
+from functools import partial
+from multiprocessing import Pool, cpu_count
 from os import listdir, mkdir
 
 import numpy as np
 
 
-def do_gen(gen_type, min_val, max_val, size):
+def do_gen(size, gen_type, min_val, max_val):
     data_dir = listdir("data")
     if gen_type in ["map", "filter"]:
         if gen_type not in data_dir:
@@ -25,10 +27,10 @@ def do_gen(gen_type, min_val, max_val, size):
         print("File saved to ", fn)
 
 
-def gen(t):
+def gen(t, ifrom=0, ito=0, size=0):
     if ito > 0:
-        for i in range(args.ifrom, args.ito):
-            do_gen(t, min_val, max_val, 2 ** i)
+        p = Pool(min(cpu_count() - 1, ito - ifrom))
+        p.map(partial(do_gen, gen_type=t, min_val=min_val, max_val=max_val), [2 ** i for i in range(ifrom, ito)])
     else:
         do_gen(t, min_val, max_val, size)
 
@@ -64,6 +66,6 @@ if __name__ == "__main__":
 
     if gen_type == "all":
         for i in ["map", "flatten", "filter"]:
-            gen(i)
+            gen(i, ifrom=args.ifrom, ito=args.ito, size=size)
     else:
-        gen(gen_type)
+        gen(gen_type, ifrom=args.ifrom, ito=args.ito, size=size)
