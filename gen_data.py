@@ -55,5 +55,5 @@ if __name__ == "__main__":
     if is_all:
         for i in range(args.ifrom, args.ito):
             do_gen(gen_type, min_val, max_val, 2 ** i)
-        else:
-            do_gen(gen_type, min_val, max_val, size)
+    else:
+        do_gen(gen_type, min_val, max_val, size)
