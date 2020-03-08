@@ -173,5 +173,30 @@ mod tests {
         println!("actual2={:?}, expected2={:?}", actual2, expected2);
         assert_eq!(actual2, expected2);
     }
+
+    #[test]
+    fn par_quick_sort() {
+        use crate::sort::par_quick_sort;
+        let arr: Vec<i32> = vec![1, 7, 16, 0, -4, -7, 2, 3, 64, -1, 9, 1];
+        let arr2: Vec<(i32, f32)> = vec![(1, 0.2), (2, 0.1), (-1, 9.0), (2, 0.1), (2, 0.2)];
+        let actual = par_quick_sort(&arr, |a: &i32, b: &i32| -> i32 { *a - *b });
+        let actual2 = par_quick_sort(&arr2, |a: &(i32, f32), b: &(i32, f32)| -> i32 {
+            let (a1, a2): (i32, f32) = *a;
+            let (b1, b2): (i32, f32) = *b;
+            if a1 == b1 {
+                if a2 < b2 { -1 } else if a2 == b2 { 0 } else { 0 }
+            } else {
+                return a1 - b1;
+            }
+        });
+
+        let expected: Vec<i32> = vec![-7, -4, -1, 0, 1, 1, 2, 3, 7, 9, 16, 64];
+        let expected2: Vec<(i32, f32)> = vec![(-1, 9.0), (1, 0.2), (2, 0.1), (2, 0.1), (2, 0.2)];
+
+        println!("actual={:?}, expected={:?}", actual, expected);
+        assert_eq!(actual, expected);
+        println!("actual2={:?}, expected2={:?}", actual2, expected2);
+        assert_eq!(actual2, expected2);
+    }
 }
 
