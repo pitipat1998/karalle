@@ -36,7 +36,7 @@ if __name__ == "__main__":
     parser.add_argument("--type", type=str, metavar="<map | flatten | filter>", default="map")
     parser.add_argument("-a", "--all", default=False, action='store_true')
     parser.add_argument("--ifrom", type=int, metavar="from 2^<from>", default=0)
-    parser.add_argument("--ito", type=int, metavar="to 2^<to>", default=10)
+    parser.add_argument("--ito", type=int, metavar="to 2^<to>", default=0)
     #     parser.add_argument("--name", type=str, metavar="File name")
 
     args = parser.parse_args()
@@ -44,14 +44,16 @@ if __name__ == "__main__":
     max_val = args.max
     size = args.size
     gen_type = args.type
-    is_all = args.all
+    ifrom = args.ifrom
+    ito = args.ito
 
-    if is_all and size > 0:
+    if ito > 0 and size > 0:
         print("Using all option, ignoring size")
-    elif not is_all and size == 0:
-        print("Please specify size or provide --all --from --to")
+    elif all(i == 0 for i in [size, ifrom, ito]):
+        print("Please specify size or provide --ifrom --ito")
+        exit(1)
 
-    if is_all:
+    if ito > 0:
         for i in range(args.ifrom, args.ito):
             do_gen(gen_type, min_val, max_val, 2 ** i)
     else:
