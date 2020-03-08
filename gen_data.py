@@ -18,6 +18,7 @@ def do_gen(size, gen_type, min_val, max_val):
     elif gen_type == "flatten":
         if "flatten" not in data_dir:
             mkdir("data/flatten")
+        print("Generating data for size : ", size)
         ret = [[np.random.randint(min_val, max_val) for i in range(np.random.randint(3, 20))] for x in range(size)]
         fn = f"data/{gen_type}/size-{size}.csv"
         with open(fn, "w") as f:
@@ -28,11 +29,12 @@ def do_gen(size, gen_type, min_val, max_val):
 
 
 def gen(t, ifrom=0, ito=0, size=0):
+    print(f"Generating data with size 2**{ifrom} to 2**{ito}")
     if ito > 0:
         p = Pool(min(cpu_count() - 1, ito - ifrom))
         p.map(partial(do_gen, gen_type=t, min_val=min_val, max_val=max_val), [2 ** i for i in range(ito, ifrom, -1)])
     else:
-        do_gen(t, min_val, max_val, size)
+        do_gen(size, t, min_val, max_val)
 
 
 if __name__ == "__main__":
