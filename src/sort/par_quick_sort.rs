@@ -6,6 +6,7 @@ use rand::prelude::ThreadRng;
 
 const THRESHOLD: usize = 500;
 
+#[allow(dead_code)]
 fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
     where T: Sync + Send + Copy,
           U: Sync + Send + Fn(&T, &T) -> i32
@@ -31,6 +32,7 @@ fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
     }
 }
 
+#[allow(dead_code)]
 pub fn par_quick_sort<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
     where T: Sync + Send + Copy,
           U: Sync + Send + Fn(&T, &T) -> i32

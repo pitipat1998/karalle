@@ -8,7 +8,6 @@ use std::fs::*;
 use std::io;
 use std::path::Path;
 use std::io::BufRead;
-use rayon::str::*;
 use serde_json::from_str;
 use serde::de::DeserializeOwned;
 
@@ -41,7 +40,7 @@ pub fn read_nested<T: DeserializeOwned>(path: &str) -> Vec<Vec<T>> {
     if let Ok(lines) = read_lines(path) {
         for line_op in lines {
             if let Ok(line) = line_op {
-                let x: Vec<T> = (line.split(",").map(|i| from_str::<T>(i).unwrap()).collect());
+                let x: Vec<T> = line.split(",").map(|i| from_str::<T>(i).unwrap()).collect();
                 v.push(x);
             }
         }
