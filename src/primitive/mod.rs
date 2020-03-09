@@ -22,5 +22,6 @@ mod flatten;
 pub use self::flatten::flatten;
 mod par_flatten;
 pub use self::par_flatten::par_flatten;
+pub use self::par_flatten::par_flatten_v2;
 
 

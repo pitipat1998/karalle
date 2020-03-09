@@ -28,7 +28,7 @@ fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
             || { left = par_quick_sort_utils(&lt, func)},
                 || { right = par_quick_sort_utils(&gt, func)}
         );
-        par_flatten(&vec![&left, &eq, &right])
+        par_flatten(&vec![left, eq, right])
     }
 }
 

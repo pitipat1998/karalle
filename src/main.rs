@@ -64,11 +64,21 @@ fn main() {
     for d in flatten_files.iter() {
         println!("Running flatten file: {}", d);
         let v: Vec<Vec<u128>> = read_nested::<u128>(&d);
-        let v_r: Vec<&Vec<u128>> = v.iter().map(|f| f).collect();
-        let res = run_flatten_benchmark(d, &v_r, rounds, tn);
+        // let v_r: Vec<&Vec<u128>> = v.iter().map(|f| f).collect();
+        let res = run_flatten_benchmark(d, &v, rounds, tn);
         flat_res.extend(res);
     }
     println!("Writing flatten result");
     let _ = serde_json::to_writer(
         &File::create("output/flatten_result.json").unwrap(), &json!(flat_res));
+
+    // let v:Vec<Vec<_>> = vec![
+    //     vec![1, 2, 3],
+    //     vec![4, 5, 6],
+    //     vec![7, 8, 9]
+    // ];
+    // let x: Vec<&Vec<_>> = vec![&vec![1, 2], &vec![3, 4]];
+    // let mut y: Vec<Vec<i32>> = x.iter().map(|&i| i).collect();
+    //
+    // let z: Vec<_> = y.into_par_iter().flatten().collect();
 }
