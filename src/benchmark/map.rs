@@ -16,7 +16,7 @@ fn fac(i: &u128) -> u128 {
 // fn huge_compute(i: usize, e: &u128) -> u128 {
 //     fac(e)
 // }
-const ROUNDS: u32 = 1000;
+const ROUNDS: u32 = 10;
 
 #[allow(dead_code)]
 fn benchmark_map<T, V, K>(vec: &Vec<T>, func: V, map: K) -> Duration
@@ -54,9 +54,9 @@ pub fn run_map_benchmark(d: &String, v: Vec<u128>) -> HashMap<String, Duration> 
         let duration = benchmark_map(&v, f, par_map_v1);
         result.entry(key).or_insert(duration);
 
-        let key = format!("{}, {}, n_spawn", fname, &d);
-        let duration = benchmark_map(&v, f, par_map_v2);
-        result.entry(key).or_insert(duration);
+        // let key = format!("{}, {}, n_spawn", fname, &d);
+        // let duration = benchmark_map(&v, f, par_map_v2);
+        // result.entry(key).or_insert(duration);
 
         let key = format!("{}, {}, half_split", fname, &d);
         let duration = benchmark_map(&v, f, par_map_v3);
