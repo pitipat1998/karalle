@@ -85,7 +85,7 @@ if __name__ == "__main__":
         mkdir(f"data/{gen_type}")
     if smart and gen_type in ["map", "filter"]:
         for i in range(20, 41):
-            fn = f"data/{gen_type}/size-{size}.csv"
+            fn = f"data/{gen_type}/size-{2**i}.csv"
             np.savetxt(fn, smart_gen(2**i, min_val, max_val), fmt="%d", delimiter=",")
         exit(0)
 
