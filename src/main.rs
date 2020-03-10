@@ -10,7 +10,7 @@ use std::time::Duration;
 use serde_json::*;
 
 use util::file_reader::*;
-
+use util::data_generator::*;
 use crate::benchmark::{run_flatten_benchmark, run_map_benchmark};
 
 pub mod util;
@@ -31,6 +31,8 @@ fn get_files(dir: &str) -> Vec<String> {
 }
 
 fn main() {
+    // make_data((2 as f32).powi(20) as u64, 1, 100, "data/", "map");
+    // return;
     let mut tn: usize = envmnt::get_or("KTHREAD", "0").parse().unwrap();
     if tn == 0 {
         tn = num_cpus::get();
