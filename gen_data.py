@@ -28,8 +28,6 @@ def smart_gen(ssize, minv, maxv, threshold=1_000_000):
 def do_gen(ssize, type_for, minv, maxv):
     data_dir = listdir("data")
     if type_for in ["map", "filter"]:
-        if type_for not in data_dir:
-            mkdir(f"data/{type_for}")
         fn = f"data/{type_for}/size-{ssize}.csv"
         np.savetxt(fname=fn,
                    X=np.random.randint(minv, maxv, ssize),
@@ -80,12 +78,15 @@ if __name__ == "__main__":
     ifrom = args.ifrom
     ito = args.ito
 
+    dir = listdir("data")
+    if gen_type not in dir:
+        mkdir(f"data/{gen_type}")
     if smart and gen_type in ["map", "filter"]:
         for i in range(20, 41):
             fn = f"data/{gen_type}/size-{size}.csv"
             np.savetxt(fn, smart_gen(2**i, min_val, max_val), fmt="%d", delimiter=",")
         exit(0)
-        
+
     if ito > 0 and size > 0:
         print("Using all option, ignoring size")
     elif all(i == 0 for i in [size, ifrom, ito]):
