@@ -61,29 +61,31 @@ def gen(t, minv, maxv, ifrom=0, ito=0, size=0):
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Generate Data")
-    parser.add_argument("--min", type=int, metavar="min value", default=0)
-    parser.add_argument("--max", type=int, metavar="max value", default=100)
-    parser.add_argument("--size", type=int, metavar="number of output", default=0)
+    parser.add_argument("--min", type=int, metavar="min value", default=3)
+    parser.add_argument("--max", type=int, metavar="max value", default=1000)
+    parser.add_argument("--size", type=int, metavar="2**<size> generated data", default=0)
     parser.add_argument("--type", type=str, metavar="<map | flatten | filter | all>", default="map")
     parser.add_argument("-a", "--all", default=False, action='store_true')
-    parser.add_argument("--ifrom", type=int, metavar="from 2^<from>", default=0)
-    parser.add_argument("--ito", type=int, metavar="to 2^<to>", default=0)
+    parser.add_argument("--ifrom", type=int, metavar="from 2^<from>", default=2)
+    parser.add_argument("--ito", type=int, metavar="to 2^<to>", default=10)
     parser.add_argument("--smart", default=False, action='store_true')
     #     parser.add_argument("--name", type=str, metavar="File name")
 
     args = parser.parse_args()
     min_val = args.min
     max_val = args.max
-    size = args.size
+    size = 2**args.size
     smart = args.smart
     gen_type = args.type
     ifrom = args.ifrom
     ito = args.ito
 
     if smart and gen_type in ["map", "filter"]:
-        fn = f"data/{gen_type}/size-{size}.csv"
-        np.savetxt(fn, smart_gen(size, min_val, max_val), fmt="%d", delimiter=",")
+        for i in range(20, 41):
+            fn = f"data/{gen_type}/size-{size}.csv"
+            np.savetxt(fn, smart_gen(2**i, min_val, max_val), fmt="%d", delimiter=",")
         exit(0)
+        
     if ito > 0 and size > 0:
         print("Using all option, ignoring size")
     elif all(i == 0 for i in [size, ifrom, ito]):
