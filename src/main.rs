@@ -36,9 +36,13 @@ fn main() {
         tn = num_cpus::get();
     }
     rayon::ThreadPoolBuilder::new().num_threads(tn).build_global().unwrap();
+
     let r = envmnt::get_or("KROUND", "10");
     let rounds: u128 = r.parse().unwrap();
     println!("Running with {} threads and {} rounds", tn, rounds);
+
+    let t: String = envmnt::get_or("KTYPE", "ALL");
+
     let map_files: Vec<String> = get_files("data/map");
     let flatten_files: Vec<String> = get_files("data/flatten");
     if map_files.is_empty() && flatten_files.is_empty() {
@@ -46,31 +50,33 @@ fn main() {
         exit(-1);
     }
     let _ = fs::create_dir("output/");
-
-    let mut map_res: HashMap<String, Duration> = HashMap::new();
-    // Map
-    for d in map_files.iter() {
-        println!("Running map file: {}", d);
-        let v: Vec<u128> = read_csv(&d);
-        let res = run_map_benchmark(d, v, rounds, tn);
-        map_res.extend(res);
+    if t == "ALL" || t == "MAP" {
+        let mut map_res: HashMap<String, Duration> = HashMap::new();
+        // Map
+        for d in map_files.iter() {
+            println!("Running map file: {}", d);
+            let v: Vec<u128> = read_csv(&d);
+            let res = run_map_benchmark(d, v, rounds, tn);
+            map_res.extend(res);
+        }
+        println!("Writing map result");
+        let _ = serde_json::to_writer(
+            &File::create("output/map_result.json").unwrap(), &json!(map_res));
     }
-    println!("Writing map result");
-    let _ = serde_json::to_writer(
-        &File::create("output/map_result.json").unwrap(), &json!(map_res));
-
-    let mut flat_res: HashMap<String, Duration> = HashMap::new();
-    // Flatten
-    for d in flatten_files.iter() {
-        println!("Running flatten file: {}", d);
-        let v: Vec<Vec<u128>> = read_nested::<u128>(&d);
-        // let v_r: Vec<&Vec<u128>> = v.iter().map(|f| f).collect();
-        let res = run_flatten_benchmark(d, &v, rounds, tn);
-        flat_res.extend(res);
+    if t == "ALL" || t == "FLATTEN" {
+        let mut flat_res: HashMap<String, Duration> = HashMap::new();
+        // Flatten
+        for d in flatten_files.iter() {
+            println!("Running flatten file: {}", d);
+            let v: Vec<Vec<u128>> = read_nested::<u128>(&d);
+            // let v_r: Vec<&Vec<u128>> = v.iter().map(|f| f).collect();
+            let res = run_flatten_benchmark(d, &v, rounds, tn);
+            flat_res.extend(res);
+        }
+        println!("Writing flatten result");
+        let _ = serde_json::to_writer(
+            &File::create("output/flatten_result.json").unwrap(), &json!(flat_res));
     }
-    println!("Writing flatten result");
-    let _ = serde_json::to_writer(
-        &File::create("output/flatten_result.json").unwrap(), &json!(flat_res));
 
     // let v:Vec<Vec<_>> = vec![
     //     vec![1, 2, 3],
