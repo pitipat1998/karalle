@@ -11,16 +11,18 @@ def smart_gen_util(ssize, minv, maxv):
 
 
 def smart_gen(ssize, minv, maxv, threshold=1_000_000):
+    # print("size", ssize)
     rounds = ssize // threshold
     p = Pool(cpu_count())
     mainc = [threshold] * rounds
     leftover = [ssize % threshold]
     if leftover[0] > 0:
         mainc += leftover
+    # print("mainc", mainc)
     ret = p.map(partial(smart_gen_util, minv=minv, maxv=maxv),
                 mainc)
     print("Finish generating, reducing array")
-    to_r = np.array(ret).flatten()
+    to_r = np.concatenate(ret).ravel()
     print("resulting size", len(to_r))
     return to_r
 
