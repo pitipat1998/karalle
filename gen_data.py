@@ -6,35 +6,57 @@ from os import listdir, mkdir
 import numpy as np
 
 
-def do_gen(size, gen_type, min_val, max_val):
+def smart_gen_util(ssize, minv, maxv):
+    return np.random.randint(minv, maxv, ssize)
+
+
+def smart_gen(ssize, minv, maxv, threshold=1_000_000):
+    rounds = ssize // threshold
+    p = Pool(cpu_count())
+    mainc = [threshold] * rounds
+    leftover = [ssize % threshold]
+    if leftover[0] > 0:
+        mainc += leftover
+    ret = p.map(partial(smart_gen_util, minv=minv, maxv=maxv),
+                mainc)
+    print("Finish generating, reducing array")
+    to_r = np.array(ret).flatten()
+    print("resulting size", len(to_r))
+    return to_r
+
+
+def do_gen(ssize, type_for, minv, maxv):
     data_dir = listdir("data")
-    if gen_type in ["map", "filter"]:
-        if gen_type not in data_dir:
-            mkdir(f"data/{gen_type}")
-        fn = f"data/{gen_type}/size-{size}.csv"
-        np.savetxt(fn, np.random.randint(min_val, max_val, size), delimiter=",",
+    if type_for in ["map", "filter"]:
+        if type_for not in data_dir:
+            mkdir(f"data/{type_for}")
+        fn = f"data/{type_for}/size-{ssize}.csv"
+        np.savetxt(fname=fn,
+                   X=np.random.randint(minv, maxv, ssize),
+                   delimiter=",",
                    fmt="%d")
         print("File saved to ", fn)
-    elif gen_type == "flatten":
+    elif type_for == "flatten":
         if "flatten" not in data_dir:
             mkdir("data/flatten")
-        print("Generating data for size : ", size)
-        fn = f"data/{gen_type}/size-{size}.csv"
+        print("Generating data for size : ", ssize)
+        fn = f"data/{type_for}/size-{ssize}.csv"
         with open(fn, "w") as f:
-            for line in range(size):
-                lst = [np.random.randint(min_val, max_val) for i in range(np.random.randint(3, 20))]
+            for line in range(ssize):
+                lst = [np.random.randint(minv, maxv) for i in range(np.random.randint(3, 200))]
                 to_write = ",".join(str(i) for i in lst) + "\n"
                 f.write(to_write)
         print("File saved to ", fn)
 
 
-def gen(t, ifrom=0, ito=0, size=0):
+def gen(t, minv, maxv, ifrom=0, ito=0, size=0):
     print(f"Generating data with size 2**{ifrom} to 2**{ito}")
     if ito > 0:
         p = Pool(min(cpu_count() - 1, ito - ifrom))
-        p.map(partial(do_gen, gen_type=t, min_val=min_val, max_val=max_val), [2 ** i for i in range(ito, ifrom, -1)])
+        p.map(partial(do_gen, type_for=t, minv=minv, maxv=maxv),
+              [2 ** i for i in range(ito, ifrom, -1)])
     else:
-        do_gen(size, t, min_val, max_val)
+        do_gen(size, t, minv, maxv)
 
 
 if __name__ == "__main__":
@@ -46,16 +68,22 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--all", default=False, action='store_true')
     parser.add_argument("--ifrom", type=int, metavar="from 2^<from>", default=0)
     parser.add_argument("--ito", type=int, metavar="to 2^<to>", default=0)
+    parser.add_argument("--smart", default=False, action='store_true')
     #     parser.add_argument("--name", type=str, metavar="File name")
 
     args = parser.parse_args()
     min_val = args.min
     max_val = args.max
     size = args.size
+    smart = args.smart
     gen_type = args.type
     ifrom = args.ifrom
     ito = args.ito
 
+    if smart and gen_type in ["map", "filter"]:
+        fn = f"data/{gen_type}/size-{size}.csv"
+        np.savetxt(fn, smart_gen(size, min_val, max_val), fmt="%d", delimiter=",")
+        exit(0)
     if ito > 0 and size > 0:
         print("Using all option, ignoring size")
     elif all(i == 0 for i in [size, ifrom, ito]):
@@ -68,6 +96,6 @@ if __name__ == "__main__":
 
     if gen_type == "all":
         for i in ["map", "flatten", "filter"]:
-            gen(i, ifrom=args.ifrom, ito=args.ito, size=size)
+            gen(i, min_val, max_val, ifrom=args.ifrom, ito=args.ito, size=size)
     else:
-        gen(gen_type, ifrom=args.ifrom, ito=args.ito, size=size)
+        gen(gen_type, min_val, max_val, ifrom=args.ifrom, ito=args.ito, size=size)
