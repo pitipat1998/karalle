@@ -2,7 +2,7 @@ extern crate rayon;
 
 use crate::primitive::par_map::par_map_v3;
 use crate::primitive::par_scan::par_scan;
-use serde::export::fmt::{Display, Debug};
+use serde::export::fmt::Debug;
 
 const THRESHOLD: usize = 1;
 
@@ -81,7 +81,7 @@ pub fn par_filter_util_v2<T>(seq: &[T], ret: &mut [T], mapped: &[usize], x: &[us
         }
     } else {
         let half: usize = seq.len()/2;
-        let ret_half = ret.len()/2;
+        // let ret_half = ret.len()/2;
         let (seq_l, seq_r) = seq.split_at(half);
         let (mapped_l, mapped_r) = mapped.split_at(half);
         let (x_l, x_r) = x.split_at(half);

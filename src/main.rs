@@ -32,48 +32,52 @@ fn get_files(dir: &str) -> Vec<String> {
         .collect()
 }
 
-fn main() {
-    let make_type = envmnt::get_or("KGEN", "none").to_lowercase();
+fn make_file(make_type: &String) {
     match make_type.as_str() {
         "map" | "filter" => {
-            (20..41).into_par_iter()
+            (20..30).into_par_iter()
                 .for_each(|i| {
-                let size = (2 as f32).powi(i) as u64;
-                println!("Generating {}({}) {} data size", size, i, make_type);
-                make_data(size, 2, 1000, "data", make_type.as_str());
-                println!("Done");
-            });
+                    let size = (2 as f32).powi(i) as u64;
+                    println!("Generating {}({}) {} data size", size, i, make_type);
+                    make_data(size, 2, 1000, "data", make_type.as_str());
+                    println!("Done");
+                });
         }
         "flatten" => {
-            (20..41).into_par_iter()
+            (20..24).into_par_iter()
                 .for_each(|i| {
-                let size = (2 as f32).powi(i) as u64;
-                println!("Generating {}({}) flatten data size", size, i);
-                make_flatten_data(size, 2, 1000, "data");
-                println!("Done");
-            });
+                    let size = (2 as f32).powi(i) as u64;
+                    println!("Generating {}({}) flatten data size", size, i);
+                    make_flatten_data(size, 2, 1000, "data");
+                    println!("Done");
+                });
         }
         "all" => {
             for t in ["filter", "map"].iter() {
-                (20..41).into_par_iter()
+                (20..30).into_par_iter()
                     .for_each(|i| {
-                    let size = (2 as f32).powi(i) as u64;
-                    println!("Generating {}({}) {} data size", size, i, t);
-                    make_data(size, 2, 1000, "data", t);
-                    println!("Done");
-                });
+                        let size = (2 as f32).powi(i) as u64;
+                        println!("Generating {}({}) {} data size", size, i, t);
+                        make_data(size, 2, 1000, "data", t);
+                        println!("Done");
+                    });
             }
-            (20..41).into_par_iter()
+            (20..30).into_par_iter()
                 .for_each(|i| {
-                let size = (2 as f32).powi(i) as u64;
-                println!("Generating {}({}) flatten data size", size, i);
-                make_flatten_data(size, 2, 1000, "data");
-                println!("Done");
-            })
+                    let size = (2 as f32).powi(i) as u64;
+                    println!("Generating {}({}) flatten data size", size, i);
+                    make_flatten_data(size, 2, 1000, "data");
+                    println!("Done");
+                })
         }
         _ => println!("Usage: KGEN=<map|filter|flatten|all>")
     }
-    if make_type != "none" { return; }
+}
+
+fn main() {
+    let make_type = envmnt::get_or("KGEN", "none").to_lowercase();
+    make_file(&make_type);
+    if &make_type != "none" { return; }
 
     let mut tn: usize = envmnt::get_or("KTHREAD", "0").parse().unwrap();
     if tn == 0 {
@@ -112,7 +116,7 @@ fn main() {
         // Flatten
         for d in flatten_files.iter() {
             println!("Running flatten file: {}", d);
-            let v: Vec<Vec<u128>> = read_nested::<u128>(&d);
+            let v: Vec<Vec<u32>> = read_nested::<u32>(&d);
             // let v_r: Vec<&Vec<u128>> = v.iter().map(|f| f).collect();
             let res = run_flatten_benchmark(d, &v, rounds, tn);
             flat_res.extend(res);
