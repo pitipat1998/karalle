@@ -9,8 +9,9 @@ use std::time::Duration;
 
 use serde_json::*;
 
-use util::file_reader::*;
 use util::data_generator::*;
+use util::file_reader::*;
+
 use crate::benchmark::{run_flatten_benchmark, run_map_benchmark};
 
 pub mod util;
@@ -31,8 +32,44 @@ fn get_files(dir: &str) -> Vec<String> {
 }
 
 fn main() {
-    // make_data((2 as f32).powi(20) as u64, 1, 100, "data/", "map");
-    // return;
+    let make_type = envmnt::get_or("KGEN", "none").to_lowercase().as_str();
+    match make_type {
+        "map" | "filter" => {
+            (20..41).for_each(|i| {
+                let size = (2 as f32).powi(i) as u64;
+                println!("Generating {} {} data size", size, make_type);
+                make_data(size, 2, 1000, "data", make_type);
+                println!("Done");
+            })
+        }
+        "flatten" => {
+            (20..41).for_each(|i| {
+                let size = (2 as f32).powi(i) as u64;
+                println!("Generating {} flatten data size", size);
+                make_flatten_data(size, 2, 1000, "data");
+                println!("Done");
+            })
+        }
+        "all" => {
+            for t in ["filter", "map"] {
+                (20..41).for_each(|i| {
+                    let size = (2 as f32).powi(i) as u64;
+                    println!("Generating {} {} data size", size, t);
+                    make_data(size, 2, 1000, "data", t);
+                    println!("Done");
+                })
+            }
+            (20..41).for_each(|i| {
+                let size = (2 as f32).powi(i) as u64;
+                println!("Generating {} flatten data size", size);
+                make_flatten_data(size, 2, 1000, "data");
+                println!("Done");
+            })
+        }
+        _ => println!("Usage: KGEN=<map|filter|flatten|all>")
+    }
+    if make_type != "none" { return; }
+
     let mut tn: usize = envmnt::get_or("KTHREAD", "0").parse().unwrap();
     if tn == 0 {
         tn = num_cpus::get();
@@ -63,7 +100,7 @@ fn main() {
         }
         println!("Writing map result");
         let _ = serde_json::to_writer(
-            &File::create("output/map_result.json").unwrap(), &json!(map_res));
+            &File::create(format!("output/map-T{}-R{}.json", tn, rounds)).unwrap(), &json!(map_res));
     }
     if t == "ALL" || t == "FLATTEN" {
         let mut flat_res: HashMap<String, Duration> = HashMap::new();
@@ -77,7 +114,7 @@ fn main() {
         }
         println!("Writing flatten result");
         let _ = serde_json::to_writer(
-            &File::create("output/flatten_result.json").unwrap(), &json!(flat_res));
+            &File::create(format!("output/flatten-T{}-R{}.json", tn, rounds)).unwrap(), &json!(flat_res));
     }
 
     // let v:Vec<Vec<_>> = vec![
