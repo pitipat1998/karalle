@@ -61,7 +61,7 @@ fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes:
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     if seq.len() <= THRESHOLD {
-        seq.sort_by(|a, b| func(a, b).cmp(&0));
+        seq.sort_unstable_by(|a, b| func(a, b).cmp(&0));
         if passes % 2 == 1 {
             for i in 0..seq.len() {
                 aux[i] = seq[i];
