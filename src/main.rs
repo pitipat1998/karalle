@@ -51,7 +51,7 @@ fn main() {
             })
         }
         "all" => {
-            for t in ["filter", "map"] {
+            for t in ["filter", "map"].iter() {
                 (20..41).for_each(|i| {
                     let size = (2 as f32).powi(i) as u64;
                     println!("Generating {} {} data size", size, t);
