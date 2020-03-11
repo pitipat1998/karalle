@@ -44,7 +44,7 @@ fn make_file(make_type: &String) {
                 });
         }
         "flatten" => {
-            (20..30).into_par_iter()
+            (20..24).into_par_iter()
                 .for_each(|i| {
                     let size = (2 as f32).powi(i) as u64;
                     println!("Generating {}({}) flatten data size", size, i);
