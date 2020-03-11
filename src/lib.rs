@@ -158,12 +158,12 @@ mod tests {
     #[test]
     fn par_flatten() {
         use crate::primitive::par_flatten;
-        let arr: &mut Vec<i32> = &mut vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
-        let arr2: &mut Vec<i32> = &mut vec![15, 16];
-        let arr3: &mut Vec<i32> = &mut vec![1, 2];
-        let arr4: &mut Vec<i32> = &mut vec![1, 2, 3, 4, 5, 6, 7, 8];
-        let arr5: &mut Vec<i32> = &mut vec![1, 2, 10, 20];
-        let actual = par_flatten(&vec![&arr, &arr2, &arr3, &arr4, &arr5]);
+        let arr: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+        let arr2: Vec<i32> = vec![15, 16];
+        let arr3: Vec<i32> = vec![1, 2];
+        let arr4: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8];
+        let arr5: Vec<i32> = vec![1, 2, 10, 20];
+        let actual: Vec<i32> = par_flatten(&vec![arr, arr2, arr3, arr4, arr5]);
 
         let expected: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1, 2, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 10, 20];
 
@@ -201,8 +201,20 @@ mod tests {
         use crate::sort::par_quick_sort;
         let arr: Vec<i32> = vec![1, 7, 16, 0, -4, -7, 2, 3, 64, -1, 9, 1];
         let arr2: Vec<(i32, f32)> = vec![(1, 0.2), (2, 0.1), (-1, 9.0), (2, 0.1), (2, 0.2)];
+        let mut arr3: Vec<i32> = vec![1, 7, 16, 0, -4, -7, 2, 3, 64, -1, 9, 1];
+        let mut arr4: Vec<(i32, f32)> = vec![(1, 0.2), (2, 0.1), (-1, 9.0), (2, 0.1), (2, 0.2)];
         let actual = par_quick_sort(&arr, |a: &i32, b: &i32| -> i32 { *a - *b });
         let actual2 = par_quick_sort(&arr2, |a: &(i32, f32), b: &(i32, f32)| -> i32 {
+            let (a1, a2): (i32, f32) = *a;
+            let (b1, b2): (i32, f32) = *b;
+            if a1 == b1 {
+                if a2 < b2 { -1 } else if a2 == b2 { 0 } else { 0 }
+            } else {
+                return a1 - b1;
+            }
+        });
+        let actual3 = par_quick_sort(&mut arr3, |a: &i32, b: &i32| -> i32 { *a - *b });
+        let actual4 = par_quick_sort(&mut arr4, |a: &(i32, f32), b: &(i32, f32)| -> i32 {
             let (a1, a2): (i32, f32) = *a;
             let (b1, b2): (i32, f32) = *b;
             if a1 == b1 {
@@ -219,6 +231,10 @@ mod tests {
         assert_eq!(actual, expected);
         println!("actual2={:?}, expected2={:?}", actual2, expected2);
         assert_eq!(actual2, expected2);
+        println!("actual3={:?}, expected={:?}", actual3, expected2);
+        assert_eq!(actual3, expected);
+        println!("actual4={:?}, expected2={:?}", actual4, expected2);
+        assert_eq!(actual4, expected2);
     }
 }
 

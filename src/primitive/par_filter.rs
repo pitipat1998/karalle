@@ -17,7 +17,7 @@ pub fn par_filter_v1<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
 }
 
 pub fn par_filter_v2<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
-    where T: Sync + Send + Copy + Debug,
+    where T: Sync + Send + Copy,
           U: Sync + Send + Fn(usize, &T) -> bool
 {
     let mapped: Vec<usize> = par_map_v3(seq, &|i: usize, elt: &T| -> usize { if func(i, elt) {1} else {0}});
@@ -27,7 +27,7 @@ pub fn par_filter_v2<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
     let mut ret: Vec<T> = Vec::with_capacity(tot);
     unsafe { ret.set_len(tot) }
 
-    par_filter_util_v2(seq, &mut ret, &mapped, &x, &func, 0);
+    par_filter_util_v2(seq, &mut ret, &mapped, &x, 0);
     ret
 }
 
@@ -69,11 +69,9 @@ fn par_filter_util_v1<T, U>(seq: &[T], mapped: &[i32], func: &U) -> Vec<T>
     }
 }
 
-fn par_filter_util_v2<T, U>(seq: &[T], ret: &mut [T], mapped: &[usize], x: &[usize], func: &U, idx: usize)
-    where T: Sync + Send + Copy + Debug,
-          U: Sync + Send + Fn(usize, &T) -> bool
+pub fn par_filter_util_v2<T>(seq: &[T], ret: &mut [T], mapped: &[usize], x: &[usize], idx: usize)
+    where T: Sync + Send + Copy
 {
-    println!("seq={:?}, ret={:?}, mapped={:?}, x={:?}, idx={}", seq, ret, mapped, x, idx);
     if seq.len() <= THRESHOLD {
         for i in 0..seq.len() {
             if mapped[i] == 1 {
@@ -89,12 +87,10 @@ fn par_filter_util_v2<T, U>(seq: &[T], ret: &mut [T], mapped: &[usize], x: &[usi
         let (x_l, x_r) = x.split_at(half);
         let x_half = x_r[0];
         let (ret_l, ret_r) = ret.split_at_mut(x_half-idx);
-//        println!("seq_l={:?}, seq_r={:?}, ret_l={:?}, ret_r={:?}, mapped_l={:?}, mapped_r={:?}, x_l={:?}, x_r={:?}, x_half={}", seq_l, seq_r, ret_l, ret_r, mapped_l, mapped_r, x_l, x_r, x_half);
-//        println!("x_half={}", x_half);
 
         rayon::join(
-            || { par_filter_util_v2(seq_l, ret_l, mapped_l, x_l, func, idx); },
-            || { par_filter_util_v2(seq_r, ret_r, mapped_r, x_r, func,  x_half); }
+            || { par_filter_util_v2(seq_l, ret_l, mapped_l, x_l, idx); },
+            || { par_filter_util_v2(seq_r, ret_r, mapped_r, x_r,  x_half); }
         );
     }
 }
