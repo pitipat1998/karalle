@@ -107,16 +107,16 @@ mod tests {
     #[test]
     fn par_filter() {
         use crate::primitive::par_filter_v1;
-//        use crate::primitive::par_filter_v2;
+        use crate::primitive::par_filter_v2;
         let arr: Vec<i32> = vec![1, 2, 3, 1, 2];
         let actual: Vec<i32> = par_filter_v1(&arr, |_i: usize, a: &i32| -> bool { *a < 3 });
-//        let actual2: Vec<i32> = par_filter_v2(&arr, |_i: usize, a: &i32| -> bool { *a < 3 });
+        let actual2: Vec<i32> = par_filter_v2(&arr, |_i: usize, a: &i32| -> bool { *a < 3 });
 
         let expected: Vec<i32> = vec![1, 2, 1, 2];
         println!("actual={:?}, expected={:?}", actual, expected);
         assert_eq!(actual, expected);
-//        println!("actual2={:?}, expected={:?}", actual2, expected);
-//        assert_eq!(actual2, expected);
+        println!("actual2={:?}, expected={:?}", actual2, expected);
+        assert_eq!(actual2, expected);
     }
 
     #[test]

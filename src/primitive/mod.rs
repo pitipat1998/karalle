@@ -16,7 +16,7 @@ mod filter;
 pub use self::filter::filter;
 mod par_filter;
 pub use self::par_filter::par_filter_v1;
-//pub use self::par_filter::par_filter_v2;
+pub use self::par_filter::par_filter_v2;
 
 mod flatten;
 pub use self::flatten::flatten;
