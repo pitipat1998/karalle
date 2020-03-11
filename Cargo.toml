@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 csv = "1.1"
+envmnt = "0.8.1"
 num = "0.2.1"
 num_cpus = "1.12.0"
 rand = "0.7.3"

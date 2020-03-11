@@ -8,19 +8,33 @@ use crate::primitive::*;
 type FlattenFunc<T> = dyn Sync + Send + Fn(&Vec<&Vec<T>>) -> Vec<T>;
 
 #[allow(dead_code)]
-fn benchmark_flatten<T: Copy + Sync , K>(vec: &Vec<&Vec<T>>, flat: K) -> (Duration, Vec<T>)
-    where K: Sync + Send + (Fn(&Vec<&Vec<T>>) -> Vec<T>)
+fn benchmark_flatten<T: Copy + Sync, K>(vec: &Vec<Vec<T>>, flat: K, rounds: u128) -> Duration
+    where K: Sync + Send + (Fn(&Vec<Vec<T>>) -> Vec<T>)
 {
     let now = Instant::now();
-    let flt = flat(&vec);
-    (now.elapsed(), flt)
+    for _ in 0..rounds {
+        let _ = flat(&vec);
+    }
+    now.elapsed().div_f32(rounds as f32)
 }
 
 #[allow(dead_code)]
-pub fn run_flatten_benchmark<T: Copy + Sync + Send>(d: &String, v: &Vec<&Vec<T>>) -> (HashMap<String, Duration>, Vec<T>) {
+pub fn run_flatten_benchmark<T>(
+    d: &String,
+    v: &Vec<Vec<T>>,
+    rounds: u128,
+    threads: usize
+) -> HashMap<String, Duration>
+where T: Copy + Sync + Send
+{
     let mut result: HashMap<String, Duration> = HashMap::new();
-    let key = format!("{}, flatten", &d);
-    let (duration, res) = benchmark_flatten(&v, par_flatten);
+
+    let key = format!("{}, {}, par_flatten", &d, threads);
+    let duration = benchmark_flatten(&v, par_flatten, rounds);
     result.entry(key).or_insert(duration);
-    (result, res)
+
+    let key = format!("{}, {}, rayon_par_iter", &d, threads);
+    let duration = benchmark_flatten(&v, par_flatten_v2, rounds);
+    result.entry(key).or_insert(duration);
+    result
 }
