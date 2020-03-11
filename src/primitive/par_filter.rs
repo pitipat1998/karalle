@@ -1,8 +1,10 @@
 extern crate rayon;
 
 use crate::primitive::par_map::par_map_v3;
+use crate::primitive::par_scan::par_scan;
+use serde::export::fmt::{Display, Debug};
 
-const THRESHOLD: usize = 1000;
+const THRESHOLD: usize = 1;
 
 // TODO: more versions of filter
 #[allow(dead_code)]
@@ -14,20 +16,21 @@ pub fn par_filter_v1<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
     par_filter_util_v1(seq, &mapped, &func)
 }
 
-//pub fn par_filter_v2<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
-//    where T: Sync + Send + Copy,
-//          U: Sync + Send + Fn(usize, &T) -> bool
-//{
-//    let mapped: Vec<i32> = par_map_v3(seq, &|i: usize, elt: &T| -> i32 { if func(i, elt) {1} else {0}});
-//    let (x, tot): (Vec<i32>, i32) = par_scan(&mapped,
-//                                             &|elt1: &i32, elt2: &i32| -> i32 { *elt1 + *elt2 },
-//                                             &0);
-//    let mut ret: Vec<T> = Vec::with_capacity(tot as usize);
-//    unsafe { ret.set_len(tot as usize) }
-//
-//    par_filter_util_v2(seq, &mut ret, &mapped, &x, &func);
-//    ret
-//}
+pub fn par_filter_v2<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
+    where T: Sync + Send + Copy + Debug,
+          U: Sync + Send + Fn(usize, &T) -> bool
+{
+    let mapped: Vec<usize> = par_map_v3(seq, &|i: usize, elt: &T| -> usize { if func(i, elt) {1} else {0}});
+    let (x, tot): (Vec<usize>, usize) = par_scan(&mapped,
+                                             &|elt1: &usize, elt2: &usize| -> usize { *elt1 + *elt2 },
+                                             &0);
+    let mut ret: Vec<T> = Vec::with_capacity(tot);
+    unsafe { ret.set_len(tot) }
+
+    par_filter_util_v2(seq, &mut ret, &mapped, &x, &func, 0);
+    ret
+}
+
 #[allow(dead_code)]
 pub fn par_filter_v3<T, U>(seq: &Vec<T>, _func: U) -> Vec<T>
     where T: Sync + Send + Copy,
@@ -66,18 +69,33 @@ fn par_filter_util_v1<T, U>(seq: &[T], mapped: &[i32], func: &U) -> Vec<T>
     }
 }
 
-//fn par_filter_util_v2<T, U>(seq: &[T], ret: &mut [T], mapped: &[i32], x: &[i32], func: &U)
-//    where T: Sync + Send + Copy,
-//          U: Sync + Send + Fn(usize, &T) -> bool
-//{
-//    rayon::scope(|s| {
-//        for (i, chunk) in ret.chunks_mut(1).enumerate() {
-//            s.spawn(move |_| {
-//                if mapped[i] == 1 {
-//                    chunk[0] = seq[i];
-//                }
-//            });
-//        }
-//    })
-//}
-//
+fn par_filter_util_v2<T, U>(seq: &[T], ret: &mut [T], mapped: &[usize], x: &[usize], func: &U, idx: usize)
+    where T: Sync + Send + Copy + Debug,
+          U: Sync + Send + Fn(usize, &T) -> bool
+{
+    println!("seq={:?}, ret={:?}, mapped={:?}, x={:?}, idx={}", seq, ret, mapped, x, idx);
+    if seq.len() <= THRESHOLD {
+        for i in 0..seq.len() {
+            if mapped[i] == 1 {
+                println!("x[i]={}, idx={}", x[i], idx);
+                ret[x[i]-idx] = seq[i];
+            }
+        }
+    } else {
+        let half: usize = seq.len()/2;
+        let ret_half = ret.len()/2;
+        let (seq_l, seq_r) = seq.split_at(half);
+        let (mapped_l, mapped_r) = mapped.split_at(half);
+        let (x_l, x_r) = x.split_at(half);
+        let x_half = x_r[0];
+        let (ret_l, ret_r) = ret.split_at_mut(x_half-idx);
+//        println!("seq_l={:?}, seq_r={:?}, ret_l={:?}, ret_r={:?}, mapped_l={:?}, mapped_r={:?}, x_l={:?}, x_r={:?}, x_half={}", seq_l, seq_r, ret_l, ret_r, mapped_l, mapped_r, x_l, x_r, x_half);
+//        println!("x_half={}", x_half);
+
+        rayon::join(
+            || { par_filter_util_v2(seq_l, ret_l, mapped_l, x_l, func, idx); },
+            || { par_filter_util_v2(seq_r, ret_r, mapped_r, x_r, func,  x_half); }
+        );
+    }
+}
+
