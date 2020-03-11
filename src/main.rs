@@ -37,7 +37,7 @@ fn main() {
         "map" | "filter" => {
             (20..41).for_each(|i| {
                 let size = (2 as f32).powi(i) as u64;
-                println!("Generating {} {} data size", size, make_type);
+                println!("Generating {}({}) {} data size", size, i, make_type);
                 make_data(size, 2, 1000, "data", make_type.as_str());
                 println!("Done");
             })
@@ -45,7 +45,7 @@ fn main() {
         "flatten" => {
             (20..41).for_each(|i| {
                 let size = (2 as f32).powi(i) as u64;
-                println!("Generating {} flatten data size", size);
+                println!("Generating {}({}) flatten data size", size, i);
                 make_flatten_data(size, 2, 1000, "data");
                 println!("Done");
             })
@@ -54,14 +54,14 @@ fn main() {
             for t in ["filter", "map"].iter() {
                 (20..41).for_each(|i| {
                     let size = (2 as f32).powi(i) as u64;
-                    println!("Generating {} {} data size", size, t);
+                    println!("Generating {}({}) {} data size", size, i, t);
                     make_data(size, 2, 1000, "data", t);
                     println!("Done");
                 })
             }
             (20..41).for_each(|i| {
                 let size = (2 as f32).powi(i) as u64;
-                println!("Generating {} flatten data size", size);
+                println!("Generating {}({}) flatten data size", size, i);
                 make_flatten_data(size, 2, 1000, "data");
                 println!("Done");
             })
