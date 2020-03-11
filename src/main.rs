@@ -32,7 +32,7 @@ fn get_files(dir: &str) -> Vec<String> {
         .collect()
 }
 
-fn make_file(make_type: String) {
+fn make_file(make_type: &String) {
     match make_type.as_str() {
         "map" | "filter" => {
             (20..30).into_par_iter()
@@ -76,8 +76,8 @@ fn make_file(make_type: String) {
 
 fn main() {
     let make_type = envmnt::get_or("KGEN", "none").to_lowercase();
-    make_file(make_type);
-    if make_type != "none" { return; }
+    make_file(&make_type);
+    if &make_type != "none" { return; }
 
     let mut tn: usize = envmnt::get_or("KTHREAD", "0").parse().unwrap();
     if tn == 0 {
@@ -103,7 +103,7 @@ fn main() {
         // Map
         for d in map_files.iter() {
             println!("Running map file: {}", d);
-            let v: Vec<u32> = read_csv(&d);
+            let v: Vec<u128> = read_csv(&d);
             let res = run_map_benchmark(d, v, rounds, tn);
             map_res.extend(res);
         }

@@ -32,7 +32,7 @@ fn benchmark_map<T, V, K>(vec: &Vec<T>, func: V, map: K, rounds: u128) -> Durati
 type MapFunc = (dyn Sync + Send + Fn(usize, &u128) -> u128);
 
 #[allow(dead_code)]
-pub fn run_map_benchmark(d: &String, v: Vec<u32>, rounds: u128, threads: usize) -> HashMap<String, Duration> {
+pub fn run_map_benchmark(d: &String, v: Vec<u128>, rounds: u128, threads: usize) -> HashMap<String, Duration> {
     let mut func: HashMap<&str, &MapFunc> = HashMap::new();
     func.insert("Multiply", &|_, x| { *x * *x });
     // func.insert("Fac", &|_, x| { fac(x) });
