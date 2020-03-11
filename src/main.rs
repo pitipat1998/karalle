@@ -32,13 +32,13 @@ fn get_files(dir: &str) -> Vec<String> {
 }
 
 fn main() {
-    let make_type = envmnt::get_or("KGEN", "none").to_lowercase().as_str();
-    match make_type {
+    let make_type = envmnt::get_or("KGEN", "none").to_lowercase();
+    match make_type.as_str() {
         "map" | "filter" => {
             (20..41).for_each(|i| {
                 let size = (2 as f32).powi(i) as u64;
                 println!("Generating {} {} data size", size, make_type);
-                make_data(size, 2, 1000, "data", make_type);
+                make_data(size, 2, 1000, "data", make_type.as_str());
                 println!("Done");
             })
         }
