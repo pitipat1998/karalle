@@ -25,7 +25,7 @@ fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
 {
     if seq.len() <= THRESHOLD {
         let mut ret = seq.clone();
-        ret.sort_by(|a, b| func(a, b).cmp(&0));
+        ret.sort_unstable_by(|a, b| func(a, b).cmp(&0));
         ret
     }
     else {
