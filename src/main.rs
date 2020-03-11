@@ -6,6 +6,7 @@ use std::fs;
 use std::fs::File;
 use std::process::exit;
 use std::time::Duration;
+use rayon::prelude::*;
 
 use serde_json::*;
 
@@ -35,31 +36,35 @@ fn main() {
     let make_type = envmnt::get_or("KGEN", "none").to_lowercase();
     match make_type.as_str() {
         "map" | "filter" => {
-            (20..41).for_each(|i| {
+            (20..41).into_par_iter()
+                .for_each(|i| {
                 let size = (2 as f32).powi(i) as u64;
                 println!("Generating {}({}) {} data size", size, i, make_type);
                 make_data(size, 2, 1000, "data", make_type.as_str());
                 println!("Done");
-            })
+            });
         }
         "flatten" => {
-            (20..41).for_each(|i| {
+            (20..41).into_par_iter()
+                .for_each(|i| {
                 let size = (2 as f32).powi(i) as u64;
                 println!("Generating {}({}) flatten data size", size, i);
                 make_flatten_data(size, 2, 1000, "data");
                 println!("Done");
-            })
+            });
         }
         "all" => {
             for t in ["filter", "map"].iter() {
-                (20..41).for_each(|i| {
+                (20..41).into_par_iter()
+                    .for_each(|i| {
                     let size = (2 as f32).powi(i) as u64;
                     println!("Generating {}({}) {} data size", size, i, t);
                     make_data(size, 2, 1000, "data", t);
                     println!("Done");
-                })
+                });
             }
-            (20..41).for_each(|i| {
+            (20..41).into_par_iter()
+                .for_each(|i| {
                 let size = (2 as f32).powi(i) as u64;
                 println!("Generating {}({}) flatten data size", size, i);
                 make_flatten_data(size, 2, 1000, "data");

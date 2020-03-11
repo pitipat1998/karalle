@@ -23,11 +23,11 @@ pub fn make_data(size: u64, min: i32, max: i32, path: &str, type_t: &str) {
 
     let thr = 1_000_000 as u64;
     let it = ((size/thr) as f32).floor() as u64;
-    let leftover = size % thr;
+    let leftover = size - (thr*it);
     for _ in 0..it {
         let data: Vec<String> = random_list_generator(thr, min, max);
         let to_write = data.join("\n");
-        let _  = write!(&mut writer, "{}", to_write);
+        let _  = write!(&mut writer, "{}\n", to_write);
     }
     let data: Vec<String> = random_list_generator(leftover, min, max);
     let to_write = data.join("\n");
