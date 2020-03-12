@@ -7,8 +7,9 @@ use crate::primitive::par_flatten;
 use crate::primitive::par_scan;
 use crate::primitive::par_map_v3;
 use rand::prelude::ThreadRng;
+use rayon::prelude::*;
 
-const THRESHOLD: usize = 1;
+const THRESHOLD: usize = 1000;
 
 #[allow(dead_code)]
 pub fn par_quick_sort<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
@@ -52,7 +53,7 @@ pub fn par_quick_sort_v2<T, U>(seq: &mut Vec<T>, func: U)
 {
     let mut aux = Vec::with_capacity(seq.len());
     unsafe { aux.set_len(seq.len()) }
-    par_quick_sort_utils_v2(seq, &mut aux, &func, 0)
+    par_quick_sort_utils_v2(seq.as_mut_slice(), &mut aux, &func, 0)
 }
 
 #[allow(dead_code)]
@@ -61,29 +62,48 @@ fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes:
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     if seq.len() <= THRESHOLD {
-        seq.sort_unstable_by(|a, b| func(a, b).cmp(&0));
+        seq.sort_by(|a, b| func(a, b).cmp(&0));
         if passes % 2 == 1 {
-            for i in 0..seq.len() {
-                aux[i] = seq[i];
-            }
+            par_copy(aux, seq);
         }
     }
     else {
         let mut rng: ThreadRng = rand::thread_rng();
-        let p: &T = seq.choose(&mut rng).unwrap_or(&seq[seq.len() / 2]);
+        let length = seq.len();
+        let p: &T = seq.choose(&mut rng).unwrap();
         let (lt_mapped, lt_x, lt_tot) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 });
         let (eq_mapped, eq_x, eq_tot) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) == 0 });
         let (gt_mapped, gt_x, gt_toto) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) > 0 });
-        let (seq_lt, seq_rest) = seq.split_at_mut(lt_tot);
-        let (seq_eq, seq_gt) = seq_rest.split_at_mut(eq_tot);
         let (aux_lt, aux_rest) = aux.split_at_mut(lt_tot);
         let (aux_eq, aux_gt) = aux_rest.split_at_mut(eq_tot);
-        par_filter_util_v2(seq_lt, aux_lt, &lt_mapped, &lt_x, 0);
-        par_filter_util_v2(seq_eq, aux_eq, &eq_mapped, &eq_x, 0);
-        par_filter_util_v2(seq_gt, aux_gt, &gt_mapped, &gt_x, 0);
+        par_filter_util_v2(seq, aux_lt, &lt_mapped, &lt_x, 0);
+        par_filter_util_v2(seq, aux_eq, &eq_mapped, &eq_x, 0);
+        par_filter_util_v2(seq, aux_gt, &gt_mapped, &gt_x, 0);
+        let (seq_lt, seq_rest) = seq.split_at_mut(lt_tot);
+        let (seq_eq, seq_gt) = seq_rest.split_at_mut(eq_tot);
+        if passes % 2 == 0 {
+            par_copy(seq_eq, aux_eq);
+        }
         rayon::join(
             || { par_quick_sort_utils_v2(aux_lt, seq_lt, func, passes + 1) },
             || { par_quick_sort_utils_v2(aux_gt, seq_gt, func, passes + 1) }
+        );
+    }
+}
+
+fn par_copy<T: Sync + Send + Copy>(a: &mut [T], b: &mut [T]) {
+    if a.len() <= THRESHOLD {
+        for i in 0..a.len() {
+            a[i] = b[i];
+        }
+    }
+    else {
+        let half = a.len()/2;
+        let (a_l, a_r) = a.split_at_mut(half);
+        let (b_l, b_r) = b.split_at_mut(half);
+        rayon::join(
+            || par_copy(a_l, b_l),
+            || par_copy(a_r, b_r)
         );
     }
 }
@@ -95,5 +115,13 @@ fn pref_sum<T, U>(seq: &[T], func: &U) -> (Vec<usize>, Vec<usize>, usize)
     let mapped: Vec<usize> = par_map_v3(&Vec::from(seq), &|i: usize, elt: &T| -> usize { if func(i, elt) {1} else {0}});
     let (x, tot): (Vec<usize>, usize) = par_scan(&mapped, &|elt1: &usize, elt2: &usize| -> usize { *elt1 + *elt2 }, &0);
     (mapped, x, tot)
+}
+
+#[allow(dead_code)]
+pub fn par_quick_sort_v3<T, U>(seq: &mut Vec<T>, func: U)
+where T: Sync + Send + Copy,
+U: Sync + Send + Fn(&T, &T) -> i32
+{
+    seq.par_sort_unstable_by(|a,b| func(a,b).cmp(&0))
 }
 

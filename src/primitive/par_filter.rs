@@ -75,7 +75,6 @@ pub fn par_filter_util_v2<T>(seq: &[T], ret: &mut [T], mapped: &[usize], x: &[us
     if seq.len() <= THRESHOLD {
         for i in 0..seq.len() {
             if mapped[i] == 1 {
-                println!("x[i]={}, idx={}", x[i], idx);
                 ret[x[i]-idx] = seq[i];
             }
         }
