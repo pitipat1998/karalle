@@ -14,7 +14,6 @@ use util::data_generator::*;
 use util::file_reader::*;
 
 use crate::benchmark::*;
-use rand::Rng;
 
 pub mod util;
 pub mod benchmark;

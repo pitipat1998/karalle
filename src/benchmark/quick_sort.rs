@@ -1,11 +1,9 @@
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
-use crate::primitive::*;
-use crate::sort::*;
-
-use rand::*;
 use rand::prelude::SliceRandom;
+
+use crate::sort::*;
 
 #[allow(dead_code)]
 fn benchmark_quick_sort<T, U>(vec: &Vec<T>, func: &U, rounds: u128) -> Duration

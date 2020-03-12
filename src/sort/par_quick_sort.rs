@@ -1,13 +1,12 @@
-use rand::seq::SliceRandom;
-use std::mem;
-
-use crate::primitive::par_filter_v1;
-use crate::primitive::par_filter_util_v2;
-use crate::primitive::par_flatten;
-use crate::primitive::par_scan;
-use crate::primitive::par_map_v3;
 use rand::prelude::ThreadRng;
+use rand::seq::SliceRandom;
 use rayon::prelude::*;
+
+use crate::primitive::par_filter_util_v2;
+use crate::primitive::par_filter_v1;
+use crate::primitive::par_flatten;
+use crate::primitive::par_map_v3;
+use crate::primitive::par_scan;
 
 const THRESHOLD: usize = 1000;
 
@@ -69,10 +68,10 @@ fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes:
     }
     else {
         let mut rng: ThreadRng = rand::thread_rng();
-        let length = seq.len();
+        let _length = seq.len();
         let p: &T = seq.choose(&mut rng).unwrap();
 
-        let (mut aux_lt, mut aux_rest, lt_tot) =
+        let (aux_lt, aux_rest, lt_tot) =
         {
             let (lt_mapped, lt_x, lt_tot) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 });
             let (aux_lt, aux_rest) = aux.split_at_mut(lt_tot);
@@ -80,7 +79,7 @@ fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes:
             (aux_lt, aux_rest, lt_tot)
         };
 
-        let (mut aux_eq, mut aux_gt, eq_tot) =
+        let (aux_eq, aux_gt, eq_tot) =
         {
             let (eq_mapped, eq_x, eq_tot) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) == 0 });
             let (aux_eq, aux_gt) = aux_rest.split_at_mut(eq_tot);
@@ -88,9 +87,9 @@ fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes:
             (aux_eq, aux_gt, eq_tot)
         };
 
-        let mut aux_eq=
+        let aux_eq=
         {
-            let (gt_mapped, gt_x, gt_toto) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) > 0 });
+            let (gt_mapped, gt_x, _gt_toto) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) > 0 });
             par_filter_util_v2(seq, aux_gt, &gt_mapped, &gt_x, 0);
             aux_eq
         };

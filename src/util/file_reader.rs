@@ -1,16 +1,16 @@
 extern crate csv;
 extern crate num;
 
-use num::{PrimInt, Unsigned};
-use std::iter::Product;
-use std::str::FromStr;
 use std::fs::*;
 use std::io;
-use std::path::Path;
 use std::io::BufRead;
-use serde_json::from_str;
-use serde::de::DeserializeOwned;
+use std::iter::Product;
+use std::path::Path;
+use std::str::FromStr;
 
+use num::{PrimInt};
+use serde::de::DeserializeOwned;
+use serde_json::from_str;
 
 #[allow(dead_code)]
 pub fn read_csv<T>(path: &str) -> Vec<T>

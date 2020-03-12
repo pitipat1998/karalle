@@ -2,7 +2,6 @@ extern crate rayon;
 
 use crate::primitive::par_map::par_map_v3;
 use crate::primitive::par_scan::par_scan;
-use serde::export::fmt::Debug;
 
 const THRESHOLD: usize = 1;
 
