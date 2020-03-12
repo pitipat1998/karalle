@@ -53,15 +53,15 @@ where T: Copy + Sync + Send,
 {
 let mut result: HashMap<String, Duration> = HashMap::new();
 
-    let key = format!("{}, {}, par_quick_sort", &d, threads);
+    let key = format!("{}, {}, par_quick_sort (non-in-place)", &d, threads);
     let duration = benchmark_quick_sort(&v, &f , rounds);
     result.entry(key).or_insert(duration);
 
-    let key = format!("{}, {}, par_quick_sort_v2", &d, threads);
+    let key = format!("{}, {}, par_quick_sort (in-place)", &d, threads);
     let duration = benchmark_quick_sort_v2(v, &f, rounds);
     result.entry(key).or_insert(duration);
 
-    let key = format!("{}, {}, par_quick_sort_v3", &d, threads);
+    let key = format!("{}, {}, par_quick_sort (rayon)", &d, threads);
     let duration = benchmark_quick_sort_v3(v, &f, rounds);
     result.entry(key).or_insert(duration);
     result
