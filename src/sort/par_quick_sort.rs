@@ -72,16 +72,29 @@ fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes:
         let length = seq.len();
         let p: &T = seq.choose(&mut rng).unwrap();
 
-        let (lt_mapped, lt_x, lt_tot) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 });
-        let (aux_lt, aux_rest) = aux.split_at_mut(lt_tot);
-        par_filter_util_v2(seq, aux_lt, &lt_mapped, &lt_x, 0);
+        let (mut aux_lt, mut aux_rest, lt_tot) =
+        {
+            let (lt_mapped, lt_x, lt_tot) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 });
+            let (aux_lt, aux_rest) = aux.split_at_mut(lt_tot);
+            par_filter_util_v2(seq, aux_lt, &lt_mapped, &lt_x, 0);
+            (aux_lt, aux_rest, lt_tot)
+        };
 
-        let (eq_mapped, eq_x, eq_tot) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) == 0 });
-        let (aux_eq, aux_gt) = aux_rest.split_at_mut(eq_tot);
-        par_filter_util_v2(seq, aux_eq, &eq_mapped, &eq_x, 0);
+        let (mut aux_eq, mut aux_gt, eq_tot) =
+        {
+            let (eq_mapped, eq_x, eq_tot) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) == 0 });
+            let (aux_eq, aux_gt) = aux_rest.split_at_mut(eq_tot);
+            par_filter_util_v2(seq, aux_eq, &eq_mapped, &eq_x, 0);
+            (aux_eq, aux_gt, eq_tot)
+        };
 
-        let (gt_mapped, gt_x, gt_toto) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) > 0 });
-        par_filter_util_v2(seq, aux_gt, &gt_mapped, &gt_x, 0);
+        let mut aux_eq=
+        {
+            let (gt_mapped, gt_x, gt_toto) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) > 0 });
+            par_filter_util_v2(seq, aux_gt, &gt_mapped, &gt_x, 0);
+            aux_eq
+        };
+
 
         let (seq_lt, seq_rest) = seq.split_at_mut(lt_tot);
         let (seq_eq, seq_gt) = seq_rest.split_at_mut(eq_tot);
