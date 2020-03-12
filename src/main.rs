@@ -133,9 +133,9 @@ fn main() {
         // Quick_sort
         for d in map_files.iter() {
             println!("Running qs file: {}", d);
-            let v: Vec<i32> = read_csv::<i32>(&d);
+            let mut v: Vec<i32> = read_csv::<i32>(&d);
             // let v_r: Vec<&Vec<u128>> = v.iter().map(|f| f).collect();
-            let res = run_quick_sort_benchmark(d, &v, |a: &i32, b: &i32| -> i32 {*a -*b}, rounds, tn);
+            let res = run_quick_sort_benchmark(d, &mut v, |a: &i32, b: &i32| -> i32 {*a -*b}, rounds, tn);
             qs_res.extend(res);
         }
         println!("Writing qs result");

@@ -4,6 +4,9 @@ use std::time::{Duration, Instant};
 use crate::primitive::*;
 use crate::sort::*;
 
+use rand::*;
+use rand::prelude::SliceRandom;
+
 #[allow(dead_code)]
 fn benchmark_quick_sort<T, U>(vec: &Vec<T>, func: &U, rounds: u128) -> Duration
     where T: Copy + Sync + Send,
@@ -53,6 +56,7 @@ where T: Copy + Sync + Send,
 {
 let mut result: HashMap<String, Duration> = HashMap::new();
 
+    let mut rng = rand::thread_rng();
     let key = format!("{}, {}, par_quick_sort (non-in-place)", &d, threads);
     let duration = benchmark_quick_sort(&v, &f , rounds);
     result.entry(key).or_insert(duration);
@@ -61,6 +65,7 @@ let mut result: HashMap<String, Duration> = HashMap::new();
     let duration = benchmark_quick_sort_v2(v, &f, rounds);
     result.entry(key).or_insert(duration);
 
+    v.shuffle(&mut rng);
     let key = format!("{}, {}, par_quick_sort (rayon)", &d, threads);
     let duration = benchmark_quick_sort_v3(v, &f, rounds);
     result.entry(key).or_insert(duration);

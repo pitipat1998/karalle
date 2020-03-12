@@ -14,7 +14,7 @@ use serde::de::DeserializeOwned;
 
 #[allow(dead_code)]
 pub fn read_csv<T>(path: &str) -> Vec<T>
-where T: PrimInt + Unsigned + Product + FromStr,
+where T: PrimInt + Product + FromStr,
       <T as std::str::FromStr>::Err: std::fmt::Debug,
 {
     let rdr = csv::Reader::from_path(path);
