@@ -26,13 +26,12 @@ fn benchmark_scan(vec: &mut Vec<i32>, rounds: u128) -> Duration
 }
 
 #[allow(dead_code)]
-pub fn run_scan_benchmark<U>(
+pub fn run_scan_benchmark(
     d: &String,
     v: &mut Vec<i32>,
     rounds: u128,
     threads: usize,
 ) -> HashMap<String, Duration>
-    where U: Sync + Send + Fn(&i32, &i32) -> i32
 {
     let mut result: HashMap<String, Duration> = HashMap::new();
 

@@ -6,8 +6,8 @@ use std::fs;
 use std::fs::File;
 use std::process::exit;
 use std::time::Duration;
-use rayon::prelude::*;
 
+use rayon::prelude::*;
 use serde_json::*;
 
 use util::data_generator::*;
@@ -75,8 +75,15 @@ fn make_file(make_type: &String) {
     }
 }
 
+fn write_output(func: &String, result: HashMap<String, Duration>,
+                rounds: u128, threads: usize,
+) {
+    let _ = serde_json::to_writer(
+        &File::create(format!("output/{}-T{}-R{}.json", func, threads, rounds)).unwrap(), &json!(result));
+}
+
 fn main() {
-    let make_type = envmnt::get_or("KGEN", "none").to_lowercase();
+    let make_type = envmnt::get_or("KMAKE", "none").to_lowercase();
     make_file(&make_type);
     if &make_type != "none" { return; }
 
@@ -90,32 +97,31 @@ fn main() {
     let rounds: u128 = r.parse().unwrap();
     println!("Running with {} threads and {} rounds", tn, rounds);
 
-    let t: String = envmnt::get_or("KTYPE", "ALL");
+    let t: String = envmnt::get_or("KTYPE", "ALL").to_lowercase();
 
-    let map_files: Vec<String> = get_files("data/map");
-    let flatten_files: Vec<String> = get_files("data/flatten");
-    if map_files.is_empty() && flatten_files.is_empty() {
+    let files_1d: Vec<String> = get_files("data/map");
+    let files_2d: Vec<String> = get_files("data/flatten");
+    if files_1d.is_empty() && files_2d.is_empty() {
         println!("No data to be testing on, put .csv files in data/");
         exit(-1);
     }
     let _ = fs::create_dir("output/");
-    if t == "ALL" || t == "MAP" {
+    if t == "all" || t == "map" {
         let mut map_res: HashMap<String, Duration> = HashMap::new();
         // Map
-        for d in map_files.iter() {
+        for d in files_1d.iter() {
             println!("Running map file: {}", d);
             let v: Vec<u128> = read_csv(&d);
             let res = run_map_benchmark(d, v, rounds, tn);
             map_res.extend(res);
         }
         println!("Writing map result");
-        let _ = serde_json::to_writer(
-            &File::create(format!("output/map-T{}-R{}.json", tn, rounds)).unwrap(), &json!(map_res));
+        write_output(&t, map_res, rounds, tn);
     }
-    if t == "ALL" || t == "FLATTEN" {
+    if t == "all" || t == "flatten" {
         let mut flat_res: HashMap<String, Duration> = HashMap::new();
         // Flatten
-        for d in flatten_files.iter() {
+        for d in files_2d.iter() {
             println!("Running flatten file: {}", d);
             let v: Vec<Vec<u32>> = read_nested::<u32>(&d);
             // let v_r: Vec<&Vec<u128>> = v.iter().map(|f| f).collect();
@@ -123,24 +129,34 @@ fn main() {
             flat_res.extend(res);
         }
         println!("Writing flatten result");
-        let _ = serde_json::to_writer(
-            &File::create(format!("output/flatten-T{}-R{}.json", tn, rounds)).unwrap(), &json!(flat_res));
+        write_output(&t,flat_res, rounds, tn);
     }
 
-    if t == "ALL" || t == "QUICK_SORT" {
+    if t == "all" || t == "qs" || t == "quick_sort" {
         let mut qs_res: HashMap<String, Duration> = HashMap::new();
         // Quick_sort
-        for d in map_files.iter() {
+        for d in files_1d.iter() {
             println!("Running qs file: {}", d);
             let mut v: Vec<i16> = read_csv::<i16>(&d);
             let res = run_quick_sort_benchmark(d, &mut v, |a: &i16, b: &i16| -> i32 { (*a - *b) as i32 }, rounds, tn);
             qs_res.extend(res);
         }
         println!("Writing qs result");
-        let _ = serde_json::to_writer(
-            &File::create(format!("output/qs-T{}-R{}.json", tn, rounds)).unwrap(), &json!(qs_res));
+        write_output(&t, qs_res, rounds, tn);
     }
 
+    if t == "all" || t == "scan" {
+        let mut scan_res: HashMap<String, Duration> = HashMap::new();
+        // Scan
+        for d in files_1d.iter() {
+            println!("Running scan files: {}", d);
+            let mut v: Vec<i32> = read_csv::<i32>(&d);
+            let res = run_scan_benchmark(d, &mut v, rounds, tn);
+            scan_res.extend(res);
+        }
+        println!("Writing scan result");
+        write_output(&t, scan_res, rounds, tn);
+   }
 
     // let v:Vec<Vec<_>> = vec![
     //     vec![1, 2, 3],
