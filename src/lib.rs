@@ -8,7 +8,7 @@ mod tests {
 
     #[test]
     fn seq_sample_sort() {
-        use crate::primitive::seq_sample_sort;
+        use crate::sort::seq_sample_sort;
         let v: &mut Vec<i32> = &mut vec![683, 70, 196, 312, 980, 206, 366, 802, 455, 90, 79, 527, 530,
                                          587, 803, 738, 84, 907, 394, 390, 941, 644, 757, 235, 192, 317,
                                          830, 728, 865, 376, 155, 368, 586, 443, 881, 575, 456, 129, 626,

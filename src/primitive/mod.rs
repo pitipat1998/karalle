@@ -25,7 +25,5 @@ mod par_flatten;
 pub use self::par_flatten::par_flatten;
 pub use self::par_flatten::par_flatten_v2;
 
-mod sample_sort;
-pub use self::sample_sort::seq_sample_sort;
 
 
