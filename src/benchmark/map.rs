@@ -36,14 +36,14 @@ pub fn run_map_benchmark(d: &String, v: Vec<u128>, rounds: u128, threads: usize)
     let mut func: HashMap<&str, &MapFunc> = HashMap::new();
     func.insert("Multiply", &|_, x| { *x * *x });
     // func.insert("Fac", &|_, x| { fac(x) });
-    func.insert("Prime", &|_, &x| {
-        (2..).filter(|&num|{
-            !(2..x).any(|n| n%num == 0)
-        })
-            .skip(x as usize)
-            .next()
-            .unwrap()
-    });
+    //func.insert("Prime", &|_, &x| {
+    //    (2..).filter(|&num|{
+    //        !(2..x).any(|n| n%num == 0)
+    //    })
+    //        .skip(x as usize)
+    //        .next()
+    //        .unwrap()
+    //});
 
     // let mut par_map_zip: HashMap<&str, &dyn Fn(&Vec<u128>, u128) -> Vec<u128>> = HashMap::new();
     // par_map_zip.insert("v1", &par_map_v1);
