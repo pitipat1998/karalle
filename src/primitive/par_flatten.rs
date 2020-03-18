@@ -1,6 +1,7 @@
 use crate::primitive::par_map::par_map_v3;
 use crate::primitive::par_scan::par_scan;
 use rayon::prelude::*;
+use crate::primitive::vec_no_init;
 
 const THRESHOLD: usize = 2;
 
@@ -22,8 +23,7 @@ pub fn par_flatten<T>(seqs: &Vec<Vec<T>>) -> Vec<T>
                                                   &0);
     let mut _x = Vec::from(&_x[1..]);
     _x.push(tot);
-    let mut ret = Vec::with_capacity(tot);
-    unsafe { ret.set_len(tot) }
+    let mut ret = vec_no_init(tot);
     // println!("_x:{:?}, tot:{}", _x, tot);
     par_flatten_util(seqs, &mut ret, &_x, 0, tot);
     // TODO: parallelize this code

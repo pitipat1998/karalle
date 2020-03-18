@@ -25,5 +25,13 @@ mod par_flatten;
 pub use self::par_flatten::par_flatten;
 pub use self::par_flatten::par_flatten_v2;
 
+mod par_bucket_transpose;
+pub use self::par_bucket_transpose::par_transpose_buckets;
+
+mod utils;
+pub use self::utils::vec_init;
+pub use self::utils::vec_no_init;
+pub use self::utils::vec_zeroes;
+pub use self::utils::par_copy;
 
 

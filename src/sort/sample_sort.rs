@@ -3,7 +3,7 @@ extern crate rayon;
 use num::PrimInt;
 use rand::{distributions::Uniform, Rng};
 use rayon::prelude::*;
-use crate::primitive::par_flatten;
+use crate::primitive::{par_flatten, vec_no_init};
 
 const THRESHOLD: usize = 100;
 
@@ -18,14 +18,12 @@ fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end:
         let mut rng = rand::thread_rng();
         let range = Uniform::new(0, seq.len());
 
-        let mut result: Vec<Vec<T>> = Vec::with_capacity(p + 2);
-        unsafe { result.set_len(p + 2) }
+        let mut result: Vec<Vec<T>> = vec_no_init(p + 2);
 
         let samp: &mut Vec<usize> = &mut (0..(p * k) as i32).map(|_| rng.sample(&range)).collect();
         samp.sort_unstable();
 
-        let mut piv: Vec<T> = Vec::with_capacity(p + 2);
-        unsafe { piv.set_len(p + 2) };
+        let mut piv: Vec<T> = vec_no_init(p + 2);
         piv.push(T::min_value());
         for i in 1..(p - 1) {
             piv[i] = num::cast::NumCast::from(samp[i * k]).unwrap();

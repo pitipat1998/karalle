@@ -14,6 +14,7 @@ use util::data_generator::*;
 use util::file_reader::*;
 
 use crate::benchmark::*;
+use rand::Rng;
 
 pub mod util;
 pub mod benchmark;
@@ -167,4 +168,16 @@ fn main() {
     // let mut y: Vec<Vec<i32>> = x.iter().map(|&i| i).collect();
     //
     // let z: Vec<_> = y.into_par_iter().flatten().collect();
+
+//    use crate::sort::par_quick_sort_v3;
+//    use crate::sort::par_sample_sort;
+//
+//    let mut rng = rand::thread_rng();
+//    for i in 0..100 {
+//        let mut arr1 = random_i32_list_generator(rng.gen_range(10000, 1000000), -1, 1);
+//        let mut arr2 = arr1.clone();
+//        par_sample_sort(&mut arr1, &|a: &i32, b: &i32| { *a - *b });
+//        par_quick_sort_v3(&mut arr2, &|a: &i32, b: &i32| { *a - *b });
+//        assert_eq!(arr1, arr2);
+//    }
 }

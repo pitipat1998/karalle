@@ -2,6 +2,7 @@ extern crate rayon;
 
 use super::map;
 use super::scan;
+use crate::primitive::vec_no_init;
 
 pub fn filter<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
     where T: Copy,
@@ -11,8 +12,7 @@ pub fn filter<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
     let (x, tot): (Vec<i32>, i32) = scan(&mapped,
                                          &|elt1: &i32, elt2: &i32| -> i32 { *elt1 + *elt2 },
                                          &0);
-    let mut ret = Vec::with_capacity(tot as usize);
-    unsafe { ret.set_len(tot as usize) }
+    let mut ret = vec_no_init(tot as usize);
 
     for i in 0..mapped.len() {
         if mapped[i] == 1 {

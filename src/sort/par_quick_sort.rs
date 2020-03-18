@@ -2,11 +2,12 @@ use rand::prelude::ThreadRng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
 
-use crate::primitive::par_filter_util_v2;
+use crate::primitive::{par_filter_util_v2, vec_no_init};
 use crate::primitive::par_filter_v1;
 use crate::primitive::par_flatten;
 use crate::primitive::par_map_v3;
 use crate::primitive::par_scan;
+use crate::primitive::par_copy;
 
 const THRESHOLD: usize = 1000;
 
@@ -50,8 +51,7 @@ pub fn par_quick_sort_v2<T, U>(seq: &mut Vec<T>, func: U)
     where T: Sync + Send + Copy,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
-    let mut aux = Vec::with_capacity(seq.len());
-    unsafe { aux.set_len(seq.len()) }
+    let mut aux = vec_no_init(seq.len());
     par_quick_sort_utils_v2(seq.as_mut_slice(), &mut aux, &func, 0)
 }
 
@@ -103,23 +103,6 @@ fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes:
         rayon::join(
             || { par_quick_sort_utils_v2(aux_lt, seq_lt, func, passes + 1) },
             || { par_quick_sort_utils_v2(aux_gt, seq_gt, func, passes + 1) }
-        );
-    }
-}
-
-fn par_copy<T: Sync + Send + Copy>(a: &mut [T], b: &mut [T]) {
-    if a.len() <= THRESHOLD {
-        for i in 0..a.len() {
-            a[i] = b[i];
-        }
-    }
-    else {
-        let half = a.len()/2;
-        let (a_l, a_r) = a.split_at_mut(half);
-        let (b_l, b_r) = b.split_at_mut(half);
-        rayon::join(
-            || par_copy(a_l, b_l),
-            || par_copy(a_r, b_r)
         );
     }
 }

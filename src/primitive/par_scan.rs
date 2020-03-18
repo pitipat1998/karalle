@@ -1,3 +1,5 @@
+use crate::primitive::vec_no_init;
+
 fn scan_up<T, U>(seq: &[T], left: &mut [T], func: &U) -> T
     where T: Sync + Send + Copy,
           U: Sync + Send + Fn(&T, &T) -> T
@@ -41,12 +43,8 @@ pub fn par_scan<T, U>(seq: &Vec<T>, func: U , s: &T) -> (Vec<T>, T)
     where T: Sync + Send + Copy,
           U: Sync + Send + Fn(&T, &T) -> T
 {
-    let mut left: Vec<T>  = Vec::with_capacity(seq.len()-1);
-    let mut right: Vec<T> = Vec::with_capacity( seq.len());
-    unsafe {
-        left.set_len(seq.len()-1);
-        right.set_len(seq.len());
-    }
+    let mut left: Vec<T>  = vec_no_init(seq.len()-1);
+    let mut right: Vec<T> = vec_no_init( seq.len());
     let total: T = scan_up(seq, &mut left, &func);
     scan_down(&mut right, &mut left, &func, s);
     (Vec::from(right), total)

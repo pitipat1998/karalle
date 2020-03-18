@@ -2,6 +2,7 @@ extern crate rayon;
 
 use crate::primitive::par_map::par_map_v3;
 use crate::primitive::par_scan::par_scan;
+use crate::primitive::vec_no_init;
 
 const THRESHOLD: usize = 1;
 
@@ -23,8 +24,7 @@ pub fn par_filter_v2<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
     let (x, tot): (Vec<usize>, usize) = par_scan(&mapped,
                                              &|elt1: &usize, elt2: &usize| -> usize { *elt1 + *elt2 },
                                              &0);
-    let mut ret: Vec<T> = Vec::with_capacity(tot);
-    unsafe { ret.set_len(tot) }
+    let mut ret: Vec<T> = vec_no_init(tot);
 
     par_filter_util_v2(seq, &mut ret, &mapped, &x, 0);
     ret

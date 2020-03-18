@@ -5,6 +5,7 @@ use std::io::{LineWriter, Write};
 use std::path::Path;
 
 use rand::*;
+use crate::primitive::vec_no_init;
 
 #[allow(dead_code)]
 pub fn random_list_generator(size: u64, min: i32, max: i32) -> Vec<String>{
@@ -44,8 +45,7 @@ pub fn make_data(size: u64, min: i32, max: i32, path: &str, type_t: &str) {
 pub fn make_flatten_data(size: u64, min: i32, max: i32, path: &str) {
     path.to_string().retain(|x| x != '/');
     let mut rng = rand::thread_rng();
-    let mut data: Vec<Vec<String>> = Vec::with_capacity(size as usize);
-    unsafe {data.set_len(size as usize);}
+    let mut data: Vec<Vec<String>> = vec_no_init(size as usize);
     let fname = format!("{}/flatten/size-{}.csv", path, size);
     let f = File::create(Path::new(fname.as_str())).expect("Unable to create file");
     let mut writer = LineWriter::new(&f);

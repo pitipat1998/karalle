@@ -3,6 +3,7 @@ extern crate rayon;
 
 use self::num_cpus::get;
 use self::rayon::prelude::*;
+use crate::primitive::{vec_no_init, vec_init};
 
 const THRESHOLD: usize = 1000;
 
@@ -12,8 +13,7 @@ pub fn par_map_v1<T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
           U: Sync + Send,
           V: Sync + Send + (Fn(usize, &T) -> U)
 {
-    let mut ret: Vec<U> = Vec::with_capacity(seq.len());
-    unsafe { ret.set_len(seq.len()) }
+    let mut ret: Vec<U> = vec_no_init(seq.len());
     par_map_util_v1(seq, &mut ret, &func, 0, seq.len());
     ret
 }
@@ -24,8 +24,7 @@ pub fn par_map_v2<T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
           U: Sync + Send,
           V: Sync + Send + (Fn(usize, &T) -> U)
 {
-    let mut ret: Vec<U> = Vec::with_capacity(seq.len());
-    unsafe { ret.set_len(seq.len()) }
+    let mut ret: Vec<U> = vec_no_init(seq.len());
     par_map_util_v2(seq, &mut ret, &func);
     ret
 }
@@ -36,10 +35,7 @@ pub fn par_map_v3<T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
           U: Sync + Send,
           V: Sync + Send + (Fn(usize, &T) -> U)
 {
-    let mut ret: Vec<U> = Vec::with_capacity(seq.len());
-    unsafe { ret.set_len(seq.len()) }
-    par_map_utils_v3(seq, &mut ret, &func);
-    ret
+    vec_init(seq.len(), &|i, _| func(i, &seq[i]))
 }
 
 // Version 4*nprocs splits
@@ -48,8 +44,7 @@ pub fn par_map_v4<T, U, V>(seq: &Vec<T>, func: V) -> Vec<U>
           U: Sync + Send,
           V: Sync + Send + (Fn(usize, &T) -> U)
 {
-    let mut ret: Vec<U> = Vec::with_capacity(seq.len());
-    unsafe { ret.set_len(seq.len()) }
+    let mut ret: Vec<U> = vec_no_init(seq.len());
     par_map_utils_v4(seq, &mut ret, &func, 0, seq.len(), get());
     ret
 }
@@ -126,27 +121,6 @@ fn par_map_util_v2<T, U, V>(seq: &[T], ret: &mut [U], func: &V)
             });
         }
     })
-}
-
-fn par_map_utils_v3<T, U, V>(seq: &[T], ret: &mut [U], func: &V)
-    where T: Sync + Send,
-          U: Sync + Send,
-          V: Sync + Send + (Fn(usize, &T) -> U)
-{
-    if seq.len() <= THRESHOLD {
-        for i in 0..seq.len() {
-            ret[i] = func(i, &seq[i]);
-        }
-    } else {
-        let half: usize = ret.len() / 2;
-        let (seq_l, seq_r) = seq.split_at(half);
-        let (ret_l, ret_r) = ret.split_at_mut(half);
-
-        rayon::join(
-            || { par_map_utils_v3(seq_l, ret_l, func) },
-            || { par_map_utils_v3(seq_r, ret_r, func) },
-        );
-    }
 }
 
 fn par_map_utils_v4<T, U, V>(
