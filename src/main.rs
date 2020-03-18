@@ -117,7 +117,7 @@ fn main() {
             map_res.extend(res);
         }
         println!("Writing map result");
-        write_output(&t, map_res, rounds, tn);
+        write_output(&"map".to_string(), map_res, rounds, tn);
     }
 //    if t == "all" || t == "flatten" {
 //        let mut flat_res: HashMap<String, Duration> = HashMap::new();
@@ -143,7 +143,7 @@ fn main() {
             qs_res.extend(res);
         }
         println!("Writing qs result");
-        write_output(&t, qs_res, rounds, tn);
+        write_output(&"qs".to_string(), qs_res, rounds, tn);
     }
 
     if t == "all" || t == "scan" {
@@ -156,7 +156,7 @@ fn main() {
             scan_res.extend(res);
         }
         println!("Writing scan result");
-        write_output(&t, scan_res, rounds, tn);
+        write_output(&"scan".to_string(), scan_res, rounds, tn);
    }
 
     // let v:Vec<Vec<_>> = vec![
