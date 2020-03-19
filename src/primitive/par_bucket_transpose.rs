@@ -1,7 +1,7 @@
 use crate::primitive::*;
 use serde::export::fmt::{Debug, Display};
 
-const GRANULARITY: usize = 2000;
+// const GRANULARITY: usize = 2000;
 
 fn transpose<T>(from: &mut [T], to: &mut [T], counts: &Vec<usize>, dest_offsets: &Vec<usize>, block_size: usize, num_blocks: usize, num_buckets: usize)
     where T: Send + Sync + Copy
@@ -31,8 +31,8 @@ pub fn par_transpose_buckets<T>(from: &mut [T], to: &mut [T], counts: &Vec<usize
     if 1 << block_bits != num_blocks {
         println!("in transpose_buckets: num_blocks must be a power or 2");
     }
-    let mut dest_offsets: Vec<usize>  = {
-        let mut tmp: Vec<usize> = vec_init(m, &|i, _| counts[(i >> block_bits) + num_buckets * (i & block_mask)]);
+    let dest_offsets: Vec<usize>  = {
+        let tmp: Vec<usize> = vec_init(m, &|i, _| counts[(i >> block_bits) + num_buckets * (i & block_mask)]);
         let (new_tmp, sum) = par_scan(&tmp, |a: &usize, b: &usize| {*a + *b}, &0);
         if sum != n {
             println!("in transpose_buckets: sum {} must be equal to {}", sum, n);

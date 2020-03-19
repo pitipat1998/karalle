@@ -14,7 +14,6 @@ use util::data_generator::*;
 use util::file_reader::*;
 
 use crate::benchmark::*;
-use rand::Rng;
 
 pub mod util;
 pub mod benchmark;
@@ -44,6 +43,7 @@ fn make_file(make_type: &String) {
                     make_data(size, 2, 1000, "data", make_type.as_str());
                     println!("Done");
                 });
+            return;
         }
         "flatten" => {
             (20..24).into_par_iter()
@@ -53,6 +53,7 @@ fn make_file(make_type: &String) {
                     make_flatten_data(size, 2, 1000, "data");
                     println!("Done");
                 });
+            return;
         }
         "all" => {
             for t in ["filter", "map"].iter() {
@@ -70,7 +71,8 @@ fn make_file(make_type: &String) {
                     println!("Generating {}({}) flatten data size", size, i);
                     make_flatten_data(size, 2, 1000, "data");
                     println!("Done");
-                })
+                });
+            return;
         }
         _ => println!("Usage: KGEN=<map|filter|flatten|all>")
     }
@@ -150,7 +152,7 @@ fn main() {
         let mut scan_res: HashMap<String, Duration> = HashMap::new();
         // Scan
         for d in files_1d.iter() {
-            println!("Running scan files: {}", d);
+            println!("Running scan file: {}", d);
             let mut v: Vec<i32> = read_csv::<i32>(&d);
             let res = run_scan_benchmark(d, &mut v, rounds, tn);
             scan_res.extend(res);
@@ -159,6 +161,17 @@ fn main() {
         write_output(&"scan".to_string(), scan_res, rounds, tn);
    }
 
+    if t == "all" || t == "sample_sort" || t == "ss" {
+        let mut ss_res: HashMap<String, Duration> = HashMap::new();
+        for d in files_1d.iter() {
+            println!("Running sample sort file: {}", d);
+            let mut v: Vec<i32> = read_csv::<i32>(&d);
+            let res = run_sample_sort_benchmark(d, &mut v, |a: &i32, b: &i32| -> i32 { (*a - *b) as i32 }, rounds, tn);
+            ss_res.extend(res);
+        }
+        println!("Writing sample sort result");
+        write_output(&"sample_sort".to_string(), ss_res, rounds, tn);
+    }
     // let v:Vec<Vec<_>> = vec![
     //     vec![1, 2, 3],
     //     vec![4, 5, 6],

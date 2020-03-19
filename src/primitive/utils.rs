@@ -1,4 +1,3 @@
-use rand::Rng;
 use rand::prelude::ThreadRng;
 
 const GRANULARITY: usize = 2048;
@@ -42,7 +41,7 @@ pub fn vec_init<T, U>(n: usize, f: &U) -> Vec<T>
 
 pub fn vec_zeroes(n: usize) -> Vec<usize>
 {
-    let v: Vec<usize> = vec_init(n, &|i, _| 0);
+    let v: Vec<usize> = vec_init(n, &|_i, _| 0);
     v
 }
 

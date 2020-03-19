@@ -10,7 +10,7 @@ fn benchmark_quick_sort<T, U>(vec: &Vec<T>, func: &U, rounds: u128) -> Duration
     where T: Copy + Sync + Send,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
-let now = Instant::now();
+    let now = Instant::now();
     for _ in 0..rounds {
         let _ = par_quick_sort(vec, func);
     }
@@ -47,16 +47,16 @@ pub fn run_quick_sort_benchmark<T, U>(
     v: &mut Vec<T>,
     f: U,
     rounds: u128,
-    threads: usize
+    threads: usize,
 ) -> HashMap<String, Duration>
-where T: Copy + Sync + Send,
-      U: Sync + Send + Fn(&T, &T) -> i32
+    where T: Copy + Sync + Send,
+          U: Sync + Send + Fn(&T, &T) -> i32
 {
-let mut result: HashMap<String, Duration> = HashMap::new();
+    let mut result: HashMap<String, Duration> = HashMap::new();
 
     let mut rng = rand::thread_rng();
     let key = format!("{}, {}, par_quick_sort (non-in-place)", &d, threads);
-    let duration = benchmark_quick_sort(&v, &f , rounds);
+    let duration = benchmark_quick_sort(&v, &f, rounds);
     result.entry(key).or_insert(duration);
 
     let key = format!("{}, {}, par_quick_sort (in-place)", &d, threads);
