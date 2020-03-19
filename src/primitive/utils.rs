@@ -70,3 +70,4 @@ pub fn par_copy<T: Sync + Send + Copy>(to: &mut [T], from: &[T]) {
     }
     par_copy_util(to, from, 0, from.len());
 }
+
