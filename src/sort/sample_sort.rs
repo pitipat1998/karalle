@@ -18,17 +18,17 @@ fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end:
         let mut rng = rand::thread_rng();
         let range = Uniform::new(0, seq.len());
 
-        let mut result: Vec<Vec<T>> = vec_no_init(p + 2);
-
-
+        let mut result: Vec<Vec<T>> = Vec::with_capacity(n*(p + 2));
+        for _ in 0..(p+2) {
+            result.push(Vec::with_capacity(n));
+        }
         let samp: &mut Vec<usize> = &mut (0..(p * k) as i32).map(|_| rng.sample(&range)).collect();
         samp.sort_unstable();
 
         let mut piv: Vec<T> = Vec::new();
-        unsafe {piv.set_len(p+2);}
         piv.push(T::min_value());
         for i in 1..(p - 1) {
-            piv[i] = num::cast::NumCast::from(samp[i * k]).unwrap();
+            piv.push(num::cast::NumCast::from(samp[i * k]).unwrap());
         }
         piv.push(T::max_value());
 
@@ -38,10 +38,6 @@ fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end:
                 .filter(|&ij| piv[(ij - 1) as usize] < elm && elm <= piv[ij as usize])
                 .collect();
             let j: usize = (*jx.first().unwrap()) as usize;
-            println!("{}: {}", result.capacity(), j);
-            if result[j as usize].is_empty() {
-                result[j as usize] = Vec::new();
-            }
             result[j].push(elm.clone());
         }
         par_flatten(&result)
