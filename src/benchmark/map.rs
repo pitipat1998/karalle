@@ -36,14 +36,14 @@ pub fn run_map_benchmark(d: &String, v: Vec<u128>, rounds: u128, threads: usize)
     let mut func: HashMap<&str, &MapFunc> = HashMap::new();
     func.insert("Multiply", &|_, x| { *x * *x });
     // func.insert("Fac", &|_, x| { fac(x) });
-    func.insert("Prime", &|_, &x| {
-        (2..).filter(|&num|{
-            !(2..x).any(|n| n%num == 0)
-        })
-            .skip(x as usize)
-            .next()
-            .unwrap()
-    });
+    //func.insert("Prime", &|_, &x| {
+    //    (2..).filter(|&num|{
+    //        !(2..x).any(|n| n%num == 0)
+    //    })
+    //        .skip(x as usize)
+    //        .next()
+    //        .unwrap()
+    //});
 
     // let mut par_map_zip: HashMap<&str, &dyn Fn(&Vec<u128>, u128) -> Vec<u128>> = HashMap::new();
     // par_map_zip.insert("v1", &par_map_v1);
@@ -58,13 +58,14 @@ pub fn run_map_benchmark(d: &String, v: Vec<u128>, rounds: u128, threads: usize)
         // result.entry(key).or_insert(duration);
 
         let key = format!("{}, {}, {}, sqrt_n", fname, &d, threads);
+        println!("map V1: {} {}", fname, &d);
         let duration = benchmark_map(&v, f, par_map_v1, rounds);
         result.entry(key).or_insert(duration);
 
         // let key = format!("{}, {}, n_spawn", fname, &d);
         // let duration = benchmark_map(&v, f, par_map_v2);
         // result.entry(key).or_insert(duration);
-
+        println!("map V2: {} {}", fname, &d);
         let key = format!("{}, {}, {}, half_split", fname, &d, threads);
         let duration = benchmark_map(&v, f, par_map_v3, rounds);
         result.entry(key).or_insert(duration);
@@ -72,7 +73,7 @@ pub fn run_map_benchmark(d: &String, v: Vec<u128>, rounds: u128, threads: usize)
         // let key = format!("{}, {}, 4nproc", fname, &d);
         // let duration = benchmark_map(&v, f, par_map_v4);
         // result.entry(key).or_insert(duration);
-
+        println!("map V3: {} {}", fname, &d);
         let key = format!("{}, {}, {}, rayon_par_iter", fname, &d, threads);
         let duration = benchmark_map(&v, f, par_map_v5, rounds);
         result.entry(key).or_insert(duration);

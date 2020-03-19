@@ -117,21 +117,21 @@ fn main() {
             map_res.extend(res);
         }
         println!("Writing map result");
-        write_output(&t, map_res, rounds, tn);
+        write_output(&"map".to_string(), map_res, rounds, tn);
     }
-    if t == "all" || t == "flatten" {
-        let mut flat_res: HashMap<String, Duration> = HashMap::new();
-        // Flatten
-        for d in files_2d.iter() {
-            println!("Running flatten file: {}", d);
-            let v: Vec<Vec<u32>> = read_nested::<u32>(&d);
-            // let v_r: Vec<&Vec<u128>> = v.iter().map(|f| f).collect();
-            let res = run_flatten_benchmark(d, &v, rounds, tn);
-            flat_res.extend(res);
-        }
-        println!("Writing flatten result");
-        write_output(&t,flat_res, rounds, tn);
-    }
+//    if t == "all" || t == "flatten" {
+//        let mut flat_res: HashMap<String, Duration> = HashMap::new();
+//        // Flatten
+//        for d in files_2d.iter() {
+//            println!("Running flatten file: {}", d);
+//            let v: Vec<Vec<u32>> = read_nested::<u32>(&d);
+//            // let v_r: Vec<&Vec<u128>> = v.iter().map(|f| f).collect();
+//            let res = run_flatten_benchmark(d, &v, rounds, tn);
+//            flat_res.extend(res);
+//        }
+//        println!("Writing flatten result");
+//        write_output(&t,flat_res, rounds, tn);
+//    }
 
     if t == "all" || t == "qs" || t == "quick_sort" {
         let mut qs_res: HashMap<String, Duration> = HashMap::new();
@@ -143,7 +143,7 @@ fn main() {
             qs_res.extend(res);
         }
         println!("Writing qs result");
-        write_output(&t, qs_res, rounds, tn);
+        write_output(&"qs".to_string(), qs_res, rounds, tn);
     }
 
     if t == "all" || t == "scan" {
@@ -156,7 +156,7 @@ fn main() {
             scan_res.extend(res);
         }
         println!("Writing scan result");
-        write_output(&t, scan_res, rounds, tn);
+        write_output(&"scan".to_string(), scan_res, rounds, tn);
    }
 
     // let v:Vec<Vec<_>> = vec![
