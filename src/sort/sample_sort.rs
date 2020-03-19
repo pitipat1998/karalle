@@ -20,10 +20,12 @@ fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end:
 
         let mut result: Vec<Vec<T>> = vec_no_init(p + 2);
 
+
         let samp: &mut Vec<usize> = &mut (0..(p * k) as i32).map(|_| rng.sample(&range)).collect();
         samp.sort_unstable();
 
-        let mut piv: Vec<T> = vec_no_init(p + 2);
+        let mut piv: Vec<T> = Vec::new();
+        unsafe {piv.set_len(p+2);}
         piv.push(T::min_value());
         for i in 1..(p - 1) {
             piv[i] = num::cast::NumCast::from(samp[i * k]).unwrap();
@@ -31,11 +33,12 @@ fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end:
         piv.push(T::max_value());
 
         for &elm in seq.iter() {
-            let jx: Vec<i32> = (1..seq.len() as i32)
+            let jx: Vec<i32> = (1..piv.len() as i32)
                 .into_par_iter()
                 .filter(|&ij| piv[(ij - 1) as usize] < elm && elm <= piv[ij as usize])
                 .collect();
             let j: usize = (*jx.first().unwrap()) as usize;
+            println!("{}: {}", result.capacity(), j);
             if result[j as usize].is_empty() {
                 result[j as usize] = Vec::new();
             }
@@ -49,7 +52,5 @@ fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end:
 pub fn seq_sample_sort<T>(seq: &mut [T], k: usize, p: usize) -> Vec<T>
     where T: Copy + PrimInt + Sync + Send
 {
-    // let t: Vec<f64> = Vec::new();
-    // t
     seq_sample_sort_util(seq, k, p, 0, seq.len())
 }

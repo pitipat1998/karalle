@@ -13,9 +13,8 @@ fn benchmark_sample_sort<T>(
 where T: Copy + Sync + Send + PrimInt
 {
     let now = Instant::now();
-    let n = (v.len() as f32).sqrt();
     for _ in 0..rounds {
-        seq_sample_sort(v, 10, n as usize);
+        seq_sample_sort(v.as_mut_slice(), 5, 3);
     }
     now.elapsed().div_f32(rounds as f32)
 }
