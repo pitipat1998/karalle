@@ -1,15 +1,16 @@
 extern crate rayon;
 
 use rand::{Rng};
-use serde::export::fmt::{Debug, Display};
-
-use crate::primitive::{vec_init, vec_no_init, vec_zeroes};
-use crate::primitive::par_copy;
+use crate::primitive::{vec_zeroes, vec_init, vec_no_init};
+use crate::sort::{par_quick_sort_v2};
 use crate::primitive::par_transpose_buckets;
-use crate::sort::par_quick_sort_v2;
+use crate::primitive::par_copy;
+use serde::export::fmt::{Display, Debug};
+use crate::sort::par_quick_sort_slice;
 
-const QS_THRESHOLD: usize = 2000;
-// const GRANULARITY: usize = 2000;
+const QS_THRESHOLD: usize = 16384;
+const BLOCK_THRESHOLD: usize = 8;
+// const GRANULARITY: usize = 2048;
 const BUCKET_QUOTIENT: usize = 8;
 const BLOCK_QUOTIENT: usize = 8;
 const OVER_SAMPLE: usize = 8;
@@ -19,7 +20,7 @@ fn count<T, U>(seq: &mut [T], pivots: &[T], c: &mut [usize], block_size: usize, 
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     let n = e - s;
-    if n <= 64 {
+    if n <= BLOCK_THRESHOLD {
         let seq_chunks = seq.chunks_mut(block_size);
         let c_chunks = c.chunks_mut(num_buckets);
         for (seq_chunk, c_chunk) in seq_chunks.zip(c_chunks) {
@@ -78,14 +79,14 @@ fn sort_within_bucket<T, U>(seq: &mut [T], pivots: &[T], bucket_offsets: &[usize
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     let n = e - s;
-    if n <= 8 {
+    if n <= BLOCK_THRESHOLD {
         for i in 0..n {
             let j = i + s;
             let start = bucket_offsets[j] - seq_s;
             let end = bucket_offsets[j + 1] - seq_s;
 
             if j == 0 || j == num_buckets - 1 || func(&pivots[j - 1], &pivots[j]) < 0 {
-                (&mut seq[start..end]).sort_unstable_by(|a, b| func(a, b).cmp(&0));
+                par_quick_sort_slice(&mut seq[start..end], func);
             }
         }
     } else {

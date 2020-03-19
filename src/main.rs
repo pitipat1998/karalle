@@ -187,7 +187,7 @@ fn main() {
 //
 //    let mut rng = rand::thread_rng();
 //    for i in 0..100 {
-//        let mut arr1 = random_i32_list_generator(rng.gen_range(10000, 1000000), -1, 1);
+//        let mut arr1 = random_i32_list_generator(rng.gen_range(100000, 1000000), 0, 2);
 //        let mut arr2 = arr1.clone();
 //        par_sample_sort(&mut arr1, &|a: &i32, b: &i32| { *a - *b });
 //        par_quick_sort_v3(&mut arr2, &|a: &i32, b: &i32| { *a - *b });

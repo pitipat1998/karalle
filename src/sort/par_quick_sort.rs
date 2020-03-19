@@ -9,7 +9,7 @@ use crate::primitive::par_map_v3;
 use crate::primitive::par_scan;
 use crate::primitive::par_copy;
 
-const THRESHOLD: usize = 1000;
+const THRESHOLD: usize = 16384;
 
 #[allow(dead_code)]
 pub fn par_quick_sort<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
@@ -53,6 +53,14 @@ pub fn par_quick_sort_v2<T, U>(seq: &mut Vec<T>, func: U)
 {
     let mut aux = vec_no_init(seq.len());
     par_quick_sort_utils_v2(seq.as_mut_slice(), &mut aux, &func, 0)
+}
+
+pub fn par_quick_sort_slice<T, U>(seq: &mut [T], func: U)
+    where T: Sync + Send + Copy,
+          U: Sync + Send + Fn(&T, &T) -> i32
+{
+    let mut aux = vec_no_init(seq.len());
+    par_quick_sort_utils_v2(seq, &mut aux, &func, 0)
 }
 
 #[allow(dead_code)]
