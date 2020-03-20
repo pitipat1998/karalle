@@ -57,7 +57,7 @@ pub fn run_map_benchmark(d: &String, v: Vec<u128>, rounds: u128, threads: usize)
         // let duration = benchmark_map(&v, f, map);
         // result.entry(key).or_insert(duration);
 
-        let key = format!("{}, {}, {}, sqrt_n", fname, &d, threads);
+        let key = format!("{}, {}, sqrt_n_{}", &d, threads, fname);
         println!("map V1: {} {}", fname, &d);
         let duration = benchmark_map(&v, f, par_map_v1, rounds);
         result.entry(key).or_insert(duration);
@@ -66,7 +66,7 @@ pub fn run_map_benchmark(d: &String, v: Vec<u128>, rounds: u128, threads: usize)
         // let duration = benchmark_map(&v, f, par_map_v2);
         // result.entry(key).or_insert(duration);
         println!("map V2: {} {}", fname, &d);
-        let key = format!("{}, {}, {}, half_split", fname, &d, threads);
+        let key = format!("{}, {}, half_split_{}", &d, threads, fname);
         let duration = benchmark_map(&v, f, par_map_v3, rounds);
         result.entry(key).or_insert(duration);
 
@@ -74,7 +74,7 @@ pub fn run_map_benchmark(d: &String, v: Vec<u128>, rounds: u128, threads: usize)
         // let duration = benchmark_map(&v, f, par_map_v4);
         // result.entry(key).or_insert(duration);
         println!("map V3: {} {}", fname, &d);
-        let key = format!("{}, {}, {}, rayon_par_iter", fname, &d, threads);
+        let key = format!("{}, {}, rayon_par_iter_{}", &d, threads, fname);
         let duration = benchmark_map(&v, f, par_map_v5, rounds);
         result.entry(key).or_insert(duration);
     }
