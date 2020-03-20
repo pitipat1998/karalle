@@ -158,23 +158,23 @@ fn main() {
         println!("Writing scan result");
         write_output(&"scan".to_string(), scan_res, rounds, tn);
    }
-
-    // let v:Vec<Vec<_>> = vec![
-    //     vec![1, 2, 3],
-    //     vec![4, 5, 6],
-    //     vec![7, 8, 9]
-    // ];
-    // let x: Vec<&Vec<_>> = vec![&vec![1, 2], &vec![3, 4]];
-    // let mut y: Vec<Vec<i32>> = x.iter().map(|&i| i).collect();
-    //
-    // let z: Vec<_> = y.into_par_iter().flatten().collect();
-
+//
+//    // let v:Vec<Vec<_>> = vec![
+//    //     vec![1, 2, 3],
+//    //     vec![4, 5, 6],
+//    //     vec![7, 8, 9]
+//    // ];
+//    // let x: Vec<&Vec<_>> = vec![&vec![1, 2], &vec![3, 4]];
+//    // let mut y: Vec<Vec<i32>> = x.iter().map(|&i| i).collect();
+//    //
+//    // let z: Vec<_> = y.into_par_iter().flatten().collect();
+//
 //    use crate::sort::par_quick_sort_v3;
 //    use crate::sort::par_sample_sort;
 //
 //    let mut rng = rand::thread_rng();
-//    for i in 0..100 {
-//        let mut arr1 = random_i32_list_generator(rng.gen_range(100000, 1000000), 0, 2);
+//    for i in 0..1 {
+//        let mut arr1 = random_i32_list_generator(rng.gen_range(140000000, 140000001), 0, 2);
 //        let mut arr2 = arr1.clone();
 //        par_sample_sort(&mut arr1, &|a: &i32, b: &i32| { *a - *b });
 //        par_quick_sort_v3(&mut arr2, &|a: &i32, b: &i32| { *a - *b });

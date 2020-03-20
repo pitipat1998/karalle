@@ -32,14 +32,18 @@ fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
     else {
         let mut rng: ThreadRng = rand::thread_rng();
         let p: &T = seq.choose(&mut rng).unwrap_or(&seq[seq.len() / 2]);
-        let lt: Vec<T> = par_filter_v1(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 });
-        let eq: Vec<T> = par_filter_v1(&seq, &|_i: usize, elt: &T| -> bool { func(elt, p) == 0 });
-        let gt: Vec<T> = par_filter_v1(&seq, &|_i: usize, elt: &T| -> bool { func(elt, p) > 0 });
-        let mut left: Vec<T> = Vec::new();
-        let mut right: Vec<T> = Vec::new();
-        rayon::join(
-            || { left = par_quick_sort_utils(&lt, func)},
-                || { right = par_quick_sort_utils(&gt, func)}
+        let ((lt, eq), gt) = rayon::join(
+            || {
+                rayon::join(
+                    || par_filter_v1(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 }),
+                    || par_filter_v1(&seq, &|_i: usize, elt: &T| -> bool { func(elt, p) == 0 })
+                )
+            },
+            || par_filter_v1(&seq, &|_i: usize, elt: &T| -> bool { func(elt, p) > 0 })
+        );
+        let (left , right) = rayon::join(
+            || par_quick_sort_utils(&lt, func),
+                || par_quick_sort_utils(&gt, func)
         );
         par_flatten(&vec![left, eq, right])
     }
@@ -79,29 +83,29 @@ fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes:
         let _length = seq.len();
         let p: &T = seq.choose(&mut rng).unwrap();
 
-        let (aux_lt, aux_rest, lt_tot) =
-        {
-            let (lt_mapped, lt_x, lt_tot) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 });
+        let (aux_lt, aux_eq, aux_gt, lt_tot, eq_tot) = {
+            let (((lt_mapped, lt_x, lt_tot), (eq_mapped, eq_x, eq_tot)), (gt_mapped, gt_x, gt_tot)) = rayon::join(
+                || {
+                    rayon::join(
+                        || pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 }),
+                        || pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) == 0 })
+                    )
+                },
+                || pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) > 0 })
+            );
             let (aux_lt, aux_rest) = aux.split_at_mut(lt_tot);
-            par_filter_util_v2(seq, aux_lt, &lt_mapped, &lt_x, 0);
-            (aux_lt, aux_rest, lt_tot)
-        };
-
-        let (aux_eq, aux_gt, eq_tot) =
-        {
-            let (eq_mapped, eq_x, eq_tot) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) == 0 });
             let (aux_eq, aux_gt) = aux_rest.split_at_mut(eq_tot);
-            par_filter_util_v2(seq, aux_eq, &eq_mapped, &eq_x, 0);
-            (aux_eq, aux_gt, eq_tot)
+            rayon::join(
+                || {
+                    rayon::join(
+                        || par_filter_util_v2(seq, aux_lt, &lt_mapped, &lt_x, 0),
+                        || par_filter_util_v2(seq, aux_eq, &eq_mapped, &eq_x, 0)
+                    )
+                },
+                || par_filter_util_v2(seq, aux_gt, &gt_mapped, &gt_x, 0)
+            );
+            (aux_lt, aux_eq, aux_gt, lt_tot, eq_tot)
         };
-
-        let aux_eq=
-        {
-            let (gt_mapped, gt_x, _gt_toto) = pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) > 0 });
-            par_filter_util_v2(seq, aux_gt, &gt_mapped, &gt_x, 0);
-            aux_eq
-        };
-
 
         let (seq_lt, seq_rest) = seq.split_at_mut(lt_tot);
         let (seq_eq, seq_gt) = seq_rest.split_at_mut(eq_tot);
