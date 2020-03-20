@@ -86,26 +86,23 @@ fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes:
         let p: &T = seq.choose(&mut rng).unwrap();
 
         let (aux_lt, aux_eq, aux_gt, lt_tot, eq_tot) = {
-            let (((lt_mapped, lt_x, lt_tot), (eq_mapped, eq_x, eq_tot)), (gt_mapped, gt_x, gt_tot)) = rayon::join(
+            let ((aux_lt, aux_eq, aux_gt, lt_tot, eq_tot), (gt_mapped, gt_x, gt_tot)) = rayon::join(
                 || {
-                    rayon::join(
+                    let ((lt_mapped, lt_x, lt_tot), (eq_mapped, eq_x, eq_tot)) = rayon::join(
                         || pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 }),
                         || pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) == 0 })
-                    )
-                },
-                || pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) > 0 })
-            );
-            let (aux_lt, aux_rest) = aux.split_at_mut(lt_tot);
-            let (aux_eq, aux_gt) = aux_rest.split_at_mut(eq_tot);
-            rayon::join(
-                || {
+                    );
+                    let (aux_lt, aux_rest) = aux.split_at_mut(lt_tot);
+                    let (aux_eq, aux_gt) = aux_rest.split_at_mut(eq_tot);
                     rayon::join(
                         || par_filter_util_v2(seq, aux_lt, &lt_mapped, &lt_x, 0),
                         || par_filter_util_v2(seq, aux_eq, &eq_mapped, &eq_x, 0)
-                    )
+                    );
+                    (aux_lt, aux_eq, aux_gt, lt_tot, eq_tot)
                 },
-                || par_filter_util_v2(seq, aux_gt, &gt_mapped, &gt_x, 0)
+                || pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) > 0 })
             );
+            par_filter_util_v2(seq, aux_gt, &gt_mapped, &gt_x, 0);
             (aux_lt, aux_eq, aux_gt, lt_tot, eq_tot)
         };
 
