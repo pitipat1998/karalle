@@ -16,6 +16,7 @@ pub fn par_quick_sort<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
     where T: Sync + Send + Copy,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
+    println!("non-inplace parallel quick sort of size {}", seq.len());
     par_quick_sort_utils(seq, &func)
 }
 
@@ -55,6 +56,7 @@ pub fn par_quick_sort_v2<T, U>(seq: &mut Vec<T>, func: U)
     where T: Sync + Send + Copy,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
+    println!("inplace parallel quick sort of size {}", seq.len());
     let mut aux = vec_no_init(seq.len());
     par_quick_sort_utils_v2(seq.as_mut_slice(), &mut aux, &func, 0)
 }
@@ -133,6 +135,7 @@ pub fn par_quick_sort_v3<T, U>(seq: &mut Vec<T>, func: U)
 where T: Sync + Send + Copy,
 U: Sync + Send + Fn(&T, &T) -> i32
 {
+    println!("rayon parallel quick sort of size {}", seq.len());
     seq.par_sort_unstable_by(|a,b| func(a,b).cmp(&0))
 }
 
