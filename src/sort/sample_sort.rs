@@ -34,7 +34,7 @@ fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end:
 
         for &elm in seq.iter() {
             let jx: Vec<i32> = (1..piv.len() as i32)
-                .into_par_iter()
+                .into_iter()
                 .filter(|&ij| piv[(ij - 1) as usize] < elm && elm <= piv[ij as usize])
                 .collect();
             let j: usize = (*jx.first().unwrap()) as usize;

@@ -46,13 +46,13 @@ pub fn run_sample_sort_benchmark<T, U>(
     println!("Seq");
     let key = format!("{}, {}, sample_sort seq", &d, threads);
     let d1 = benchmark_sample_sort(v, rounds);
-    println!("{}: {}", key, d1);
+    println!("{}: {:?}", key, d1);
     result.entry(key).or_insert(d1);
 
     println!("Par");
     let key = format!("{}, {}, sample_sort par", &d, threads);
     let d2 = benchmark_par_sample_sort(v, &f, rounds);
-    println!("{}: {}", key, d2);
+    println!("{}: {:?}", key, d2);
     result.entry(key).or_insert(d2);
 
     result
