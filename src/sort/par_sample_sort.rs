@@ -1,20 +1,16 @@
 extern crate rayon;
 
-use num::PrimInt;
-use rand::{distributions::Uniform, Rng};
-use rayon::prelude::*;
-use crate::primitive::{par_flatten, vec_zeroes, vec_init, vec_no_init};
-use crate::sort::{par_quick_sort_v2, par_quick_sort_v3};
+use rand::{Rng};
+use crate::primitive::{vec_zeroes, vec_init, vec_no_init};
+use crate::sort::{par_quick_sort_v2};
 use crate::primitive::par_transpose_buckets;
 use crate::primitive::par_copy;
-use rand::prelude::ThreadRng;
-use std::cmp::min;
 use serde::export::fmt::{Display, Debug};
 use crate::sort::par_quick_sort_slice;
 
 const QS_THRESHOLD: usize = 16384;
 const BLOCK_THRESHOLD: usize = 8;
-const GRANULARITY: usize = 2048;
+// const GRANULARITY: usize = 2048;
 const BUCKET_QUOTIENT: usize = 8;
 const BLOCK_QUOTIENT: usize = 8;
 const OVER_SAMPLE: usize = 8;
@@ -40,8 +36,8 @@ fn count<T, U>(seq: &mut [T], pivots: &[T], c: &mut [usize], block_size: usize, 
         let (seq_l, seq_r) = seq.split_at_mut(seq_mid);
         let (c_l, c_r) = c.split_at_mut(c_mid);
         rayon::join(
-            || count(seq_l, pivots, c_l, block_size, num_buckets, s, s+half, func),
-            || count(seq_r, pivots, c_r, block_size, num_buckets, s+half, e, func)
+            || count(seq_l, pivots, c_l, block_size, num_buckets, s, s + half, func),
+            || count(seq_r, pivots, c_r, block_size, num_buckets, s + half, e, func),
         );
     }
 }
@@ -85,7 +81,7 @@ fn sort_within_bucket<T, U>(seq: &mut [T], pivots: &[T], bucket_offsets: &[usize
     let n = e - s;
     if n <= BLOCK_THRESHOLD {
         for i in 0..n {
-            let j = i+s;
+            let j = i + s;
             let start = bucket_offsets[j] - seq_s;
             let end = bucket_offsets[j + 1] - seq_s;
 
@@ -98,8 +94,8 @@ fn sort_within_bucket<T, U>(seq: &mut [T], pivots: &[T], bucket_offsets: &[usize
         let mid = bucket_offsets[half + s];
         let (l, r) = seq.split_at_mut(mid - seq_s);
         rayon::join(
-            || sort_within_bucket(l, pivots, bucket_offsets, num_buckets, func, s, half+s, seq_s, mid),
-            || sort_within_bucket(r, pivots, bucket_offsets, num_buckets, func, half+s, e, mid, seq_e)
+            || sort_within_bucket(l, pivots, bucket_offsets, num_buckets, func, s, half + s, seq_s, mid),
+            || sort_within_bucket(r, pivots, bucket_offsets, num_buckets, func, half + s, e, mid, seq_e),
         );
     }
 }
@@ -121,10 +117,10 @@ fn par_sample_sort_util<T, U>(seq: &mut [T], aux: &mut [T], func: &U)
         let pivots = {
             let mut samples: Vec<T> = vec_init(sample_set_size, &|_, rng| seq[rng.gen_range(0, seq.len())]);
             par_quick_sort_v2(&mut samples, func);
-            vec_init(num_buckets-1, &|i, _| samples[i * OVER_SAMPLE])
+            vec_init(num_buckets - 1, &|i, _| samples[i * OVER_SAMPLE])
         };
 
-        let mut counts: Vec<usize> = vec_zeroes(m+1);
+        let mut counts: Vec<usize> = vec_zeroes(m + 1);
         counts[m] = 0;
         count(seq, &pivots, &mut counts, block_size, num_buckets, 0, num_blocks, func);
 
@@ -139,7 +135,7 @@ pub fn par_sample_sort<T, U>(seq: &mut Vec<T>, func: &U)
     where T: Copy + Sync + Send + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
-let mut aux: Vec<T> = Vec::with_capacity(seq.len());
+    // let mut _aux: Vec<T> = Vec::with_capacity(seq.len());
     let n = seq.len();
     par_sample_sort_util(seq, &mut vec_no_init(n), func);
 }

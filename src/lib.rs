@@ -70,7 +70,7 @@ mod tests {
     #[test]
     fn map() {
         use crate::primitive::map;
-        use crate::util::read_csv;
+        // use crate::util::read_csv;
         let arr: &mut Vec<i32> = &mut vec![1, 2, 3, 4];
         let f: &dyn Fn(usize, &i32) -> i32 = &|_i: usize, a: &i32| -> i32 { if *a <= 2 { 1 } else { 0 } };
         let actual: Vec<i32> = map(arr, f);
