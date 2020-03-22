@@ -92,7 +92,7 @@ fn split_three_util<T>(seq: &[T], fl: &[usize], block_size: usize, s: usize, e: 
     if n <= 1 {
         let start = s * block_size;
         let end = min((s+1) * block_size, seq.len());
-        let len = end - start;
+        // let len = end - start;
         let mut c0: usize = 0;
         let mut c1: usize = 0;
         let mut c2: usize = 0;
@@ -145,7 +145,7 @@ fn split_three<T>(seq: &[T], ret: &mut [T], fl: &[usize]) -> (usize, usize)
     where T: Sync + Send + Copy + Display + Debug
 {
     let l = num_blocks(seq.len(), BLOCK_SIZE);
-    let (sums0, m0): (Vec<usize>, usize) = {
+    let (_sums0, m0): (Vec<usize>, usize) = {
         let mut tmp: Vec<usize> = vec_init(l, &|i, _| {
             let s = i * BLOCK_SIZE;
             let e = min((i + 1) * BLOCK_SIZE, seq.len());
@@ -160,7 +160,7 @@ fn split_three<T>(seq: &[T], ret: &mut [T], fl: &[usize]) -> (usize, usize)
         let tot = par_scan_inplace(&mut tmp, &|a: &usize, b: &usize| { *a + *b }, &0);
         (tmp, tot)
     };
-    let (sums1, m1): (Vec<usize>, usize) = {
+    let (_sums1, m1): (Vec<usize>, usize) = {
         let mut tmp = vec_init(l, &|i, _| {
             let s = i * BLOCK_SIZE;
             let e = min((i + 1) * BLOCK_SIZE, seq.len());

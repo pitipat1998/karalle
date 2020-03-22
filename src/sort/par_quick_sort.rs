@@ -7,7 +7,6 @@ use serde::export::fmt::{Display, Debug};
 use crate::constant::*;
 use num_cpus::get;
 use std::cmp::max;
-use rayon::current_num_threads;
 
 #[allow(dead_code)]
 pub fn par_quick_sort<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
@@ -71,7 +70,7 @@ pub fn par_quick_sort_slice<T, U>(seq: &mut [T], func: U)
     par_quick_sort_utils_v2(seq, &mut aux, &func, 0, cut_size)
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes: usize, cut_size: usize)
     where T: Sync + Send + Copy + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32

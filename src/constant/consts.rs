@@ -1,5 +1,3 @@
-use std::cmp::max;
-
 pub const GRANULARITY: usize = 2000;
 pub const QS_THRESHOLD: usize = 1 << 14;
 pub const BLOCK_THRESHOLD: usize = 1;

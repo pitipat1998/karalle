@@ -15,7 +15,7 @@ fn par_scan_util<T, U>(seq: &[T], ret: &mut [T], func: &U, offset: &T) -> T
     if l <= 2 {
         return scan(seq, ret, func, offset);
     }
-    let mut sums: Vec<T> = vec_init(l, &|i: usize, _| {
+    let sums: Vec<T> = vec_init(l, &|i: usize, _| {
         let s = i * BLOCK_SIZE;
         let e = min((i+1) * BLOCK_SIZE, seq.len());
         reduce(&seq[s..e], func)

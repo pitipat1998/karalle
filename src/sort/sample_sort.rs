@@ -1,8 +1,7 @@
 extern crate rayon;
 
-use num::PrimInt;
+use num::{PrimInt};
 use rand::{distributions::Uniform, Rng};
-use rayon::prelude::*;
 use crate::primitive::*;
 use crate::constant::*;
 use serde::export::fmt::{Display, Debug};

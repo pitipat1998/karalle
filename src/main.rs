@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
 use std::process::exit;
-use std::time::{Duration, Instant};
+use std::time::{Duration};
 
 use rayon::prelude::*;
 use serde_json::*;
@@ -14,9 +14,6 @@ use util::data_generator::*;
 use util::file_reader::*;
 
 use crate::benchmark::*;
-
-use rand::prelude::*;
-use project_k::primitive::vec_no_init;
 
 pub mod util;
 pub mod benchmark;
