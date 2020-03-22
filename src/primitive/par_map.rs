@@ -161,7 +161,7 @@ fn par_map_utils_v4<T, U, V>(
                             chunk,
                             func,
                             x,
-                            x + chunk.len(),
+                            _s + chunk.len(),
                             cpu,
                         );
                     });

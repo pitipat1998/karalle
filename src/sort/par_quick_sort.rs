@@ -67,7 +67,7 @@ pub fn par_quick_sort_slice<T, U>(seq: &mut [T], func: U)
     par_quick_sort_utils_v2(seq, &mut aux, &func, 0)
 }
 
-#[allow(dead_code)]
+#[allow(dead_code,unused_variables)]
 fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes: usize)
     where T: Sync + Send + Copy,
           U: Sync + Send + Fn(&T, &T) -> i32

@@ -2,8 +2,7 @@ extern crate rayon;
 
 use num::PrimInt;
 use rand::{distributions::Uniform, Rng};
-use rayon::prelude::*;
-use crate::primitive::{par_flatten, vec_no_init};
+use crate::primitive::{par_flatten};
 
 const THRESHOLD: usize = 100;
 
