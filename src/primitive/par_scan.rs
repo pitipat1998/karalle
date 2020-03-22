@@ -1,52 +1,48 @@
-use crate::primitive::vec_no_init;
+use crate::constant::*;
+use super::utils::*;
+use super::vec::*;
+use super::scan::*;
+use super::reduce::*;
+use std::cmp::min;
+use serde::export::fmt::{Display, Debug};
 
-fn scan_up<T, U>(seq: &[T], left: &mut [T], func: &U) -> T
-    where T: Sync + Send + Copy,
+fn par_scan_util<T, U>(seq: &[T], ret: &mut [T], func: &U, offset: &T) -> T
+    where T: Sync + Send + Copy + Display + Debug + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> T
 {
-    return if seq.len() <= 1 {
-        seq[0]
-    } else {
-        let m: usize = seq.len() / 2;
-        let mut l: T = seq[m];
-        let mut r: T = seq[m];
-        let (seq_l, seq_r) = seq.split_at(m);
-        let (left_l, left_r) = left.split_at_mut(m);
-        rayon::join(
-            || { l = scan_up(seq_l, left_l, func); },
-            || { r = scan_up(seq_r, left_r, func); }
-        );
-        left_l[m-1] = l;
-        func(&l, &r)
+    let n: usize = seq.len();
+    let l: usize = num_blocks(n, BLOCK_SIZE);
+    if l <= 2 {
+        return scan(seq, ret, func, offset);
     }
+    let mut sums: Vec<T> = vec_init(l, &|i: usize, _| {
+        let s = i * BLOCK_SIZE;
+        let e = min((i+1) * BLOCK_SIZE, seq.len());
+        reduce(&seq[s..e], func)
+    }, 1);
+    let mut tmp = vec_no_init(l);
+    let total = scan(&sums, &mut tmp, func, offset);
+    sliced_for(seq, ret, BLOCK_SIZE, &|i: usize, s_chunk: &[T], r_chunk: &mut [T]| {
+        scan(s_chunk, r_chunk, func, &tmp[i]);
+    });
+    return total;
 }
 
-fn scan_down<T, U>(right: &mut [T], left: &mut [T], func: &U, s: &T)
-    where T: Sync + Send + Copy,
+pub fn par_scan<T, U>(seq: &[T], func: U , offset: &T) -> (Vec<T>, T)
+    where T: Sync + Send + Copy + Display + Debug + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> T
 {
-    if right.len() <= 1 {
-        right[0] = *s;
-    } else {
-        let m: usize = right.len() / 2;
-        let ns: T = func(s, &left[m-1]);
-        let (right_l, right_r) = right.split_at_mut(m);
-        let (left_l, left_r) = left.split_at_mut(m);
-        rayon::join(
-            || scan_down(right_l, left_l, func, s),
-            || scan_down(right_r, left_r, func, &ns)
-        );
-    }
+    let mut ret = vec_no_init(seq.len());
+    let tot = par_scan_util(seq, &mut ret, &func, offset);
+    (ret, tot)
 }
 
-pub fn par_scan<T, U>(seq: &Vec<T>, func: U , s: &T) -> (Vec<T>, T)
-    where T: Sync + Send + Copy,
+pub fn par_scan_inplace<T, U>(seq: &mut [T], func: U , offset: &T) -> T
+    where T: Sync + Send + Copy + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> T
 {
-    let mut left: Vec<T>  = vec_no_init(seq.len()-1);
-    let mut right: Vec<T> = vec_no_init( seq.len());
-    let total: T = scan_up(seq, &mut left, &func);
-    scan_down(&mut right, &mut left, &func, s);
-    (Vec::from(right), total)
-}
+    let (ret, tot) = par_scan(&seq, func, offset);
+    par_copy(seq, &ret);
+    tot
 
+}

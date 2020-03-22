@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
 use std::process::exit;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use rayon::prelude::*;
 use serde_json::*;
@@ -15,10 +15,14 @@ use util::file_reader::*;
 
 use crate::benchmark::*;
 
+use rand::prelude::*;
+use project_k::primitive::vec_no_init;
+
 pub mod util;
 pub mod benchmark;
 pub mod primitive;
 pub mod sort;
+pub mod constant;
 
 fn get_files(dir: &str) -> Vec<String> {
     fs::read_dir(dir).unwrap()
@@ -181,15 +185,24 @@ fn main() {
     //
     // let z: Vec<_> = y.into_par_iter().flatten().collect();
 
-//    use crate::sort::par_quick_sort_v3;
-//    use crate::sort::par_sample_sort;
+//    use crate::sort::*;
+//    use crate::primitive::*;
+//    use rayon::prelude::*;
 //
 //    let mut rng = rand::thread_rng();
-//    for i in 0..1 {
-//        let mut arr1 = random_i32_list_generator(rng.gen_range(140000000, 140000001), 0, 2);
-//        let mut arr2 = arr1.clone();
-//        par_sample_sort(&mut arr1, &|a: &i32, b: &i32| { *a - *b });
-//        par_quick_sort_v3(&mut arr2, &|a: &i32, b: &i32| { *a - *b });
-//        assert_eq!(arr1, arr2);
+//    let tim = Instant::now();
+//    for i in 0..10 {
+//        let mut arr1: Vec<i32> = random_i32_list_generator(rng.gen_range(3000000, 3000001), -10, 11);
+////        par_map_v3(&mut arr1, &|a: usize, b: &i32| { 2*b });
+//        par_quick_sort_v2(&mut arr1, &|a: &i32, b: &i32| { *a - *b });
 //    }
+//    println!("inplace time={}", tim.elapsed().as_secs_f64()/10.0);
+//
+//    let tim = Instant::now();
+//    for i in 0..10 {
+//        let mut arr1: Vec<i32> = random_i32_list_generator(rng.gen_range(3000000, 3000001), -10, 11);
+////        par_map_v3(&mut arr1, &|a: usize, b:&i32| { 2*b });
+//        par_quick_sort_v3(&mut arr1, &|a: &i32, b: &i32| { *a - *b });
+//    }
+//    println!("rayon time={}", tim.elapsed().as_secs_f64()/10.0);
 }

@@ -1,45 +1,31 @@
-use crate::primitive::par_map::par_map_v3;
-use crate::primitive::par_scan::par_scan;
+use crate::primitive::*;
+use crate::constant::*;
 use rayon::prelude::*;
-use crate::primitive::vec_no_init;
-
-const THRESHOLD: usize = 2;
+use serde::export::fmt::{Display, Debug};
 
 // using rayon's par_iter
 #[allow(dead_code)]
 pub fn par_flatten_v2<T>(seqs: &Vec<Vec<T>>) -> Vec<T>
-    where T: Sync + Send + Copy
+    where T: Sync + Send + Copy + Display + Debug
 {
     (&seqs).into_par_iter().cloned().flatten().collect()
 }
 
 #[allow(dead_code)]
 pub fn par_flatten<T>(seqs: &Vec<Vec<T>>) -> Vec<T>
-    where T: Sync + Send + Copy
+    where T: Sync + Send + Copy + Display + Debug
 {
-    let sizes: Vec<usize> = par_map_v3(&seqs, |_i, elt| -> usize { elt.len() });
-    let (_x, tot): (Vec<usize>, usize) = par_scan(&sizes,
-                                                  &|elt1: &usize, elt2: &usize| -> usize { *elt1 + *elt2 },
-                                                  &0);
-    let mut _x = Vec::from(&_x[1..]);
-    _x.push(tot);
-    let mut ret = vec_no_init(tot);
-    // println!("_x:{:?}, tot:{}", _x, tot);
-    par_flatten_util(seqs, &mut ret, &_x, 0, tot);
-    // TODO: parallelize this code
-//    rayon::scope(|s| {
-//        for i in 0..seqs.len() {
-//            let off = x[i];
-//            s.spawn(|_1| {
-//                for j in 0..seqs[i].len() {
-//                    s.spawn(|_2| {
-//                        ret[off + j] = seqs[i][j];
-//                    })
-//                }
-//            });
-//        }
-//    });
-    ret
+//    let sizes: Vec<usize> = par_map_v3(&seqs, &|_i, elt| -> usize { elt.len() });
+//    let (_x, tot): (Vec<usize>, usize) = par_scan(&sizes,
+//                                                  &|elt1: &usize, elt2: &usize| -> usize { *elt1 + *elt2 },
+//                                                  &0);
+//    let mut _x = Vec::from(&_x[1..]);
+//    _x.push(tot);
+//    let mut ret = vec_no_init(tot);
+//    // println!("_x:{:?}, tot:{}", _x, tot);
+//    par_flatten_util(seqs, &mut ret, &_x, 0, tot);
+//    ret
+    par_flatten_v2(seqs)
 }
 
 #[allow(dead_code)]
@@ -51,7 +37,7 @@ pub fn par_flatten_util<T: Copy + Sync + Send>(
     e: usize
 ) {
      // println!("x:{:?}, ret:{:?}, seq:{}, s:{}, e:{}", x, ret.len(), seq.len(), s, e);
-    if seq.len() <= THRESHOLD {
+    if seq.len() <= BLOCK_SIZE+1 {
         if seq.len() > 0 {
             let mut n = 0;
             let mut r = s;

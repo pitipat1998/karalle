@@ -10,7 +10,7 @@ fn benchmark_sample_sort<T>(
     v: &mut Vec<T>,
     rounds: u128,
 ) -> Duration
-where T: Copy + Sync + Send + PrimInt
+where T: Copy + Sync + Send + PrimInt + Display + Debug
 {
     let now = Instant::now();
     for _ in 0..rounds {

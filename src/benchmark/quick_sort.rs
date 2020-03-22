@@ -4,10 +4,11 @@ use std::time::{Duration, Instant};
 use rand::prelude::SliceRandom;
 
 use crate::sort::*;
+use serde::export::fmt::{Display, Debug};
 
 #[allow(dead_code)]
 fn benchmark_quick_sort<T, U>(vec: &Vec<T>, func: &U, rounds: u128) -> Duration
-    where T: Copy + Sync + Send,
+    where T: Copy + Sync + Send + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     let now = Instant::now();
@@ -19,7 +20,7 @@ fn benchmark_quick_sort<T, U>(vec: &Vec<T>, func: &U, rounds: u128) -> Duration
 
 #[allow(dead_code)]
 fn benchmark_quick_sort_v2<T, U>(vec: &mut Vec<T>, func: &U, rounds: u128) -> Duration
-    where T: Copy + Sync + Send,
+    where T: Copy + Sync + Send + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     let now = Instant::now();
@@ -31,7 +32,7 @@ fn benchmark_quick_sort_v2<T, U>(vec: &mut Vec<T>, func: &U, rounds: u128) -> Du
 
 #[allow(dead_code)]
 fn benchmark_quick_sort_v3<T, U>(vec: &mut Vec<T>, func: &U, rounds: u128) -> Duration
-    where T: Copy + Sync + Send,
+    where T: Copy + Sync + Send + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     let now = Instant::now();
@@ -49,7 +50,7 @@ pub fn run_quick_sort_benchmark<T, U>(
     rounds: u128,
     threads: usize,
 ) -> HashMap<String, Duration>
-    where T: Copy + Sync + Send,
+    where T: Copy + Sync + Send + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     let mut result: HashMap<String, Duration> = HashMap::new();
