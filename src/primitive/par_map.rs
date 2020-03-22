@@ -67,20 +67,32 @@ fn par_map_util_v1<T, U, V>(
         }
         _ => {
             let sqrt: usize = (n as f64).sqrt().ceil() as usize;
+            let num_chunks: usize = ((n as f64) / (sqrt as f64)).ceil() as usize;
 
             rayon::scope(|s| {
                 for (i, chunk) in ret.chunks_mut(sqrt).enumerate() {
-                    let start = i * sqrt;
-                    let end = min(e, (i+1) * sqrt);
+                    if i < num_chunks - 1 {
                         s.spawn(move |_| {
                             par_map_util_v1(
                                 seq,
                                 chunk,
                                 func,
-                                start,
-                                end,
+                                i * sqrt,
+                                (i + 1) * sqrt,
                             );
                         });
+                    } else {
+                        let x = i * sqrt;
+                        s.spawn(move |_| {
+                            par_map_util_v1(
+                                seq,
+                                chunk,
+                                func,
+                                x,
+                                x + chunk.len(),
+                            );
+                        });
+                    }
                 }
             })
         }
