@@ -1,16 +1,17 @@
 extern crate rayon;
 
-use num::PrimInt;
+use num::{PrimInt};
 use rand::{distributions::Uniform, Rng};
-use crate::primitive::{par_flatten};
+use crate::primitive::*;
+use crate::constant::*;
+use serde::export::fmt::{Display, Debug};
 
-const THRESHOLD: usize = 100;
 
 fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end: usize) -> Vec<T>
-    where T: Copy + PrimInt + Sync + Send
+    where T: Copy + PrimInt + Sync + Send + Display + Debug
 {
     let n = end - start;
-    if (n / k) < THRESHOLD {
+    if (n / k) < QS_THRESHOLD {
         seq[start..end].sort_unstable();
         seq.to_vec()
     } else {
@@ -45,7 +46,7 @@ fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end:
 
 #[allow(dead_code)]
 pub fn seq_sample_sort<T>(seq: &mut [T], k: usize, p: usize) -> Vec<T>
-    where T: Copy + PrimInt + Sync + Send
+    where T: Copy + PrimInt + Sync + Send + Display + Debug
 {
     seq_sample_sort_util(seq, k, p, 0, seq.len())
 }

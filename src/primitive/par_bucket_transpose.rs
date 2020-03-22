@@ -1,9 +1,7 @@
 use serde::export::fmt::{Debug, Display};
 
 use crate::primitive::*;
-
-// const GRANULARITY: usize = 2048;
-// const BLOCK_THRESHOLD: usize = 8;
+use crate::constant::*;
 
 fn transpose<T>(from: &[T], to: &mut [T], counts: &Vec<usize>, dest_offsets: &Vec<usize>, block_size: usize,
                 num_blocks: usize, num_buckets: usize, s: usize, e: usize)
@@ -33,7 +31,7 @@ pub fn par_transpose_buckets<T>(from: &mut [T], to: &mut [T], counts: &Vec<usize
     assert_eq!(1 << block_bits, num_blocks);
 
     let dest_offsets: Vec<usize> = {
-        let tmp: Vec<usize> = vec_init(m, &|i, _| counts[(i >> block_bits) + num_buckets * (i & block_mask)]);
+        let tmp: Vec<usize> = vec_init(m, &|i, _| counts[(i >> block_bits) + num_buckets * (i & block_mask)], GRANULARITY);
         let (new_tmp, sum) = par_scan(&tmp, |a: &usize, b: &usize| { *a + *b }, &0);
         assert_eq!(sum, n);
         new_tmp

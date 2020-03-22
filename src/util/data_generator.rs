@@ -16,7 +16,7 @@ pub fn random_list_generator(size: u64, min: i32, max: i32) -> Vec<String>{
 #[allow(dead_code)]
 pub fn random_i32_list_generator(size: u64, min: i32, max: i32) -> Vec<i32>{
     let mut rng = rand::thread_rng();
-    ((0..size).into_iter().map(|_|rng.gen_range(min, max)).collect())
+    (0..size).into_iter().map(|_|rng.gen_range(min, max)).collect()
 }
 
 #[allow(dead_code)]

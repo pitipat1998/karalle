@@ -2,29 +2,28 @@ use rand::prelude::ThreadRng;
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
 
-use crate::primitive::{par_filter_util_v2, vec_no_init};
-use crate::primitive::par_filter_v1;
-use crate::primitive::par_flatten;
-use crate::primitive::par_map_v3;
-use crate::primitive::par_scan;
-use crate::primitive::par_copy;
-
-const THRESHOLD: usize = 16384;
+use crate::primitive::*;
+use serde::export::fmt::{Display, Debug};
+use crate::constant::*;
+use num_cpus::get;
+use std::cmp::max;
 
 #[allow(dead_code)]
-pub fn par_quick_sort<T, U>(seq: &Vec<T>, func: U) -> Vec<T>
-    where T: Sync + Send + Copy,
+pub fn par_quick_sort<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
+    where T: Sync + Send + Copy + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
-    par_quick_sort_utils(seq, &func)
+    println!("non-inplace parallel quick sort of size {}", seq.len());
+    let cut_size = max((3*seq.len()) / get(),  QS_THRESHOLD);
+    par_quick_sort_utils(seq, func, cut_size)
 }
 
 #[allow(dead_code)]
-fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
-    where T: Sync + Send + Copy,
+fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U, cut_size: usize) -> Vec<T>
+    where T: Sync + Send + Copy + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
-    if seq.len() <= THRESHOLD {
+    if seq.len() <= cut_size {
         let mut ret = seq.clone();
         ret.sort_unstable_by(|a, b| func(a, b).cmp(&0));
         ret
@@ -35,45 +34,49 @@ fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
         let ((lt, eq), gt) = rayon::join(
             || {
                 rayon::join(
-                    || par_filter_v1(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 }),
-                    || par_filter_v1(&seq, &|_i: usize, elt: &T| -> bool { func(elt, p) == 0 })
+                    || par_filter_v3(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 }),
+                    || par_filter_v3(&seq, &|_i: usize, elt: &T| -> bool { func(elt, p) == 0 })
                 )
             },
-            || par_filter_v1(&seq, &|_i: usize, elt: &T| -> bool { func(elt, p) > 0 })
+            || par_filter_v3(&seq, &|_i: usize, elt: &T| -> bool { func(elt, p) > 0 })
         );
         let (left , right) = rayon::join(
-            || par_quick_sort_utils(&lt, func),
-                || par_quick_sort_utils(&gt, func)
+            || par_quick_sort_utils(&lt, func, cut_size),
+                || par_quick_sort_utils(&gt, func, cut_size)
         );
-        par_flatten(&vec![left, eq, right])
+        vec![left, eq, right].par_iter().flatten().map(|x| *x).collect()
     }
 }
 
 
 #[allow(dead_code)]
-pub fn par_quick_sort_v2<T, U>(seq: &mut Vec<T>, func: U)
-    where T: Sync + Send + Copy,
+pub fn par_quick_sort_v2<T, U>(seq: &mut Vec<T>, func: &U)
+    where T: Sync + Send + Copy + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
+    println!("inplace parallel quick sort of size {}", seq.len());
     let mut aux = vec_no_init(seq.len());
-    par_quick_sort_utils_v2(seq.as_mut_slice(), &mut aux, &func, 0)
+    let cut_size = max((3*seq.len()) / get(),  QS_THRESHOLD);
+    par_quick_sort_utils_v2(seq.as_mut_slice(), &mut aux, func, 0, cut_size)
+//    par_quick_sort_utils_v2(seq.as_mut_slice(), &mut aux, func, 0, QS_THRESHOLD)
 }
 
 pub fn par_quick_sort_slice<T, U>(seq: &mut [T], func: U)
-    where T: Sync + Send + Copy,
+    where T: Sync + Send + Copy + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     let mut aux = vec_no_init(seq.len());
-    par_quick_sort_utils_v2(seq, &mut aux, &func, 0)
+    let cut_size = max((3*seq.len()) / get(),  QS_THRESHOLD);
+    par_quick_sort_utils_v2(seq, &mut aux, &func, 0, cut_size)
 }
 
-#[allow(dead_code,unused_variables)]
-fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes: usize)
-    where T: Sync + Send + Copy,
+#[allow(dead_code, unused_variables)]
+fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes: usize, cut_size: usize)
+    where T: Sync + Send + Copy + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
-    if seq.len() <= THRESHOLD {
-        seq.sort_by(|a, b| func(a, b).cmp(&0));
+    if seq.len() <= cut_size {
+        seq.sort_unstable_by(|a, b| func(a, b).cmp(&0));
         if passes % 2 == 1 {
             par_copy(aux, seq);
         }
@@ -83,56 +86,36 @@ fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes:
         let _length = seq.len();
         let p: &T = seq.choose(&mut rng).unwrap();
 
-        let (aux_lt, aux_eq, aux_gt, lt_tot, eq_tot) = {
-            let (((lt_mapped, lt_x, lt_tot), (eq_mapped, eq_x, eq_tot)), (gt_mapped, gt_x, gt_tot)) = rayon::join(
-                || {
-                    rayon::join(
-                        || pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 }),
-                        || pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) == 0 })
-                    )
-                },
-                || pref_sum(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) > 0 })
-            );
-            let (aux_lt, aux_rest) = aux.split_at_mut(lt_tot);
-            let (aux_eq, aux_gt) = aux_rest.split_at_mut(eq_tot);
-            rayon::join(
-                || {
-                    rayon::join(
-                        || par_filter_util_v2(seq, aux_lt, &lt_mapped, &lt_x, 0),
-                        || par_filter_util_v2(seq, aux_eq, &eq_mapped, &eq_x, 0)
-                    )
-                },
-                || par_filter_util_v2(seq, aux_gt, &gt_mapped, &gt_x, 0)
-            );
-            (aux_lt, aux_eq, aux_gt, lt_tot, eq_tot)
-        };
+        let (lt_tot, eq_tot, mid_eq) = p_split3(seq, aux, func);
 
         let (seq_lt, seq_rest) = seq.split_at_mut(lt_tot);
         let (seq_eq, seq_gt) = seq_rest.split_at_mut(eq_tot);
-        if passes % 2 == 0 {
-            par_copy(seq_eq, aux_eq);
-        }
+        let (aux_lt, aux_rest) = aux.split_at_mut(lt_tot);
+        let (aux_eq, aux_gt) = aux_rest.split_at_mut(eq_tot);
         rayon::join(
-            || { par_quick_sort_utils_v2(aux_lt, seq_lt, func, passes + 1) },
-            || { par_quick_sort_utils_v2(aux_gt, seq_gt, func, passes + 1) }
+            || {
+                if !mid_eq {
+                    par_quick_sort_utils_v2(aux_eq, seq_eq, func, passes + 1, cut_size)
+                } else {
+                    par_copy(seq_eq, &aux_eq);
+                }
+            },
+            || {
+                rayon::join(
+                    || { par_quick_sort_utils_v2(aux_lt, seq_lt, func, passes + 1, cut_size) },
+                    || { par_quick_sort_utils_v2(aux_gt, seq_gt, func, passes + 1, cut_size) }
+                );
+            }
         );
     }
 }
 
-fn pref_sum<T, U>(seq: &[T], func: &U) -> (Vec<usize>, Vec<usize>, usize)
-    where T: Sync + Send + Copy,
-          U: Sync + Send + Fn(usize, &T) -> bool
-{
-    let mapped: Vec<usize> = par_map_v3(&Vec::from(seq), &|i: usize, elt: &T| -> usize { if func(i, elt) {1} else {0}});
-    let (x, tot): (Vec<usize>, usize) = par_scan(&mapped, &|elt1: &usize, elt2: &usize| -> usize { *elt1 + *elt2 }, &0);
-    (mapped, x, tot)
-}
-
 #[allow(dead_code)]
-pub fn par_quick_sort_v3<T, U>(seq: &mut Vec<T>, func: U)
-where T: Sync + Send + Copy,
+pub fn par_quick_sort_v3<T, U>(seq: &mut Vec<T>, func: &U)
+where T: Sync + Send + Copy + Display + Debug,
 U: Sync + Send + Fn(&T, &T) -> i32
 {
+    println!("rayon parallel quick sort of size {}", seq.len());
     seq.par_sort_unstable_by(|a,b| func(a,b).cmp(&0))
 }
 

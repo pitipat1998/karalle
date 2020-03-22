@@ -7,16 +7,10 @@ use crate::primitive::par_transpose_buckets;
 use crate::primitive::par_copy;
 use serde::export::fmt::{Display, Debug};
 use crate::sort::par_quick_sort_slice;
-
-const QS_THRESHOLD: usize = 16384;
-const BLOCK_THRESHOLD: usize = 8;
-// const GRANULARITY: usize = 2048;
-const BUCKET_QUOTIENT: usize = 8;
-const BLOCK_QUOTIENT: usize = 8;
-const OVER_SAMPLE: usize = 8;
+use crate::constant::*;
 
 fn count<T, U>(seq: &mut [T], pivots: &[T], c: &mut [usize], block_size: usize, num_buckets: usize, s: usize, e: usize, func: &U)
-    where T: Sync + Send + Copy + Display + Debug,
+    where T: Sync + Send + Copy + Display + Debug + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     let n = e - s;
@@ -43,7 +37,7 @@ fn count<T, U>(seq: &mut [T], pivots: &[T], c: &mut [usize], block_size: usize, 
 }
 
 fn merge_seq<T, U>(sa: &[T], sb: &[T], sc: &mut [usize], func: &U)
-    where T: Sync + Send + Copy + Display + Debug,
+    where T: Sync + Send + Copy + Display + Debug + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     if sa.len() == 0 || sb.len() == 0 { return; }
@@ -115,9 +109,9 @@ fn par_sample_sort_util<T, U>(seq: &mut [T], aux: &mut [T], func: &U)
         let sample_set_size = num_buckets * OVER_SAMPLE;
         let m = num_blocks * num_buckets;
         let pivots = {
-            let mut samples: Vec<T> = vec_init(sample_set_size, &|_, rng| seq[rng.gen_range(0, seq.len())]);
+            let mut samples: Vec<T> = vec_init(sample_set_size, &|_, rng| seq[rng.gen_range(0, seq.len())], GRANULARITY);
             par_quick_sort_v2(&mut samples, func);
-            vec_init(num_buckets - 1, &|i, _| samples[i * OVER_SAMPLE])
+            vec_init(num_buckets - 1, &|i, _| samples[i * OVER_SAMPLE], GRANULARITY)
         };
 
         let mut counts: Vec<usize> = vec_zeroes(m + 1);
@@ -135,7 +129,7 @@ pub fn par_sample_sort<T, U>(seq: &mut Vec<T>, func: &U)
     where T: Copy + Sync + Send + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
-    // let mut _aux: Vec<T> = Vec::with_capacity(seq.len());
+    println!("inplace parallel sample sort of size {}", seq.len());
     let n = seq.len();
     par_sample_sort_util(seq, &mut vec_no_init(n), func);
 }
