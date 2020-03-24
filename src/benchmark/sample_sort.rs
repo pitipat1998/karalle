@@ -6,52 +6,51 @@ use crate::sort::seq_sample_sort;
 use num::PrimInt;
 use serde::export::fmt::{Display, Debug};
 
-fn benchmark_sample_sort<T>(
-    v: &mut Vec<T>,
-    rounds: u128,
-) -> Duration
-where T: Copy + Sync + Send + PrimInt + Display + Debug
+use crate::util::data_generator::*;
+
+fn benchmark_sample_sort(size: u64, rounds: u128) -> Duration
 {
-    let now = Instant::now();
-    for _ in 0..rounds {
-        seq_sample_sort(v.as_mut_slice(), 5, 3);
+    let mut tot_time = Duration::new(0, 0);
+    for i in 0..rounds {
+        let mut arr: Vec<i16> = random_i16_list_generator(size, -10, 11);
+        let t = Instant::now();
+        seq_sample_sort(&mut arr, 5, 3);
+        tot_time += t.elapsed();
     }
-    now.elapsed().div_f32(rounds as f32)
+    tot_time.div_f64(rounds as f64)
 }
 
 #[allow(dead_code)]
-fn benchmark_par_sample_sort<T, U>(vec: &mut Vec<T>, func: &U, rounds: u128) -> Duration
-    where T: Copy + Sync + Send + Display + Debug,
-          U: Sync + Send + Fn(&T, &T) -> i32
+fn benchmark_par_sample_sort(size: u64, rounds: u128) -> Duration
 {
-    let now = Instant::now();
-    for _ in 0..rounds {
-        let _ = par_sample_sort(vec, func);
+    let mut tot_time = Duration::new(0, 0);
+    for i in 0..rounds {
+        let mut arr: Vec<i16> = random_i16_list_generator(size, -10, 11);
+        let t = Instant::now();
+        par_sample_sort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+        tot_time += t.elapsed();
     }
-    now.elapsed().div_f32(rounds as f32)
+    tot_time.div_f64(rounds as f64)
 }
 
 #[allow(dead_code)]
-pub fn run_sample_sort_benchmark<T, U>(
+pub fn run_sample_sort_benchmark(
     d: &String,
-    v: &mut Vec<T>,
-    f: U,
+    size: u64,
     rounds: u128,
     threads: usize,
 ) -> HashMap<String, Duration>
-    where T: Copy + Sync + Send + PrimInt + Display + Debug,
-          U: Sync + Send + Fn(&T, &T) -> i32
 {
     let mut result: HashMap<String, Duration> = HashMap::new();
     println!("Seq");
     let key = format!("{}, {}, sample_sort seq", &d, threads);
-    let d1 = benchmark_sample_sort(v, rounds);
+    let d1 = benchmark_sample_sort(size, rounds);
     println!("{}: {:?}", key, d1);
     result.entry(key).or_insert(d1);
 
     println!("Par");
     let key = format!("{}, {}, sample_sort par", &d, threads);
-    let d2 = benchmark_par_sample_sort(v, &f, rounds);
+    let d2 = benchmark_par_sample_sort( size,  rounds);
     println!("{}: {:?}", key, d2);
     result.entry(key).or_insert(d2);
 
