@@ -12,6 +12,8 @@ mod tests {
     use std::process::exit;
     use crate::primitive::par_filter_v3;
     use rayon::prelude::*;
+    use crate::util::data_generator::random_i32_list_generator;
+
     const LENGTH: u64 = 1000000;
     #[test]
     fn seq_sample_sort() {
@@ -64,12 +66,20 @@ mod tests {
             |a: &i32, b: &i32| -> i32 { *a + *b },
             &0,
         );
+        let arr2 = &mut arr.clone();
+        let actual_tot2: i32 = par_scan_inplace(
+            arr2,
+            |a: &i32, b: &i32| -> i32 { *a + *b },
+            &0,
+        );
 
         let mut expected_arr = vec_no_init(arr.len());
         let expected_tot = scan(&arr, &mut expected_arr, &|a: &i32, b: &i32| -> i32 { *a + *b }, &0);
 
         assert_eq!(actual_arr, expected_arr);
         assert_eq!(actual_tot, expected_tot);
+        assert_eq!(arr2, &mut expected_arr);
+        assert_eq!(actual_tot2, expected_tot);
     }
 
     #[test]
@@ -167,12 +177,15 @@ mod tests {
         let mut arr: &mut Vec<i32> = &mut random_i32_list_generator(LENGTH, -1000, 1001);
         let mut arr3: Vec<i32> = arr.clone();
         let mut arr5: Vec<i32> = arr.clone();
+        let mut arr7: Vec<i32> = arr.clone();
         let actual = par_quick_sort(&arr, &|a: &i32, b: &i32| -> i32 { *a - *b });
         par_quick_sort_v2(&mut arr3, &|a: &i32, b: &i32| -> i32 { *a - *b });
         par_quick_sort_v3(&mut arr5, &|a: &i32, b: &i32| -> i32 { *a - *b });
+        par_sample_sort(&mut arr7, &|a: &i32, b: &i32| -> i32 { *a - *b });
 
         assert_eq!(actual, arr5);
         assert_eq!(arr3, arr5);
+        assert_eq!(arr7, arr5);
     }
 }
 

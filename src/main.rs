@@ -173,9 +173,10 @@ fn main() {
         println!("Writing sample sort result");
         write_output(&"sample_sort".to_string(), ss_res, rounds, tn);
     }
+
 //    use std::time::*;
 //    use crate::sort::*;
-//    let mut rounds = 10;
+//    let mut rounds = 1;
 //    for size in sizes {
 //        println!("size={}", size);
 //        let mut tot_time = Duration::new(0, 0);
@@ -208,3 +209,4 @@ fn main() {
 //        println!();
 //    }
 }
+

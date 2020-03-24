@@ -7,17 +7,27 @@ fn transpose<T>(from: &[T], to: &mut [T], counts: &Vec<usize>, dest_offsets: &Ve
                 num_blocks: usize, num_buckets: usize, s: usize, e: usize)
     where T: Send + Sync + Copy + Display + Debug
 {
-    for i in s..e {
-        let mut s_offset = i * block_size;
-        for j in 0..num_buckets {
-            let mut d_offset = dest_offsets[i + num_blocks * j];
-            let len = counts[i * num_buckets + j];
-            for _ in 0..len {
-                to[d_offset] = from[s_offset];
-                d_offset += 1;
-                s_offset += 1;
+    let n = e - s;
+    if n <= 1 {
+        for i in s..e {
+            let mut s_offset = i * block_size;
+            for j in 0..num_buckets {
+                let mut d_offset = dest_offsets[i + num_blocks * j];
+                let len = counts[i * num_buckets + j];
+                for _ in 0..len {
+                    to[d_offset] = from[s_offset];
+                    d_offset += 1;
+                    s_offset += 1;
+                }
             }
         }
+    } else {
+        let m = n / 2;
+        let (to1, to2) = no_split(to);
+        rayon::join(
+            || transpose(from, to1, counts, dest_offsets, block_size, num_blocks, num_buckets, s, s+m),
+                || transpose(from, to2, counts, dest_offsets, block_size, num_blocks, num_buckets, s+m, e)
+        );
     }
 }
 
@@ -31,8 +41,8 @@ pub fn par_transpose_buckets<T>(from: &mut [T], to: &mut [T], counts: &Vec<usize
     assert_eq!(1 << block_bits, num_blocks);
 
     let dest_offsets: Vec<usize> = {
-        let tmp: Vec<usize> = vec_init(m, &|i, _| counts[(i >> block_bits) + num_buckets * (i & block_mask)], GRANULARITY);
-        let (new_tmp, sum) = par_scan(&tmp, |a: &usize, b: &usize| { *a + *b }, &0);
+        let tmp: &mut [usize] = &mut vec_init(m, &|i, _| counts[(i >> block_bits) + num_buckets * (i & block_mask)], GRANULARITY);
+        let (new_tmp, sum) = par_scan(tmp, |a: &usize, b: &usize| { *a + *b }, &0);
         assert_eq!(sum, n);
         new_tmp
     };

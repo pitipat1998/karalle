@@ -20,8 +20,8 @@ pub fn par_filter_v2<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
     where T: Sync + Send + Copy + Display + Debug,
           U: Sync + Send + (Fn(usize, &T) -> bool)
 {
-    let mapped: Vec<usize> = par_map_v3(seq, &|i: usize, elt: &T| -> usize { if func(i, elt) {1} else {0}});
-    let (x, tot): (Vec<usize>, usize) = par_scan(&mapped,
+    let mapped: &mut [usize] = &mut par_map_v3(seq, &|i: usize, elt: &T| -> usize { if func(i, elt) {1} else {0}});
+    let (x, tot): (Vec<usize>, usize) = par_scan(mapped,
                                              &|elt1: &usize, elt2: &usize| -> usize { *elt1 + *elt2 },
                                              &0);
     let mut ret: Vec<T> = vec_no_init(tot);

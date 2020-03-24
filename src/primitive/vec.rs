@@ -1,5 +1,6 @@
 use rand::prelude::ThreadRng;
 use crate::constant::*;
+use std::slice;
 
 pub fn vec_no_init<T>(n: usize) -> Vec<T> {
     let mut v: Vec<T> = Vec::with_capacity(n);
@@ -44,3 +45,11 @@ pub fn vec_zeroes(n: usize) -> Vec<usize>
     v
 }
 
+pub fn no_split<T>(seq: &mut [T]) -> (&mut [T], &mut [T]) {
+    let len = seq.len();
+    let ptr: *mut T = seq.as_mut_ptr();
+    unsafe {
+        (slice::from_raw_parts_mut(ptr, len),
+         slice::from_raw_parts_mut(ptr, len))
+    }
+}
