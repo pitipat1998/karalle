@@ -21,6 +21,12 @@ pub fn random_i16_list_generator(size: u64, min: i16, max: i16) -> Vec<i16>{
 }
 
 #[allow(dead_code)]
+pub fn random_i32_list_generator(size: u64, min: i32, max: i32) -> Vec<i32>{
+    let mut rng = rand::thread_rng();
+    (0..size).into_par_iter().map(|_| (rand::thread_rng()).gen_range(min, max)).collect()
+}
+
+#[allow(dead_code)]
 pub fn make_data(size: u64, min: i32, max: i32, path: &str, type_t: &str) {
     path.to_string().retain(|x| x != '/');
 
