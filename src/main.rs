@@ -162,24 +162,14 @@ fn main() {
         println!("Writing scan result");
         write_output(&"scan".to_string(), scan_res, rounds, tn);
    }
-    if t == "all" || t == "sample_sort" || t == "ss" {
-        let mut ss_res: HashMap<String, Duration> = HashMap::new();
-        for size in &sizes {
-            println!("Running sample sort size: {}", size);
-            let res = run_sample_sort_benchmark(&size.to_string(), *size, rounds, tn);
-            ss_res.extend(res);
-        }
-        println!("Writing sample sort result");
-        write_output(&"sample_sort".to_string(), ss_res, rounds, tn);
-    }
-//    // let v:Vec<Vec<_>> = vec![
-//    //     vec![1, 2, 3],
-//    //     vec![4, 5, 6],
-//    //     vec![7, 8, 9]
-//    // ];
-//    // let x: Vec<&Vec<_>> = vec![&vec![1, 2], &vec![3, 4]];
-//    // let mut y: Vec<Vec<i32>> = x.iter().map(|&i| i).collect();
-//    //
-//    // let z: Vec<_> = y.into_par_iter().flatten().collect();
-
+//    if t == "all" || t == "sample_sort" || t == "ss" {
+//        let mut ss_res: HashMap<String, Duration> = HashMap::new();
+//        for size in &sizes {
+//            println!("Running sample sort size: {}", size);
+//            let res = run_sample_sort_benchmark(&size.to_string(), *size, rounds, tn);
+//            ss_res.extend(res);
+//        }
+//        println!("Writing sample sort result");
+//        write_output(&"sample_sort".to_string(), ss_res, rounds, tn);
+//    }
 }
