@@ -13,7 +13,7 @@ pub fn par_quick_sort<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
     where T: Sync + Send + Copy + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
-    println!("non-inplace parallel quick sort of size {}", seq.len());
+//    println!("non-inplace parallel quick sort of size {}", seq.len());
     let cut_size = max((3*seq.len()) / get(),  QS_THRESHOLD);
     par_quick_sort_utils(seq, func, cut_size)
 }
@@ -54,11 +54,10 @@ pub fn par_quick_sort_v2<T, U>(seq: &mut Vec<T>, func: &U)
     where T: Sync + Send + Copy + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
-    println!("inplace parallel quick sort of size {}", seq.len());
+//    println!("inplace parallel quick sort of size {}", seq.len());
     let mut aux = vec_no_init(seq.len());
-    let cut_size = max((3*seq.len()) / get(),  QS_THRESHOLD);
+    let cut_size = max((2*seq.len()) / get(),  QS_THRESHOLD);
     par_quick_sort_utils_v2(seq.as_mut_slice(), &mut aux, func, 0, cut_size)
-//    par_quick_sort_utils_v2(seq.as_mut_slice(), &mut aux, func, 0, QS_THRESHOLD)
 }
 
 pub fn par_quick_sort_slice<T, U>(seq: &mut [T], func: U)
@@ -82,12 +81,7 @@ fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes:
         }
     }
     else {
-        let mut rng: ThreadRng = rand::thread_rng();
-        let _length = seq.len();
-        let p: &T = seq.choose(&mut rng).unwrap();
-
         let (lt_tot, eq_tot, mid_eq) = p_split3(seq, aux, func);
-
         let (seq_lt, seq_rest) = seq.split_at_mut(lt_tot);
         let (seq_eq, seq_gt) = seq_rest.split_at_mut(eq_tot);
         let (aux_lt, aux_rest) = aux.split_at_mut(lt_tot);
@@ -115,7 +109,7 @@ pub fn par_quick_sort_v3<T, U>(seq: &mut Vec<T>, func: &U)
 where T: Sync + Send + Copy + Display + Debug,
 U: Sync + Send + Fn(&T, &T) -> i32
 {
-    println!("rayon parallel quick sort of size {}", seq.len());
+//    println!("rayon parallel quick sort of size {}", seq.len());
     seq.par_sort_unstable_by(|a,b| func(a,b).cmp(&0))
 }
 

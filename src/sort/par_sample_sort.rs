@@ -129,7 +129,7 @@ pub fn par_sample_sort<T, U>(seq: &mut Vec<T>, func: &U)
     where T: Copy + Sync + Send + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
-    println!("inplace parallel sample sort of size {}", seq.len());
+//    println!("inplace parallel sample sort of size {}", seq.len());
     let n = seq.len();
     par_sample_sort_util(seq, &mut vec_no_init(n), func);
 }

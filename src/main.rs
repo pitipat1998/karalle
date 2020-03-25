@@ -14,6 +14,7 @@ use util::data_generator::*;
 use util::file_reader::*;
 
 use crate::benchmark::*;
+use project_k::primitive::vec_init;
 
 pub mod util;
 pub mod benchmark;
@@ -87,6 +88,7 @@ fn write_output(func: &String, result: HashMap<String, Duration>,
 }
 
 fn main() {
+    let sizes: Vec<u64> = vec_init(30, &|i, _| { (1 << (i+1)) as u64 }, 2000);
     let make_type = envmnt::get_or("KMAKE", "none").to_lowercase();
     make_file(&make_type);
     if &make_type != "none" { return; }
@@ -139,10 +141,9 @@ fn main() {
     if t == "all" || t == "qs" || t == "quick_sort" {
         let mut qs_res: HashMap<String, Duration> = HashMap::new();
         // Quick_sort
-        for d in files_1d.iter() {
-            println!("Running qs file: {}", d);
-            let mut v: Vec<i16> = read_csv::<i16>(&d);
-            let res = run_quick_sort_benchmark(d, &mut v, |a: &i16, b: &i16| -> i32 { (*a - *b) as i32 }, rounds, tn);
+        for size in &sizes {
+            println!("Running qs size: {}", size);
+            let res = run_quick_sort_benchmark(&size.to_string(), *size, rounds, tn);
             qs_res.extend(res);
         }
         println!("Writing qs result");
@@ -161,45 +162,51 @@ fn main() {
         println!("Writing scan result");
         write_output(&"scan".to_string(), scan_res, rounds, tn);
    }
-    // if t == "all" || t == "sample_sort" || t == "ss" {
-    //     let mut ss_res: HashMap<String, Duration> = HashMap::new();
-    //     for d in files_1d.iter() {
-    //         println!("Running sample sort file: {}", d);
-    //         let mut v: Vec<i32> = read_csv::<i32>(&d);
-    //         let res = run_sample_sort_benchmark(d, &mut v, |a: &i32, b: &i32| -> i32 { (*a - *b) as i32 }, rounds, tn);
-    //         ss_res.extend(res);
-    //     }
-    //     println!("Writing sample sort result");
-    //     write_output(&"sample_sort".to_string(), ss_res, rounds, tn);
-    // }
-    // let v:Vec<Vec<_>> = vec![
-    //     vec![1, 2, 3],
-    //     vec![4, 5, 6],
-    //     vec![7, 8, 9]
-    // ];
-    // let x: Vec<&Vec<_>> = vec![&vec![1, 2], &vec![3, 4]];
-    // let mut y: Vec<Vec<i32>> = x.iter().map(|&i| i).collect();
-    //
-    // let z: Vec<_> = y.into_par_iter().flatten().collect();
 
+    if t == "all" || t == "sample_sort" || t == "ss" {
+        let mut ss_res: HashMap<String, Duration> = HashMap::new();
+        for size in &sizes {
+            println!("Running sample sort size: {}", size);
+            let res = run_sample_sort_benchmark(&size.to_string(), *size, rounds, tn);
+            ss_res.extend(res);
+        }
+        println!("Writing sample sort result");
+        write_output(&"sample_sort".to_string(), ss_res, rounds, tn);
+    }
+
+//    use std::time::*;
 //    use crate::sort::*;
-//    use crate::primitive::*;
-//    use rayon::prelude::*;
+//    let mut rounds = 1;
+//    for size in sizes {
+//        println!("size={}", size);
+//        let mut tot_time = Duration::new(0, 0);
+//        for i in 0..rounds {
+//            let mut arr: Vec<i32> = random_i32_list_generator(size, -1000, 1001);
+//            let t = Instant::now();
+//            par_quick_sort_v2(&mut arr, &|a: &i32, b: &i32| -> i32 { *a - *b });
+//            tot_time += t.elapsed();
+//        }
+//        println!("par-qs-in-place={}", tot_time.div_f64(rounds as f64).as_secs_f64());
 //
-//    let mut rng = rand::thread_rng();
-//    let tim = Instant::now();
-//    for i in 0..10 {
-//        let mut arr1: Vec<i32> = random_i32_list_generator(rng.gen_range(3000000, 3000001), -10, 11);
-////        par_map_v3(&mut arr1, &|a: usize, b: &i32| { 2*b });
-//        par_quick_sort_v2(&mut arr1, &|a: &i32, b: &i32| { *a - *b });
-//    }
-//    println!("inplace time={}", tim.elapsed().as_secs_f64()/10.0);
+//        let mut tot_time = Duration::new(0, 0);
+//        for i in 0..rounds {
+//            let mut arr: Vec<i32> = random_i32_list_generator(size, -1000, 1001);
+//            let t = Instant::now();
+//            par_sample_sort(&mut arr, &|a: &i32, b: &i32| -> i32 { *a - *b });
+//            tot_time += t.elapsed();
+//        }
+//        println!("par-ss-in-place={}", tot_time.div_f64(rounds as f64).as_secs_f64());
 //
-//    let tim = Instant::now();
-//    for i in 0..10 {
-//        let mut arr1: Vec<i32> = random_i32_list_generator(rng.gen_range(3000000, 3000001), -10, 11);
-////        par_map_v3(&mut arr1, &|a: usize, b:&i32| { 2*b });
-//        par_quick_sort_v3(&mut arr1, &|a: &i32, b: &i32| { *a - *b });
+//        let mut tot_time = Duration::new(0, 0);
+//        for i in 0..rounds {
+//            let mut arr: Vec<i32> = random_i32_list_generator(size, -1000, 1001);
+//            let t = Instant::now();
+//            par_quick_sort_v3(&mut arr, &|a: &i32, b: &i32| -> i32 { *a - *b });
+//            tot_time += t.elapsed();
+//        }
+//        println!("rayon-qs-in-place={}", tot_time.div_f64(rounds as f64).as_secs_f64());
+//
+//        println!();
 //    }
-//    println!("rayon time={}", tim.elapsed().as_secs_f64()/10.0);
 }
+

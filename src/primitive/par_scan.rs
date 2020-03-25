@@ -6,7 +6,7 @@ use super::reduce::*;
 use std::cmp::min;
 use serde::export::fmt::{Display, Debug};
 
-fn par_scan_util<T, U>(seq: &[T], ret: &mut [T], func: &U, offset: &T) -> T
+fn par_scan_util<T, U>(seq: &mut [T], ret: &mut [T], func: &U, offset: &T) -> T
     where T: Sync + Send + Copy + Display + Debug + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> T
 {
@@ -15,20 +15,21 @@ fn par_scan_util<T, U>(seq: &[T], ret: &mut [T], func: &U, offset: &T) -> T
     if l <= 2 {
         return scan(seq, ret, func, offset);
     }
-    let sums: Vec<T> = vec_init(l, &|i: usize, _| {
+    let sums: &mut [T] = &mut vec_init(l, &|i: usize, _| {
         let s = i * BLOCK_SIZE;
         let e = min((i+1) * BLOCK_SIZE, seq.len());
         reduce(&seq[s..e], func)
     }, 1);
+//    let (sums1, sums2) = no_split(sums);
     let mut tmp = vec_no_init(l);
     let total = scan(&sums, &mut tmp, func, offset);
-    sliced_for(seq, ret, BLOCK_SIZE, &|i: usize, s_chunk: &[T], r_chunk: &mut [T]| {
-        scan(s_chunk, r_chunk, func, &tmp[i]);
+    double_sliced_for(seq, ret, seq.len(), BLOCK_SIZE, &|ss, sr, i: usize, s, e| {
+        scan(&ss[s..e], &mut sr[s..e], func, &tmp[i]);
     });
     return total;
 }
 
-pub fn par_scan<T, U>(seq: &[T], func: U , offset: &T) -> (Vec<T>, T)
+pub fn par_scan<T, U>(seq: &mut [T], func: U , offset: &T) -> (Vec<T>, T)
     where T: Sync + Send + Copy + Display + Debug + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> T
 {
@@ -41,8 +42,6 @@ pub fn par_scan_inplace<T, U>(seq: &mut [T], func: U , offset: &T) -> T
     where T: Sync + Send + Copy + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> T
 {
-    let (ret, tot) = par_scan(&seq, func, offset);
-    par_copy(seq, &ret);
-    tot
-
+    let (seq1, seq2) = no_split(seq);
+    par_scan_util(seq1, seq2, &func, offset)
 }

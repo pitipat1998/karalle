@@ -1,8 +1,9 @@
 use std::cmp::min;
 use serde::export::fmt::{Display, Debug};
-use crate::primitive::{vec_init, vec_no_init, par_scan_inplace};
+use crate::primitive::{vec_init, vec_no_init, par_scan_inplace, no_split};
 use rand::prelude::ThreadRng;
 use crate::constant::*;
+use num::abs;
 
 pub fn num_blocks(n: usize, block_size: usize) -> usize {
     if n == 0 {
@@ -13,51 +14,83 @@ pub fn num_blocks(n: usize, block_size: usize) -> usize {
     }
 }
 
-pub fn par_for<U>(s: usize, e: usize, f: &U, granularity: usize)
-    where U: Sync + Send + Fn(usize)
+pub fn par_for<T, U>(seq: &mut [T], s: usize, e: usize, f: &U, granularity: usize)
+    where T: Sync + Send + Copy + Display + Debug,
+          U: Sync + Send + Fn(&mut [T], usize)
 {
     let n = e - s;
     if n <= granularity {
         for i in s..e {
-            f(i);
+            f(seq, i);
         }
     } else {
         let m: usize = n / 2;
+        let (seq1, seq2) = no_split(seq);
         rayon::join(
-            || par_for(s, m, f, granularity),
-            || par_for(m, e, f, granularity)
+            || par_for(seq1, s, m, f, granularity),
+            || par_for(seq2, m, e, f, granularity)
         );
     }
 }
 
-fn sliced_for_util<T, U>(seq1: &[T], seq2: &mut [T], block_size: usize, s: usize, e: usize, f: &U)
+fn double_sliced_for_util<T, U>(seq1: &mut [T], seq2: &mut [T], len: usize, block_size: usize, s: usize, e: usize, f: &U)
     where T: Sync + Send + Copy + Display + Debug,
-          U: Sync + Send + Fn(usize, &[T], &mut [T])
+          U: Sync + Send + Fn(&mut [T], &mut [T], usize, usize, usize)
 {
     let n = e - s;
     if n <= 1 {
-        let seq_chunks = seq1.chunks(block_size);
-        let ret_chunks = seq2.chunks_mut(block_size);
-        for (i, (seq_chunk, ret_chunk)) in seq_chunks.zip(ret_chunks).enumerate() {
-            f(i+s, seq_chunk, ret_chunk);
+        for i in s..e {
+            let start = i * block_size;
+            let end = min((i+1) * block_size, len);
+            f(seq1, seq2, i, start, end);
         }
     } else {
         let m: usize = n / 2;
-        let (seq_l, seq_r) = seq1.split_at(m * block_size);
-        let (ret_l, ret_r) = seq2.split_at_mut(m * block_size);
+        let (seq1_1, seq1_2) = no_split(seq1);
+        let (seq2_1, seq2_2) = no_split(seq2);
         rayon::join(
-            || sliced_for_util(seq_l, ret_l, block_size, s, s+m, f),
-            || sliced_for_util(seq_r, ret_r, block_size, s+m, e, f),
+            || double_sliced_for_util(seq1_1, seq2_1, len, block_size, s, s+m, f),
+            || double_sliced_for_util(seq1_2, seq2_2, len, block_size, s+m, e, f),
         );
     }
 }
 
-pub fn sliced_for<T, U>(seq1: &[T], seq2: &mut [T], block_size: usize, f: &U)
+pub fn double_sliced_for<T, U>(seq1: &mut [T], seq2: &mut [T], len: usize, block_size: usize, f: &U)
     where T: Sync + Send + Copy + Display + Debug,
-          U: Sync + Send + Fn(usize, &[T], &mut [T])
+          U: Sync + Send + Fn(&mut [T], &mut [T], usize, usize, usize)
 {
-    let l = num_blocks(seq1.len(), block_size);
-    sliced_for_util(seq1, seq2, block_size, 0, l, f);
+    assert_eq!(seq1.len(), seq2.len());
+    let l = num_blocks(len, block_size);
+    double_sliced_for_util(seq1, seq2, len, block_size, 0, l, f);
+}
+
+fn single_sliced_for_util<T, U>(seq: &mut [T], len: usize, block_size: usize, s: usize, e: usize, f: &U)
+    where T: Sync + Send + Copy + Display + Debug,
+          U: Sync + Send + Fn(&mut [T], usize, usize, usize)
+{
+    let n = e - s;
+    if n <= 1 {
+        for i in s..e {
+            let start = i * block_size;
+            let end = min((i+1) * block_size, len);
+            f(seq, i, start, end);
+        }
+    } else {
+        let m: usize = n / 2;
+        let (seq1, seq2) = no_split(seq);
+        rayon::join(
+            || single_sliced_for_util(seq1 , len, block_size, s, s+m, f),
+            || single_sliced_for_util(seq2, len, block_size, s+m, e, f),
+        );
+    }
+}
+
+pub fn single_sliced_for<T, U>(seq: &mut [T], len: usize, block_size: usize, f: &U)
+    where T: Sync + Send + Copy + Display + Debug,
+          U: Sync + Send + Fn(&mut [T], usize, usize, usize)
+{
+    let l = num_blocks(len, block_size);
+    single_sliced_for_util(seq,  block_size, len, 0, l, f);
 }
 
 fn par_copy_util<T: Sync + Send + Copy + Display + Debug>(to: &mut [T], from: &[T], s: usize, e: usize) {
@@ -85,59 +118,38 @@ pub fn par_copy<T: Sync + Send + Copy + Display + Debug>(to: &mut [T], from: &[T
     par_copy_util(to, from, 0, from.len());
 }
 
-fn split_three_util<T>(seq: &[T], fl: &[usize], block_size: usize, s: usize, e: usize) -> (Vec<T>, Vec<T>, Vec<T>)
+fn split_three_util<T>(seq: &[T], ret: &mut[T], fl: &[usize], sums0: &[usize], sums1: &[usize],
+                       m0: usize, m1: usize, block_size: usize, s: usize, e: usize)
     where T: Sync + Send + Copy + Display + Debug
 {
     let n = e - s;
     if n <= 1 {
         let start = s * block_size;
         let end = min((s+1) * block_size, seq.len());
-        // let len = end - start;
-        let mut c0: usize = 0;
-        let mut c1: usize = 0;
-        let mut c2: usize = 0;
+        let mut c0: usize = sums0[s];
+        let mut c1: usize = m0 + sums1[s];
+        let mut c2: usize = m0 + m1 + (start - sums0[s] - sums1[s]);
         for j in start..end {
             if fl[j] == 0 {
+                ret[c0] = seq[j];
                 c0 += 1;
             }
             else if fl[j] == 1 {
+                ret[c1] = seq[j];
                 c1 += 1;
             }
             else {
+                ret[c2] = seq[j];
                 c2 += 1;
             }
         }
-        let mut sp0: Vec<T> = vec_no_init(c0);
-        let mut sp1: Vec<T> = vec_no_init(c1);
-        let mut sp2: Vec<T> = vec_no_init(c2);
-        let mut c0: usize = 0;
-        let mut c1: usize = 0;
-        let mut c2: usize = 0;
-        for j in start..end {
-            if fl[j] == 0 {
-                sp0[c0] = seq[j];
-                c0 += 1;
-            }
-            else if fl[j] == 1 {
-                sp1[c1] = seq[j];
-                c1 += 1;
-            }
-            else {
-                sp2[c2] = seq[j];
-                c2 += 1;
-            }
-        }
-        (sp0, sp1, sp2)
     } else {
         let m: usize = n / 2;
-        let ((mut l0, mut l1, mut l2), (r0, r1, r2)) = rayon::join(
-            || split_three_util(seq, fl, block_size, s, s+m),
-            || split_three_util(seq, fl, block_size, s+m, e),
+        let (ret1, ret2) = no_split(ret);
+        rayon::join(
+            || split_three_util(seq, ret1, fl, sums0, sums1, m0, m1, block_size, s, s+m),
+            || split_three_util(seq, ret2,fl, sums0, sums1, m0, m1, block_size, s+m, e),
         );
-        l0.extend(r0);
-        l1.extend(r1);
-        l2.extend(r2);
-        (l0, l1, l2)
     }
 }
 
@@ -145,48 +157,24 @@ fn split_three<T>(seq: &[T], ret: &mut [T], fl: &[usize]) -> (usize, usize)
     where T: Sync + Send + Copy + Display + Debug
 {
     let l = num_blocks(seq.len(), BLOCK_SIZE);
-    let (_sums0, m0): (Vec<usize>, usize) = {
-        let mut tmp: Vec<usize> = vec_init(l, &|i, _| {
-            let s = i * BLOCK_SIZE;
-            let e = min((i + 1) * BLOCK_SIZE, seq.len());
-            let mut c0: usize = 0;
-            for j in s..e {
-                if fl[j] == 0 {
-                    c0 += 1;
-                }
+    let sums0 : &mut [usize] = &mut vec_no_init(l);
+    let sums1: &mut [usize] = &mut vec_no_init(l);
+    double_sliced_for(sums0, sums1, seq.len(),BLOCK_SIZE, &|s0, s1, i, s, e, | {
+        let mut c0: usize = 0;
+        let mut c1: usize = 0;
+        for j in s..e {
+            if fl[j] == 0 {
+                c0 += 1;
+            } else if fl[j] == 1 {
+                c1 += 1;
             }
-            c0
-        }, 1);
-        let tot = par_scan_inplace(&mut tmp, &|a: &usize, b: &usize| { *a + *b }, &0);
-        (tmp, tot)
-    };
-    let (_sums1, m1): (Vec<usize>, usize) = {
-        let mut tmp = vec_init(l, &|i, _| {
-            let s = i * BLOCK_SIZE;
-            let e = min((i + 1) * BLOCK_SIZE, seq.len());
-            let mut c1: usize = 0;
-            for j in s..e {
-                if fl[j] == 1 {
-                    c1 += 1;
-                }
-            }
-            c1
-        }, 1);
-        let tot = par_scan_inplace(&mut tmp, &|a: &usize, b: &usize| { *a + *b }, &0);
-        (tmp, tot)
-    };
-    let (sp0, sp1, sp2) = split_three_util(seq, fl, BLOCK_SIZE, 0, l);
-    let (ret0, ret_rest) = ret.split_at_mut(m0);
-    let (ret1, ret2) = ret_rest.split_at_mut(m1);
-    rayon::join(
-        || {
-            rayon::join(
-                || par_copy(ret0, &sp0),
-                || par_copy(ret1, &sp1)
-            )
-        },
-        || par_copy(ret2, &sp2)
-    );
+        }
+        s0[i] = c0;
+        s1[i] = c1;
+    });
+    let m0: usize = par_scan_inplace(sums0, &|a: &usize, b: &usize| { *a + *b }, &0);
+    let m1: usize = par_scan_inplace(sums1, &|a: &usize, b: &usize| { *a + *b }, &0);
+    split_three_util(seq, ret, fl, &sums0, &sums1, m0, m1, BLOCK_SIZE, 0, l);
     (m0, m1)
 }
 
@@ -220,3 +208,4 @@ pub fn p_split3<T, U>(seq: &mut [T], ret: &mut [T], f: &U) -> (usize, usize, boo
     let (m0, m1) = split_three(seq, ret, &vec_init(n, &flag, GRANULARITY));
     (m0, m1, f(&p1, &p2) >= 0)
 }
+
