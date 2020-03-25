@@ -88,7 +88,7 @@ fn write_output(func: &String, result: HashMap<String, Duration>,
 }
 
 fn main() {
-    let sizes: Vec<u64> = vec_init(30, &|i, _| { (1 << (i+1)) as u64 }, 2000);
+    let sizes: Vec<u64> = vec_init(28, &|i, _| { (1 << (i+1)) as u64 }, 2000);
     let make_type = envmnt::get_or("KMAKE", "none").to_lowercase();
     make_file(&make_type);
     if &make_type != "none" { return; }

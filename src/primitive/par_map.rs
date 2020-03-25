@@ -4,7 +4,6 @@ extern crate rayon;
 use self::rayon::prelude::*;
 use crate::primitive::*;
 use crate::constant::*;
-use std::cmp::min;
 
 
 // Version sqrt(n) splits

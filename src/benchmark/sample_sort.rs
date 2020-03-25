@@ -3,15 +3,12 @@ use std::time::{Duration, Instant};
 
 use crate::sort::par_sample_sort;
 use crate::sort::seq_sample_sort;
-use num::PrimInt;
-use serde::export::fmt::{Display, Debug};
-
 use crate::util::data_generator::*;
 
 fn benchmark_sample_sort(size: u64, rounds: u128) -> Duration
 {
     let mut tot_time = Duration::new(0, 0);
-    for i in 0..rounds {
+    for _ in 0..rounds {
         let mut arr: Vec<i16> = random_i16_list_generator(size, -10, 11);
         let t = Instant::now();
         seq_sample_sort(&mut arr, 5, 3);
@@ -24,7 +21,7 @@ fn benchmark_sample_sort(size: u64, rounds: u128) -> Duration
 fn benchmark_par_sample_sort(size: u64, rounds: u128) -> Duration
 {
     let mut tot_time = Duration::new(0, 0);
-    for i in 0..rounds {
+    for _ in 0..rounds {
         let mut arr: Vec<i16> = random_i16_list_generator(size, -10, 11);
         let t = Instant::now();
         par_sample_sort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
