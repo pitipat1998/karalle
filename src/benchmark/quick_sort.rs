@@ -2,10 +2,9 @@ use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 use rand::prelude::SliceRandom;
+use serde::export::fmt::{Debug, Display};
 
 use crate::sort::*;
-use serde::export::fmt::{Display, Debug};
-
 use crate::util::data_generator::*;
 
 #[allow(dead_code)]
@@ -59,19 +58,19 @@ pub fn run_quick_sort_benchmark(
 
     let mut rng = rand::thread_rng();
     let key = format!("{}, {}, par_quick_sort (non-in-place)", &d, threads);
-    let duration = benchmark_quick_sort(size,  rounds);
+    let duration = benchmark_quick_sort(size, rounds);
     result.entry(key).or_insert(duration);
 
     let key = format!("{}, {}, par_quick_sort (in-place)", &d, threads);
-    let duration = benchmark_quick_sort_v2( size,  rounds);
+    let duration = benchmark_quick_sort_v2(size, rounds);
     result.entry(key).or_insert(duration);
 
     let key = format!("{}, {}, par_quick_sort (rayon)", &d, threads);
-    let duration = benchmark_quick_sort_v3( size, rounds);
+    let duration = benchmark_quick_sort_v3(size, rounds);
     result.entry(key).or_insert(duration);
 
     let key = format!("{}, {}, par_sample_sort (in-place)", &d, threads);
-    let duration = benchmark_quick_sort_v3( size, rounds);
+    let duration = benchmark_quick_sort_v3(size, rounds);
     result.entry(key).or_insert(duration);
     result
 }
