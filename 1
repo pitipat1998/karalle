@@ -1,0 +1,44 @@
+    Finished release [optimized] target(s) in 0.04s
+    Finished release [optimized] target(s) in 0.04s
+     Running `target/release/project-k`
+     Running `target/release/project-k`
+thread 'main' panicked at 'called `Option::unwrap()` on a `None` valuethread 'main' panicked at 'called `Option::unwrap()` on a `None` value', /rustc/f3e1a954d2ead4e2fc197c7da7d71e6c61bad196/src/libcore/macros/mod.rs:15:40
+', /rustc/f3e1a954d2ead4e2fc197c7da7d71e6c61bad196/src/libcore/macros/mod.rs:15:40
+stack backtrace:
+stack backtrace:
+   0: <std::sys_common::backtrace::_print::DisplayBacktrace as core::fmt::Display>::fmt
+   1: core::fmt::write
+   0: <std::sys_common::backtrace::_print::DisplayBacktrace as core::fmt::Display>::fmt
+   1: core::fmt::write
+   2: std::io::Write::write_fmt
+    2: std::io::Write::write_fmt
+   3:   3: std::panicking::default_hook::{{std::panicking::default_hook::{{closure}}
+closure}}
+    4: std::panicking::default_hook  4: std::panicking::default_hook
+
+   5:    5: std::panicking::rust_panic_with_hook
+std::panicking::rust_panic_with_hook
+   6:    6: rust_begin_unwind
+rust_begin_unwind
+     7: core::panicking::panic_fmt
+ 7: core::panicking::panic_fmt
+   8:    8: corecore::panicking::panic
+::panicking::panic
+   9: project_k::sort::sample_sort::seq_sample_sort
+  10: project_k::benchmark::sample_sort::run_sample_sort_benchmark
+   9: project_k::sort::sample_sort::seq_sample_sort
+  10: project_k::benchmark::sample_sort::run_sample_sort_benchmark
+  11: project_k::main
+   11: project_k::main
+  12: std::rt:: 12: std::rt::lang_start::{{closure}}lang_start::{{closure}}
+
+  13:   13: std::panicking::try::do_call
+std::panicking::try::do_call
+  14: __rust_maybe_catch_panic
+  14: __rust_maybe_catch_panic
+  15: std::rt::lang_start_internal
+  15: std::rt::lang_start_internal
+  16  16: main
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+: main
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.

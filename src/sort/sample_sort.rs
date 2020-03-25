@@ -22,13 +22,17 @@ fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end:
         for _ in 0..(p+2) {
             result.push(Vec::with_capacity(n));
         }
-        let samp: &mut Vec<usize> = &mut (0..(p * k) as i32).map(|_| rng.sample(&range)).collect();
+        // let samp: &mut Vec<usize> = &mut (0..(p * k) as i32).map(|_| rng.sample(&range)).collect();
+        let samp: &mut Vec<&T> = &mut (0..(p*k) as i32).map(|_| {
+            let idx = rng.sample(&range);
+            &seq[idx]
+        }).collect();
         samp.sort_unstable();
 
         let mut piv: Vec<T> = Vec::new();
         piv.push(T::min_value());
         for i in 1..(p - 1) {
-            piv.push(num::cast::NumCast::from(samp[i * k]).unwrap());
+            piv.push(*samp[i*k]);
         }
         piv.push(T::max_value());
 
