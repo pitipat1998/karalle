@@ -4,7 +4,7 @@ use crate::primitive::*;
 use crate::constant::*;
 
 fn par_oblivious_buckets_transpose<T>(from: &mut [T], to: &mut [T], counts: &[usize],
-                                          n: usize, block_size: usize, num_blocks: usize,
+                                          n: usize, _block_size: usize, num_blocks: usize,
                                           num_buckets: usize) -> Vec<usize>
     where T: Send + Sync + Copy + Display + Debug
 {

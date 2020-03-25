@@ -1,6 +1,6 @@
 pub const GRANULARITY: usize = 2000;
 pub const QS_THRESHOLD: usize = 1 << 14;
-pub const BLOCK_THRESHOLD: usize = 1;
+// pub const BLOCK_THRESHOLD: usize = 1;
 pub const BUCKET_QUOTIENT: usize = 8;
 pub const BLOCK_QUOTIENT: usize = 8;
 pub const OVER_SAMPLE: usize = 8;
