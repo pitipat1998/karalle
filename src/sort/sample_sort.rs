@@ -37,8 +37,14 @@ fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end:
                 .into_iter()
                 .filter(|&ij| piv[(ij - 1) as usize] < elm && elm <= piv[ij as usize])
                 .collect();
-            let j: usize = (*jx.first().unwrap()) as usize;
-            result[j].push(elm.clone());
+            match jx.first() {
+                Some(&j) => {
+                    result[j as usize].push(elm.clone())
+                }
+                _ => {}
+            }
+            // let j: usize = (*jx.first().unwrap()) as usize;
+            // result[j].push(elm.clone());
         }
         par_flatten(&result)
     }
