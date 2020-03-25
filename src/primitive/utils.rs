@@ -27,15 +27,16 @@ pub fn par_for<T, U>(seq: &mut [T], s: usize, e: usize, f: &U, granularity: usiz
         let m: usize = n / 2;
         let (seq1, seq2) = no_split(seq);
         rayon::join(
-            || par_for(seq1, s, m, f, granularity),
-            || par_for(seq2, m, e, f, granularity)
+            || par_for(seq1, s, s+m, f, granularity),
+            || par_for(seq2, s+m, e, f, granularity)
         );
     }
 }
 
-fn double_sliced_for_util<T, U>(seq1: &mut [T], seq2: &mut [T], len: usize, block_size: usize, s: usize, e: usize, f: &U)
+fn double_sliced_for_util<T, V, U>(seq1: &mut [T], seq2: &mut [V], len: usize, block_size: usize, s: usize, e: usize, f: &U)
     where T: Sync + Send + Copy + Display + Debug,
-          U: Sync + Send + Fn(&mut [T], &mut [T], usize, usize, usize)
+          V: Sync + Send + Copy + Display + Debug,
+          U: Sync + Send + Fn(&mut [T], &mut [V], usize, usize, usize)
 {
     let n = e - s;
     if n <= 1 {
@@ -55,11 +56,11 @@ fn double_sliced_for_util<T, U>(seq1: &mut [T], seq2: &mut [T], len: usize, bloc
     }
 }
 
-pub fn double_sliced_for<T, U>(seq1: &mut [T], seq2: &mut [T], len: usize, block_size: usize, f: &U)
+pub fn double_sliced_for<T, V, U>(seq1: &mut [T], seq2: &mut [V], len: usize, block_size: usize, f: &U)
     where T: Sync + Send + Copy + Display + Debug,
-          U: Sync + Send + Fn(&mut [T], &mut [T], usize, usize, usize)
+          V: Sync + Send + Copy + Display + Debug,
+          U: Sync + Send + Fn(&mut [T], &mut [V], usize, usize, usize)
 {
-    assert_eq!(seq1.len(), seq2.len());
     let l = num_blocks(len, block_size);
     double_sliced_for_util(seq1, seq2, len, block_size, 0, l, f);
 }
@@ -115,6 +116,7 @@ pub fn par_copy<T: Sync + Send + Copy + Display + Debug>(to: &mut [T], from: &[T
     if to.len() < from.len() {
         println!("par_copy: destination vector is less than source vector");
     }
+    assert!(to.len() >= from.len());
     par_copy_util(to, from, 0, from.len());
 }
 

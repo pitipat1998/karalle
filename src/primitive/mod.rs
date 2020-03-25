@@ -27,6 +27,12 @@ pub use self::par_flatten::*;
 mod par_bucket_transpose;
 pub use self::par_bucket_transpose::*;
 
+mod par_block_transpose;
+pub use self::par_block_transpose::*;
+
+mod par_transpose;
+pub use self::par_transpose::*;
+
 mod utils;
 pub use self::utils::*;
 

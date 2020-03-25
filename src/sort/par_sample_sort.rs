@@ -1,40 +1,14 @@
 extern crate rayon;
 
 use rand::{Rng};
-use crate::primitive::{vec_zeroes, vec_init, vec_no_init};
+use crate::primitive::{vec_zeroes, vec_init, vec_no_init, par_for, double_sliced_for};
 use crate::sort::{par_quick_sort_v2};
-use crate::primitive::par_transpose_buckets;
+use crate::primitive::par_buckets_transpose;
 use crate::primitive::par_copy;
 use serde::export::fmt::{Display, Debug};
 use crate::sort::par_quick_sort_slice;
 use crate::constant::*;
-
-fn count<T, U>(seq: &mut [T], pivots: &[T], c: &mut [usize], block_size: usize, num_buckets: usize, s: usize, e: usize, func: &U)
-    where T: Sync + Send + Copy + Display + Debug + Display + Debug,
-          U: Sync + Send + Fn(&T, &T) -> i32
-{
-    let n = e - s;
-    if n <= BLOCK_THRESHOLD {
-        let seq_chunks = seq.chunks_mut(block_size);
-        let c_chunks = c.chunks_mut(num_buckets);
-        for (seq_chunk, c_chunk) in seq_chunks.zip(c_chunks) {
-//            println!("seq_chunk={:?}, c_chunk={:?}", seq_chunk.len(), c_chunk.len());
-            seq_chunk.sort_unstable_by(|a, b| func(a, b).cmp(&0));
-            merge_seq(seq_chunk, pivots, c_chunk, func);
-        }
-    } else {
-        let half = n / 2;
-        let seq_mid = half * block_size;
-        let c_mid = half * num_buckets;
-//        println!("seq={}, seq_mid={}, c={}, c_mid={}, s={}, e={}", seq.len(), seq_mid, c.len(), c_mid, s, e);
-        let (seq_l, seq_r) = seq.split_at_mut(seq_mid);
-        let (c_l, c_r) = c.split_at_mut(c_mid);
-        rayon::join(
-            || count(seq_l, pivots, c_l, block_size, num_buckets, s, s + half, func),
-            || count(seq_r, pivots, c_r, block_size, num_buckets, s + half, e, func),
-        );
-    }
-}
+use std::cmp::min;
 
 fn merge_seq<T, U>(sa: &[T], sb: &[T], sc: &mut [usize], func: &U)
     where T: Sync + Send + Copy + Display + Debug + Display + Debug,
@@ -67,33 +41,6 @@ fn merge_seq<T, U>(sa: &[T], sb: &[T], sc: &mut [usize], func: &U)
     sc[ic] = sa.len() - ia;
 }
 
-fn sort_within_bucket<T, U>(seq: &mut [T], pivots: &[T], bucket_offsets: &[usize], num_buckets: usize,
-                            func: &U, s: usize, e: usize, seq_s: usize, seq_e: usize)
-    where T: Copy + Sync + Send + Display + Debug,
-          U: Sync + Send + Fn(&T, &T) -> i32
-{
-    let n = e - s;
-    if n <= BLOCK_THRESHOLD {
-        for i in 0..n {
-            let j = i + s;
-            let start = bucket_offsets[j] - seq_s;
-            let end = bucket_offsets[j + 1] - seq_s;
-
-            if j == 0 || j == num_buckets - 1 || func(&pivots[j - 1], &pivots[j]) < 0 {
-                par_quick_sort_slice(&mut seq[start..end], func);
-            }
-        }
-    } else {
-        let half = n / 2;
-        let mid = bucket_offsets[half + s];
-        let (l, r) = seq.split_at_mut(mid - seq_s);
-        rayon::join(
-            || sort_within_bucket(l, pivots, bucket_offsets, num_buckets, func, s, half + s, seq_s, mid),
-            || sort_within_bucket(r, pivots, bucket_offsets, num_buckets, func, half + s, e, mid, seq_e),
-        );
-    }
-}
-
 fn par_sample_sort_util<T, U>(seq: &mut [T], aux: &mut [T], func: &U)
     where T: Copy + Sync + Send + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
@@ -114,12 +61,24 @@ fn par_sample_sort_util<T, U>(seq: &mut [T], aux: &mut [T], func: &U)
             vec_init(num_buckets - 1, &|i, _| samples[i * OVER_SAMPLE], GRANULARITY)
         };
 
-        let mut counts: Vec<usize> = vec_zeroes(m + 1);
+        let counts: &mut [usize] = &mut vec_zeroes(m + 1);
         counts[m] = 0;
-        count(seq, &pivots, &mut counts, block_size, num_buckets, 0, num_blocks, func);
+        double_sliced_for(seq, counts, n, block_size, &|ss, cc, i, s, e|{
+            let cs = i * num_buckets;
+            let ce = min((i+1)*num_buckets, cc.len());
+            (&mut ss[s..e]).sort_unstable_by(|a, b| func(a, b).cmp(&0));
+            merge_seq(&mut ss[s..e], &pivots, &mut cc[cs..ce], func);
+        });
 
-        let bucket_offsets: Vec<usize> = par_transpose_buckets(seq, aux, &counts, seq.len(), block_size, num_blocks, num_buckets);
-        sort_within_bucket(aux, &pivots, &bucket_offsets, num_buckets, func, 0, num_buckets, 0, aux.len());
+        let bucket_offsets: Vec<usize> = par_buckets_transpose(seq, aux, &counts, seq.len(), block_size, num_blocks, num_buckets);
+        par_for(aux, 0, num_buckets, &|au, i|{
+            let start = bucket_offsets[i];
+            let end = bucket_offsets[i + 1];
+
+            if i == 0 || i == num_buckets - 1 || func(&pivots[i - 1], &pivots[i]) < 0 {
+                par_quick_sort_slice(&mut au[start..end], func);
+            }
+        }, 1);
         par_copy(seq, aux);
     }
 }
@@ -129,7 +88,6 @@ pub fn par_sample_sort<T, U>(seq: &mut Vec<T>, func: &U)
     where T: Copy + Sync + Send + Display + Debug,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
-//    println!("inplace parallel sample sort of size {}", seq.len());
     let n = seq.len();
     par_sample_sort_util(seq, &mut vec_no_init(n), func);
 }

@@ -6,3 +6,5 @@ pub const BLOCK_QUOTIENT: usize = 8;
 pub const OVER_SAMPLE: usize = 8;
 pub const LOG_BLOCK_SIZE: usize = 10;
 pub const BLOCK_SIZE: usize = (1 << LOG_BLOCK_SIZE);
+pub const TRANS_THRESHOLD: usize = GRANULARITY / 4;
+
