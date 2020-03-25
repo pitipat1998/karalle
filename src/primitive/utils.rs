@@ -3,7 +3,6 @@ use serde::export::fmt::{Display, Debug};
 use crate::primitive::{vec_init, vec_no_init, par_scan_inplace, no_split};
 use rand::prelude::ThreadRng;
 use crate::constant::*;
-use num::abs;
 
 pub fn num_blocks(n: usize, block_size: usize) -> usize {
     if n == 0 {

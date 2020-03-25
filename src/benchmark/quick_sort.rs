@@ -1,18 +1,14 @@
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
-use rand::prelude::SliceRandom;
-
 use crate::sort::*;
-use serde::export::fmt::{Display, Debug};
-
 use crate::util::data_generator::*;
 
 #[allow(dead_code)]
 fn benchmark_quick_sort(size: u64, rounds: u128) -> Duration
 {
     let mut tot_time = Duration::new(0, 0);
-    for i in 0..rounds {
+    for _ in 0..rounds {
         let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
         let t = Instant::now();
         par_quick_sort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
@@ -25,7 +21,7 @@ fn benchmark_quick_sort(size: u64, rounds: u128) -> Duration
 fn benchmark_quick_sort_v2(size: u64, rounds: u128) -> Duration
 {
     let mut tot_time = Duration::new(0, 0);
-    for i in 0..rounds {
+    for _ in 0..rounds {
         let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
         let t = Instant::now();
         par_quick_sort_v2(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
@@ -38,7 +34,7 @@ fn benchmark_quick_sort_v2(size: u64, rounds: u128) -> Duration
 fn benchmark_quick_sort_v3(size: u64, rounds: u128) -> Duration
 {
     let mut tot_time = Duration::new(0, 0);
-    for i in 0..rounds {
+    for _ in 0..rounds {
         let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
         let t = Instant::now();
         par_quick_sort_v3(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
@@ -57,7 +53,6 @@ pub fn run_quick_sort_benchmark(
 {
     let mut result: HashMap<String, Duration> = HashMap::new();
 
-    let mut rng = rand::thread_rng();
     let key = format!("{}, {}, par_quick_sort (non-in-place)", &d, threads);
     let duration = benchmark_quick_sort(size,  rounds);
     result.entry(key).or_insert(duration);
