@@ -65,8 +65,8 @@ pub fn run_quick_sort_benchmark(
     let duration = benchmark_quick_sort_v3(size, rounds);
     result.entry(key).or_insert(duration);
 
-    let key = format!("{}, {}, par_sample_sort (in-place)", &d, threads);
-    let duration = benchmark_quick_sort_v3(size, rounds);
-    result.entry(key).or_insert(duration);
+    // let key = format!("{}, {}, par_sample_sort (in-place)", &d, threads);
+    // let duration = benchmark_quick_sort_v3(size, rounds);
+    // result.entry(key).or_insert(duration);
     result
 }
