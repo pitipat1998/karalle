@@ -111,6 +111,17 @@ fn main() {
         exit(-1);
     }
     let _ = fs::create_dir("output/");
+
+    if t == "all" || t == "ms" || t == "mergesort" {
+        let mut ms_res: HashMap<String, Duration> = HashMap::new();
+        for size in &sizes {
+            println!("Running ms size: {}", size);
+            let res = run_quick_sort_benchmark(&size.to_string(), *size, rounds, tn);
+            ms_res.extend(res);
+        }
+        println!("Writing merge_sort result");
+        write_output(&"merge_sort".to_string(), ms_res, rounds, tn);
+    }
     if t == "all" || t == "map" {
         let mut map_res: HashMap<String, Duration> = HashMap::new();
         // Map
