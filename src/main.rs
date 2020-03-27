@@ -87,7 +87,7 @@ fn write_output(func: &String, result: HashMap<String, Duration>,
 }
 
 fn main() {
-    let sizes: Vec<u64> = vec_init(24, &|i, _| { (1 << (i + 1)) as u64 }, 2000);
+    let sizes: Vec<u64> = vec_init(27, &|i, _| { (1 << (i + 1)) as u64 }, 2000);
     let make_type = envmnt::get_or("KMAKE", "none").to_lowercase();
     make_file(&make_type);
     if &make_type != "none" { return; }
@@ -98,7 +98,7 @@ fn main() {
     }
     rayon::ThreadPoolBuilder::new().num_threads(tn).build_global().unwrap();
 
-    let r = envmnt::get_or("KROUND", "10");
+    let r = envmnt::get_or("KROUND", "100");
     let rounds: u128 = r.parse().unwrap();
     println!("Running with {} threads and {} rounds", tn, rounds);
 
