@@ -187,32 +187,32 @@ fn main() {
     if t == "fronk" {
         use std::time::*;
         use crate::sort::*;
-        let rounds = 100;
-        let size = 1 << 27;
-        let mut tot_time = Duration::new(0, 0);
-        for _ in 0..rounds {
-            let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
-            let t = Instant::now();
-            par_quick_sort_v2(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
-            tot_time += t.elapsed();
+        for size in sizes {
+            let mut tot_time = Duration::new(0, 0);
+            for _ in 0..rounds {
+                let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
+                let t = Instant::now();
+                par_quick_sort_v2(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+                tot_time += t.elapsed();
+            }
+            println!("par qs in-place: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
+            let mut tot_time = Duration::new(0, 0);
+            for _ in 0..rounds {
+                let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
+                let t = Instant::now();
+                par_sample_sort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+                tot_time += t.elapsed();
+            }
+            println!("par ss in-place: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
+            let mut tot_time = Duration::new(0, 0);
+            for _ in 0..rounds {
+                let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
+                let t = Instant::now();
+                par_quick_sort_v3(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+                tot_time += t.elapsed();
+            }
+            println!("par qs rayon: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
         }
-        println!("par qs in-place: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
-        let mut tot_time = Duration::new(0, 0);
-        for _ in 0..rounds {
-            let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
-            let t = Instant::now();
-            par_sample_sort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
-            tot_time += t.elapsed();
-        }
-        println!("par ss in-place: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
-        let mut tot_time = Duration::new(0, 0);
-        for _ in 0..rounds {
-            let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
-            let t = Instant::now();
-            par_quick_sort_v3(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
-            tot_time += t.elapsed();
-        }
-        println!("par qs rayon: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
     }
 
 }
