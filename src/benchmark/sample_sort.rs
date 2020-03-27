@@ -18,7 +18,7 @@ fn benchmark_sample_sort(size: u64, rounds: u128) -> Duration
 }
 
 #[allow(dead_code)]
-fn benchmark_par_sample_sort(size: u64, rounds: u128) -> Duration
+pub fn benchmark_par_sample_sort(size: u64, rounds: u128) -> Duration
 {
     let mut tot_time = Duration::new(0, 0);
     for _ in 0..rounds {

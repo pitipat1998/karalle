@@ -3,6 +3,7 @@ use std::time::{Duration, Instant};
 
 use crate::sort::*;
 use crate::util::data_generator::*;
+use super::sample_sort::benchmark_par_sample_sort;
 
 #[allow(dead_code)]
 fn benchmark_quick_sort(size: u64, rounds: u128) -> Duration
@@ -65,8 +66,8 @@ pub fn run_quick_sort_benchmark(
     let duration = benchmark_quick_sort_v3(size, rounds);
     result.entry(key).or_insert(duration);
 
-    // let key = format!("{}, {}, par_sample_sort (in-place)", &d, threads);
-    // let duration = benchmark_quick_sort_v3(size, rounds);
-    // result.entry(key).or_insert(duration);
+    let key = format!("{}, {}, par_sample_sort (in-place)", &d, threads);
+    let duration = benchmark_par_sample_sort(size, rounds);
+    result.entry(key).or_insert(duration);
     result
 }
