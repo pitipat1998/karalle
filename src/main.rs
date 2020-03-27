@@ -188,6 +188,7 @@ fn main() {
         use std::time::*;
         use crate::sort::*;
         for size in sizes {
+            println!("size={}", size);
             let mut tot_time = Duration::new(0, 0);
             for _ in 0..rounds {
                 let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
@@ -212,6 +213,7 @@ fn main() {
                 tot_time += t.elapsed();
             }
             println!("par qs rayon: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
+            println!();
         }
     }
 
