@@ -1,5 +1,6 @@
 extern crate envmnt;
 extern crate num_cpus;
+extern crate chrono;
 
 use std::collections::HashMap;
 use std::fs;
@@ -13,8 +14,8 @@ use serde_json::*;
 use project_k::primitive::vec_init;
 use util::data_generator::*;
 use util::file_reader::*;
-use crate::benchmark::*;
 
+use crate::benchmark::*;
 pub mod util;
 pub mod benchmark;
 pub mod primitive;
@@ -184,38 +185,41 @@ fn main() {
         write_output(&"sample_sort".to_string(), ss_res, rounds, tn);
     }
 
-    if t == "fronk" {
-        use std::time::*;
-        use crate::sort::*;
-        for size in sizes {
-            println!("size={}", size);
-            let mut tot_time = Duration::new(0, 0);
-            for _ in 0..rounds {
-                let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
-                let t = Instant::now();
-                par_quick_sort_v2(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
-                tot_time += t.elapsed();
-            }
-            println!("par qs in-place: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
-            let mut tot_time = Duration::new(0, 0);
-            for _ in 0..rounds {
-                let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
-                let t = Instant::now();
-                par_sample_sort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
-                tot_time += t.elapsed();
-            }
-            println!("par ss in-place: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
-            let mut tot_time = Duration::new(0, 0);
-            for _ in 0..rounds {
-                let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
-                let t = Instant::now();
-                par_quick_sort_v3(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
-                tot_time += t.elapsed();
-            }
-            println!("par qs rayon: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
-            println!();
-        }
+    if t == "all" || t == "big_map" || t == "bm" {
+        big_map_seq();
     }
 
+    // if t == "fronk" {
+    //     use std::time::*;
+    //     use crate::sort::*;
+    //     for size in sizes {
+    //         println!("size={}", size);
+    //         let mut tot_time = Duration::new(0, 0);
+    //         for _ in 0..rounds {
+    //             let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
+    //             let t = Instant::now();
+    //             par_quick_sort_v2(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+    //             tot_time += t.elapsed();
+    //         }
+    //         println!("par qs in-place: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
+    //         let mut tot_time = Duration::new(0, 0);
+    //         for _ in 0..rounds {
+    //             let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
+    //             let t = Instant::now();
+    //             par_sample_sort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+    //             tot_time += t.elapsed();
+    //         }
+    //         println!("par ss in-place: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
+    //         let mut tot_time = Duration::new(0, 0);
+    //         for _ in 0..rounds {
+    //             let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
+    //             let t = Instant::now();
+    //             par_quick_sort_v3(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+    //             tot_time += t.elapsed();
+    //         }
+    //         println!("par qs rayon: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
+    //         println!();
+    //     }
+    // }
 }
 

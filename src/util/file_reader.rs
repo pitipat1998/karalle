@@ -28,10 +28,11 @@ where T: PrimInt + Product + FromStr,
     v
 }
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
     where P: AsRef<Path>, {
     let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
+    let line =io::BufReader::new(file).lines();
+    Ok(line)
 }
 
 #[allow(dead_code)]
