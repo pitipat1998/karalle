@@ -9,6 +9,7 @@ use rayon::prelude::*;
 use serde::export::Formatter;
 
 use crate::primitive::par_map_v1;
+use memmap::MmapOptions;
 
 struct Record {
     date: NaiveDate,
@@ -41,12 +42,10 @@ impl Debug for Record {
 pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
     let filename = "DEBS2012-cleaned-v3.txt";
     println!("Starting bm");
-    let mut content = String::new();
-    match File::open(filename) {
-        Ok(mut file) => {
-            file.read_to_string(&mut content).unwrap();
-        } Err(_)=>{}
-    }
+    let mut file = File::open(filename).unwrap();
+    // let mut reader = BufReader::new(file);
+    let mut content : String = String::new();
+    {file.read_to_string( &mut content).unwrap();}
     println!("Finished reading file");
     // let lc: usize = lines.len();
     let mut m: HashMap<String, Duration> = HashMap::new();
