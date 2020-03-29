@@ -39,22 +39,29 @@ impl Debug for Record {
 #[allow(irrefutable_let_patterns, dead_code)]
 pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
     let filename = "DEBS2012-cleaned-v3.txt";
-
-    let mut rdr = csv::ReaderBuilder::new()
+    println!("Starting bm");
+    let rdr_res = csv::ReaderBuilder::new()
         .has_headers(false)
         .delimiter(b'\t')
-        .from_path(filename).unwrap();
+        .from_path(filename);
     let lines: &mut Vec<StringRecord> = &mut Vec::new();
-
-    for result in rdr.records() {
-        match result {
-            Ok(line) => {
-                lines.push(line);
+    let mut lc: usize = 0;
+    println!("Reading file");
+    match rdr_res {
+        Ok(mut rdr) => {
+            for result in rdr.records() {
+                match result {
+                    Ok(line) => {
+                        lc += 1;
+                        lines.push(line);
+                    }
+                    Err(e) => println!("{:?}", e)
+                }
             }
-            Err(e) => println!("{:?}", e)
         }
+        Err(_) => {}
     }
-    let lc = (&lines).len();
+    println!("Finished reading file");
     let mut m: HashMap<String, Duration> = HashMap::new();
     let seq_now = Instant::now();
     {
@@ -65,14 +72,14 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
             for line in lines.as_mut_slice() {
                 let date = NaiveDate::parse_from_str((&line).get(0).unwrap(), "%Y-%m-%d").unwrap();
                 let time = NaiveTime::parse_from_str((&line).get(1).unwrap(), "%H:%M:%S%.f").unwrap();
-                let mut arr = [0;55];
+                let mut arr = [0; 55];
                 for i in 2..57 {
-                    arr[i-2] = (&line).get(i).unwrap().parse::<i32>().unwrap();
+                    arr[i - 2] = (&line).get(i).unwrap().parse::<i32>().unwrap();
                 }
                 res.push(Record {
                     date,
                     time,
-                    recs: arr
+                    recs: arr,
                 })
             }
         }
@@ -88,9 +95,9 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
                 .map(|line| {
                     let date = NaiveDate::parse_from_str(line.get(0).unwrap(), "%Y-%m-%d").unwrap();
                     let time = NaiveTime::parse_from_str(line.get(1).unwrap(), "%H:%M:%S%.f").unwrap();
-                    let mut arr = [0;55];
+                    let mut arr = [0; 55];
                     for i in 2..57 {
-                        arr[i-2] = (&line).get(i).unwrap().parse::<i32>().unwrap();
+                        arr[i - 2] = (&line).get(i).unwrap().parse::<i32>().unwrap();
                     }
                     Record {
                         date,
@@ -112,9 +119,9 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
                 &|_, line: &StringRecord| {
                     let date = NaiveDate::parse_from_str((&line).get(0).unwrap(), "%Y-%m-%d").unwrap();
                     let time = NaiveTime::parse_from_str((&line).get(1).unwrap(), "%H:%M:%S%.f").unwrap();
-                    let mut arr = [0;55];
+                    let mut arr = [0; 55];
                     for i in 2..57 {
-                        arr[i-2] = (&line).get(i).unwrap().parse::<i32>().unwrap();
+                        arr[i - 2] = (&line).get(i).unwrap().parse::<i32>().unwrap();
                     }
                     Record {
                         date,
