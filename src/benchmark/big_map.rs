@@ -38,7 +38,7 @@ impl Debug for Record {
 }
 
 fn run_seq(rounds: usize, buffer_vec: &mut Vec<String>) -> Duration {
-    println!("Running seq");
+    println!("Running bm_seq");
     let seq_now = Instant::now();
     for _ in 0..rounds {
         // sequential
@@ -59,6 +59,7 @@ fn run_seq(rounds: usize, buffer_vec: &mut Vec<String>) -> Duration {
 
 fn run_rayon(rounds: usize, buffer_vec: &mut Vec<String>) -> Duration {
     // parallel rayon
+    println!("Running bm_rayon");
     let ray_now = Instant::now();
     for _ in 0..rounds {
         let _r: Vec<Record> = buffer_vec.as_mut_slice().into_par_iter()
@@ -78,6 +79,7 @@ fn run_rayon(rounds: usize, buffer_vec: &mut Vec<String>) -> Duration {
 
 fn run_par(rounds: usize, buffer_vec: &mut Vec<String>) -> Duration {
     // parallel map
+    println!("Running bm_par");
     let par_now = Instant::now();
     for _ in 0..rounds {
         let _r: Vec<Record> = par_map_v1(
@@ -107,7 +109,8 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
     let lines = reader.lines();
     let mut c = 0;
     let mut lc = 0;
-    let mut buffer_vec: Vec<String> = Vec::new();
+    let mut buffer_vec: Vec<String> = Vec::with_capacity(thresh as usize);
+    unsafe {buffer_vec.set_len(thresh as usize)};
     let mut t_seq = Duration::new(0, 0);
     let mut t_ray = Duration::new(0, 0);
     let mut t_par = Duration::new(0, 0);
@@ -121,7 +124,7 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
                     t_par += run_par(rounds, &mut buffer_vec);
                     buffer_vec.clear();
                 }
-                buffer_vec.push(line);
+                buffer_vec[c as usize] = line;
                 c += 1;
             }
             Err(_) => {}
