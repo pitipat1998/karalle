@@ -122,7 +122,6 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
                     t_seq += run_seq(rounds, &mut buffer_vec);
                     t_ray += run_rayon(rounds, &mut buffer_vec);
                     t_par += run_par(rounds, &mut buffer_vec);
-                    buffer_vec.clear();
                     c=0;
                 }
                 buffer_vec[c] = line;
