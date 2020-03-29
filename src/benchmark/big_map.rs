@@ -40,7 +40,7 @@ impl Debug for Record {
 
 #[allow(irrefutable_let_patterns, dead_code)]
 pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
-    let filename = "DEBS2012-cleaned-v3.txt.small";
+    let filename = "DEBS2012-cleaned-v3.txt";
     println!("Starting bm");
     let file= File::open(filename).unwrap();
     let reader = BufReader::new(file);
