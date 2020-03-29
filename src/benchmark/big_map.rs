@@ -54,7 +54,7 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
             Err(e) => println!("{:?}", e)
         }
     }
-    let lc = lines.clone().len();
+    let lc = (&lines).len();
     let mut m: HashMap<String, Duration> = HashMap::new();
     let seq_now = Instant::now();
     {
