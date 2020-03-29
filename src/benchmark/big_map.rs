@@ -98,7 +98,8 @@ fn run_par(rounds: usize, buffer_vec: &mut Vec<String>) -> Duration {
 
 #[allow(irrefutable_let_patterns, dead_code)]
 pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
-    let filename = "DEBS2012-cleaned-v3.txt.small";
+    let filename:String = envmnt::get_or("BM_FILE", "DEBS2012-cleaned-v3.txt");
+    let thresh: i32 = envmnt::get_or("BM_CHUNK", "100000").parse().unwrap();
     println!("Starting bm");
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
@@ -114,7 +115,7 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
         lc += 1;
         match lr {
             Ok(line) => {
-                if c == 10_000 {
+                if c == thresh {
                     t_seq += run_seq(rounds, &mut buffer_vec);
                     t_ray += run_rayon(rounds, &mut buffer_vec);
                     t_par += run_par(rounds, &mut buffer_vec);
