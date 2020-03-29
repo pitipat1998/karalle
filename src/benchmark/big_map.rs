@@ -48,7 +48,7 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
         } Err(_)=>{}
     }
     println!("Finished reading file");
-    let lc: usize = lines.len();
+    // let lc: usize = lines.len();
     let mut m: HashMap<String, Duration> = HashMap::new();
     // let seq_now = Instant::now();
     // {
