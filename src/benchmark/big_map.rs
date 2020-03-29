@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::*;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Read};
 use std::time::{Duration, Instant};
 
 use chrono::{NaiveDate, NaiveTime};
@@ -41,14 +41,12 @@ impl Debug for Record {
 pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
     let filename = "DEBS2012-cleaned-v3.txt";
     println!("Starting bm");
-    let file= File::open(filename).unwrap();
-    let reader = BufReader::new(file);
-    let lines: &mut Vec<&str> = &mut reader
-        .lines()
-        .filter_map(
-            |line|
-                line.ok().and_then(|l|l.parse().ok()))
-        .collect();
+    let mut content = String::new();
+    match File::open(filename) {
+        Ok(mut file) => {
+            file.read_to_string(&mut content).unwrap();
+        } Err(_)=>{}
+    }
     println!("Finished reading file");
     let lc: usize = lines.len();
     let mut m: HashMap<String, Duration> = HashMap::new();
