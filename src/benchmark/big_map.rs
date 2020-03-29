@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::*;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Empty};
+use std::io::{BufRead, BufReader};
 use std::time::{Duration, Instant};
 
 use chrono::{NaiveDate, NaiveTime};
@@ -43,69 +43,74 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
     println!("Starting bm");
     let file= File::open(filename).unwrap();
     let reader = BufReader::new(file);
-    let lines: &mut Vec<String> = &mut reader.lines().filter_map(|line|line.ok().and_then(|l|l.parse().ok())).collect();
+    let lines: &mut Vec<&str> = &mut reader
+        .lines()
+        .filter_map(
+            |line|
+                line.ok().and_then(|l|l.parse().ok()))
+        .collect();
     println!("Finished reading file");
     let lc: usize = lines.len();
     let mut m: HashMap<String, Duration> = HashMap::new();
-    let seq_now = Instant::now();
-    {
-        println!("Running seq");
-        for _ in 0..rounds {
-            // sequential
-            let mut v: Vec<u8> = Vec::new();
-            for line_st in lines.as_mut_slice() {
-                let line: Vec<&str> = line_st.split_whitespace().collect();
-                let _date = NaiveDate::parse_from_str((&line)[0], "%Y-%m-%d").unwrap();
-                let _time = NaiveTime::parse_from_str((&line)[1], "%H:%M:%S%.f").unwrap();
-                let mut arr = [0; 55];
-                for i in 2..57 {
-                    arr[i - 2] = (&line)[i].parse::<i32>().unwrap();
-                }
-                v.push(0);
-            }
-        }
-    }
-    m.entry(format!("{}, {}, big_map_seq", lc, threads)).or_insert(seq_now.elapsed().div_f64(rounds as f64));
-
-    let rayon_now = Instant::now();
-    println!("Running rayon");
-    {
-        // parallel rayon
-        for _ in 0..rounds {
-            let _r: Vec<u8> = lines.as_mut_slice().into_par_iter()
-                .map(|line_st: &mut String| {
-                    let line: Vec<&str> = line_st.split_whitespace().collect();
-                    let _date = NaiveDate::parse_from_str(line[0], "%Y-%m-%d").unwrap();
-                    let _time = NaiveTime::parse_from_str(line[1], "%H:%M:%S%.f").unwrap();
-                    let mut arr = [0; 55];
-                    for i in 2..57 {
-                        arr[i - 2] = line[i].parse::<i32>().unwrap();
-                    }
-                    0
-                }).collect();
-        }
-    };
-    m.entry(format!("{}, {}, big_map_rayon", lc, threads)).or_insert(rayon_now.elapsed().div_f64(rounds as f64));
-
-    let par_now = Instant::now();
-    println!("Running par");
-    {
-        // parallel map
-        for _ in 0..rounds {
-            let _r: Vec<u8> = par_map_v1(
-                &lines,
-                &|_, line_st: &String| {
-                    let line: Vec<&str> = line_st.split_whitespace().collect();
-                    let _date = NaiveDate::parse_from_str(line[0], "%Y-%m-%d").unwrap();
-                    let _time = NaiveTime::parse_from_str(line[1], "%H:%M:%S%.f").unwrap();
-                    let mut arr = [0; 55];
-                    for i in 2..57 {
-                        arr[i - 2] = line[i].parse::<i32>().unwrap();
-                    }
-                    0
-                });
-        }
-    };
-    m.entry(format!("{}, {}, big_map_par", lc, threads)).or_insert(par_now.elapsed().div_f64(rounds as f64));
+    // let seq_now = Instant::now();
+    // {
+    //     println!("Running seq");
+    //     for _ in 0..rounds {
+    //         // sequential
+    //         let mut v: Vec<u8> = Vec::new();
+    //         for line_st in lines.as_mut_slice() {
+    //             let line: Vec<&str> = line_st.split_whitespace().collect();
+    //             let _date = NaiveDate::parse_from_str((&line)[0], "%Y-%m-%d").unwrap();
+    //             let _time = NaiveTime::parse_from_str((&line)[1], "%H:%M:%S%.f").unwrap();
+    //             let mut arr = [0; 55];
+    //             for i in 2..57 {
+    //                 arr[i - 2] = (&line)[i].parse::<i32>().unwrap();
+    //             }
+    //             v.push(0);
+    //         }
+    //     }
+    // }
+    // m.entry(format!("{}, {}, big_map_seq", lc, threads)).or_insert(seq_now.elapsed().div_f64(rounds as f64));
+    //
+    // let rayon_now = Instant::now();
+    // println!("Running rayon");
+    // {
+    //     // parallel rayon
+    //     for _ in 0..rounds {
+    //         let _r: Vec<u8> = lines.as_mut_slice().into_par_iter()
+    //             .map(|line_st: &mut String| {
+    //                 let line: Vec<&str> = line_st.split_whitespace().collect();
+    //                 let _date = NaiveDate::parse_from_str(line[0], "%Y-%m-%d").unwrap();
+    //                 let _time = NaiveTime::parse_from_str(line[1], "%H:%M:%S%.f").unwrap();
+    //                 let mut arr = [0; 55];
+    //                 for i in 2..57 {
+    //                     arr[i - 2] = line[i].parse::<i32>().unwrap();
+    //                 }
+    //                 0
+    //             }).collect();
+    //     }
+    // };
+    // m.entry(format!("{}, {}, big_map_rayon", lc, threads)).or_insert(rayon_now.elapsed().div_f64(rounds as f64));
+    //
+    // let par_now = Instant::now();
+    // println!("Running par");
+    // {
+    //     // parallel map
+    //     for _ in 0..rounds {
+    //         let _r: Vec<u8> = par_map_v1(
+    //             &lines,
+    //             &|_, line_st: &String| {
+    //                 let line: Vec<&str> = line_st.split_whitespace().collect();
+    //                 let _date = NaiveDate::parse_from_str(line[0], "%Y-%m-%d").unwrap();
+    //                 let _time = NaiveTime::parse_from_str(line[1], "%H:%M:%S%.f").unwrap();
+    //                 let mut arr = [0; 55];
+    //                 for i in 2..57 {
+    //                     arr[i - 2] = line[i].parse::<i32>().unwrap();
+    //                 }
+    //                 0
+    //             });
+    //     }
+    // };
+    // m.entry(format!("{}, {}, big_map_par", lc, threads)).or_insert(par_now.elapsed().div_f64(rounds as f64));
     m
 }
