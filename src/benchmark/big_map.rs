@@ -101,16 +101,16 @@ fn run_par(rounds: usize, buffer_vec: &mut Vec<String>) -> Duration {
 #[allow(irrefutable_let_patterns, dead_code)]
 pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
     let filename:String = envmnt::get_or("BM_FILE", "DEBS2012-cleaned-v3.txt");
-    let thresh: i32 = envmnt::get_or("BM_CHUNK", "100000").parse().unwrap();
+    let thresh: usize = envmnt::get_or("BM_CHUNK", "100000").parse().unwrap();
     println!("Starting bm");
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
     let mut m: HashMap<String, Duration> = HashMap::new();
     let lines = reader.lines();
-    let mut c = 0;
-    let mut lc = 0;
+    let mut c: usize = 0;
+    let mut lc: i32 = 0;
     let mut buffer_vec: Vec<String> = Vec::with_capacity(thresh as usize);
-    unsafe {buffer_vec.set_len(thresh as usize)};
+    unsafe {buffer_vec.set_len(thresh)};
     let mut t_seq = Duration::new(0, 0);
     let mut t_ray = Duration::new(0, 0);
     let mut t_par = Duration::new(0, 0);
@@ -123,8 +123,9 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
                     t_ray += run_rayon(rounds, &mut buffer_vec);
                     t_par += run_par(rounds, &mut buffer_vec);
                     buffer_vec.clear();
+                    c=0;
                 }
-                buffer_vec[c as usize] = line;
+                buffer_vec[c] = line;
                 c += 1;
             }
             Err(_) => {}
