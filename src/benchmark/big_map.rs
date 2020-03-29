@@ -1,11 +1,10 @@
 use std::collections::HashMap;
 use std::fmt::*;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Empty};
 use std::time::{Duration, Instant};
 
 use chrono::{NaiveDate, NaiveTime};
-use csv::StringRecord;
 use rayon::prelude::*;
 use serde::export::Formatter;
 
@@ -53,20 +52,16 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
         println!("Running seq");
         for _ in 0..rounds {
             // sequential
-            let mut res: Vec<Record> = Vec::with_capacity(lines.len());
+            let mut v: Vec<u8> = Vec::new();
             for line_st in lines.as_mut_slice() {
                 let line: Vec<&str> = line_st.split_whitespace().collect();
-                let date = NaiveDate::parse_from_str((&line)[0], "%Y-%m-%d").unwrap();
-                let time = NaiveTime::parse_from_str((&line)[1], "%H:%M:%S%.f").unwrap();
+                let _date = NaiveDate::parse_from_str((&line)[0], "%Y-%m-%d").unwrap();
+                let _time = NaiveTime::parse_from_str((&line)[1], "%H:%M:%S%.f").unwrap();
                 let mut arr = [0; 55];
                 for i in 2..57 {
                     arr[i - 2] = (&line)[i].parse::<i32>().unwrap();
                 }
-                res.push(Record {
-                    date,
-                    time,
-                    recs: arr,
-                })
+                v.push(0);
             }
         }
     }
@@ -77,20 +72,16 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
     {
         // parallel rayon
         for _ in 0..rounds {
-            let _r: Vec<Record> = lines.as_mut_slice().into_par_iter()
+            let _r: Vec<u8> = lines.as_mut_slice().into_par_iter()
                 .map(|line_st: &mut String| {
                     let line: Vec<&str> = line_st.split_whitespace().collect();
-                    let date = NaiveDate::parse_from_str(line[0], "%Y-%m-%d").unwrap();
-                    let time = NaiveTime::parse_from_str(line[1], "%H:%M:%S%.f").unwrap();
+                    let _date = NaiveDate::parse_from_str(line[0], "%Y-%m-%d").unwrap();
+                    let _time = NaiveTime::parse_from_str(line[1], "%H:%M:%S%.f").unwrap();
                     let mut arr = [0; 55];
                     for i in 2..57 {
                         arr[i - 2] = line[i].parse::<i32>().unwrap();
                     }
-                    Record {
-                        date,
-                        time,
-                        recs: arr,
-                    }
+                    0
                 }).collect();
         }
     };
@@ -101,23 +92,18 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
     {
         // parallel map
         for _ in 0..rounds {
-            let _r: Vec<Record> = par_map_v1(
+            let _r: Vec<u8> = par_map_v1(
                 &lines,
                 &|_, line_st: &String| {
                     let line: Vec<&str> = line_st.split_whitespace().collect();
-                    let date = NaiveDate::parse_from_str(line[0], "%Y-%m-%d").unwrap();
-                    let time = NaiveTime::parse_from_str(line[1], "%H:%M:%S%.f").unwrap();
+                    let _date = NaiveDate::parse_from_str(line[0], "%Y-%m-%d").unwrap();
+                    let _time = NaiveTime::parse_from_str(line[1], "%H:%M:%S%.f").unwrap();
                     let mut arr = [0; 55];
                     for i in 2..57 {
                         arr[i - 2] = line[i].parse::<i32>().unwrap();
                     }
-                    Record {
-                        date,
-                        time,
-                        recs: arr,
-                    }
+                    0
                 });
-            println!("{:?}", _r);
         }
     };
     m.entry(format!("{}, {}, big_map_par", lc, threads)).or_insert(par_now.elapsed().div_f64(rounds as f64));
