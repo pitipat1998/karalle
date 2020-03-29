@@ -12,7 +12,7 @@ use crate::primitive::par_map_v1;
 struct Record {
     date: NaiveDate,
     time: NaiveTime,
-    recs: Vec<i32>,
+    recs: [i32; 55],
 }
 
 impl Record {
@@ -21,7 +21,7 @@ impl Record {
         Record {
             date: NaiveDate::from_ymd(1970, 12, 1),
             time: NaiveTime::from_hms_milli(00, 00, 00, 00),
-            recs: Vec::new(),
+            recs: [0; 55],
         }
     }
 }
@@ -31,14 +31,14 @@ impl Debug for Record {
         f.debug_struct("Record")
             .field("date", &self.date)
             .field("time", &self.time)
-            .field("others", &self.recs)
+            .field("others", &(self.recs.to_vec()))
             .finish()
     }
 }
 
 #[allow(irrefutable_let_patterns, dead_code)]
 pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
-    let filename = "DEBS2012-cleaned-v3.txt.small";
+    let filename = "DEBS2012-cleaned-v3.txt";
 
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
@@ -65,14 +65,14 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
             for line in lines.as_mut_slice() {
                 let date = NaiveDate::parse_from_str((&line).get(0).unwrap(), "%Y-%m-%d").unwrap();
                 let time = NaiveTime::parse_from_str((&line).get(1).unwrap(), "%H:%M:%S%.f").unwrap();
-                let mut vecs: Vec<i32> = Vec::new();
+                let mut arr = [0;55];
                 for i in 2..57 {
-                    vecs.push((&line).get(i).unwrap().parse::<i32>().unwrap());
+                    arr[i-2] = (&line).get(i).unwrap().parse::<i32>().unwrap();
                 }
                 res.push(Record {
                     date,
                     time,
-                    recs: vecs,
+                    recs: arr
                 })
             }
         }
@@ -88,14 +88,14 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
                 .map(|line| {
                     let date = NaiveDate::parse_from_str(line.get(0).unwrap(), "%Y-%m-%d").unwrap();
                     let time = NaiveTime::parse_from_str(line.get(1).unwrap(), "%H:%M:%S%.f").unwrap();
-                    let mut recs: Vec<i32> = Vec::new();
+                    let mut arr = [0;55];
                     for i in 2..57 {
-                        recs.push(line.get(i).unwrap().parse::<i32>().unwrap());
+                        arr[i-2] = (&line).get(i).unwrap().parse::<i32>().unwrap();
                     }
                     Record {
                         date,
                         time,
-                        recs,
+                        recs: arr,
                     }
                 }).collect();
         }
@@ -106,25 +106,22 @@ pub fn big_map_seq(rounds: usize, threads: usize) -> HashMap<String, Duration> {
     println!("Running par");
     {
         // parallel map
-        for i in 0..rounds {
+        for _ in 0..rounds {
             let _r: Vec<Record> = par_map_v1(
                 &lines,
                 &|_, line: &StringRecord| {
-                    println!("{:?}", &line);
                     let date = NaiveDate::parse_from_str((&line).get(0).unwrap(), "%Y-%m-%d").unwrap();
                     let time = NaiveTime::parse_from_str((&line).get(1).unwrap(), "%H:%M:%S%.f").unwrap();
-                    let mut vecs: Vec<i32> = Vec::new();
+                    let mut arr = [0;55];
                     for i in 2..57 {
-                        vecs.push((&line).get(i).unwrap().parse::<i32>().unwrap());
+                        arr[i-2] = (&line).get(i).unwrap().parse::<i32>().unwrap();
                     }
-                    println!("Here");
                     Record {
                         date,
                         time,
-                        recs: vecs,
+                        recs: arr,
                     }
                 });
-            println!("Finish round: {}",i );
         }
     };
     m.entry(format!("{}, {}, big_map_par", lc, threads)).or_insert(par_now.elapsed().div_f64(rounds as f64));
