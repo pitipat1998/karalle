@@ -117,7 +117,7 @@ fn main() {
         let mut ms_res: HashMap<String, Duration> = HashMap::new();
         for size in &sizes {
             println!("Running ms size: {}", size);
-            let res = run_quick_sort_benchmark(&size.to_string(), *size, rounds, tn);
+            let res = run_merge_sort_benchmark(&size.to_string(), *size, rounds, tn);
             ms_res.extend(res);
         }
         println!("Writing merge_sort result");
@@ -185,7 +185,7 @@ fn main() {
         write_output(&"sample_sort".to_string(), ss_res, rounds, tn);
     }
 
-    if t == "all" || t == "big_map" || t == "bm" {
+    if t == "big_map" || t == "bm" {
         let bm_res = big_map_seq(rounds as usize, tn);
         println!("Writing big_map result");
         write_output(&"big_map".to_string(), bm_res, rounds, tn);
