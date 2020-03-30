@@ -179,7 +179,7 @@ fn main() {
             qs_res.extend(res);
         }
         println!("Writing qs result");
-        write_output(&"qs".to_string(), qs_res, rounds, tn);
+        write_output(&"qs_thd".to_string(), qs_res, rounds, tn);
     }
 
     if t == "sample_sort" || t == "ss" {
