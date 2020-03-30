@@ -1,4 +1,5 @@
 DEBS2012-cleaned-v3.txt*
+run_all.sh
 .idea
 data/**
 !data/.gitkeep
