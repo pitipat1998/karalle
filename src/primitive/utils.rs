@@ -7,7 +7,7 @@ pub fn num_blocks(n: usize, block_size: usize) -> usize {
         0
     }
     else {
-        (1 + ((n)-1) / (block_size))
+        1 + ((n)-1) / (block_size)
     }
 }
 

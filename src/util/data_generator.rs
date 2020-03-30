@@ -31,7 +31,7 @@ pub fn make_data(size: u64, min: i32, max: i32, path: &str, type_t: &str) {
     path.to_string().retain(|x| x != '/');
 
     let fname = format!("{}/{}/size-{}.csv", path, type_t, size);
-    let _ = create_dir_all(format!("{:?}/{:?}", path, type_t));
+    let _ = create_dir_all(format!("{}/{}", path, type_t));
     let f = File::create(Path::new(fname.as_str())).expect("Unable to create file");
     let mut writer = LineWriter::new(&f);
 
@@ -56,7 +56,7 @@ pub fn make_flatten_data(size: u64, min: i32, max: i32, path: &str) {
     let fname = format!("{}/flatten/size-{}.csv", path, size);
     let f = File::create(Path::new(fname.as_str())).expect("Unable to create file");
     let mut writer = LineWriter::new(&f);
-    let _ = create_dir_all(format!("{:?}/{:?}", path, "flatten"));
+    let _ = create_dir_all(format!("{}/{}", path, "flatten"));
     for _ in 0..data.len() {
         let dsize: u64 = rng.gen_range(3, 300);
         let line = random_list_generator(dsize, min, max);

@@ -113,7 +113,7 @@ fn main() {
     let files_1d: Vec<String> = get_files("data/map");
     // let files_2d: Vec<String> = get_files("data/flatten");
     if files_1d.is_empty()  {
-        println!("No data to be testing on, put .csv files in data/");
+        println!("No data to be testing on, run `KMAKE=<type> cargo run --release`");
         exit(-1);
     }
 
