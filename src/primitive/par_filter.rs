@@ -3,6 +3,7 @@ extern crate rayon;
 use crate::primitive::*;
 use crate::constant::*;
 use rayon::prelude::*;
+use std::cmp::min;
 
 
 // TODO: more versions of filter
@@ -19,13 +20,34 @@ pub fn par_filter_v2<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
     where T: Sync + Send + Copy ,
           U: Sync + Send + (Fn(usize, &T) -> bool)
 {
-    let mapped: &mut [usize] = &mut par_map_v3(seq, &|i: usize, elt: &T| -> usize { if func(i, elt) {1} else {0}});
-    let (x, tot): (Vec<usize>, usize) = par_scan(mapped,
-                                             &|elt1: &usize, elt2: &usize| -> usize { *elt1 + *elt2 },
-                                             &0);
-    let mut ret: Vec<T> = vec_no_init(tot);
-
-    par_filter_util_v2(seq, &mut ret, &mapped, &x, 0);
+    let n = seq.len();
+    let l = num_blocks(n, BLOCK_SIZE);
+    let sums: &mut [usize] = &mut vec_no_init(l);
+    let fl: &mut [bool] = &mut vec_no_init(n);
+    double_sliced_for(fl, sums, n, BLOCK_SIZE, &|ff, ss, i,  s,  e| {
+        let mut r: usize = 0;
+        for  j in s..e {
+            let b = func(j, &seq[j]);
+            ff[j] = b;
+            r += if b {1} else {0};
+        }
+        ss[i] = r;
+    });
+    let m = par_scan_inplace(sums, |a, b| { *a + *b }, &0);
+    let mut ret: Vec<T> = vec_no_init(m);
+    single_sliced_for(&mut ret, n, BLOCK_SIZE, &|rr, i,  s, e| {
+        let ss = &seq[s..e];
+        let ff = &fl[s..e];
+        let end = if i == l-1 {m} else {sums[i+1]};
+        let tmp_rr = &mut rr[sums[i]..end];
+        let mut k: usize = 0;
+        for j in 0..ss.len() {
+            if ff[j] {
+                tmp_rr[k] = ss[j];
+                k += 1;
+            }
+        }
+    });
     ret
 }
 
@@ -63,30 +85,6 @@ fn par_filter_util_v1<T, U>(seq: &[T], mapped: &[i32], func: &U) -> Vec<T>
         );
         l.extend(r);
         l
-    }
-}
-
-pub fn par_filter_util_v2<T>(seq: &[T], ret: &mut [T], mapped: &[usize], x: &[usize], idx: usize)
-    where T: Sync + Send + Copy
-{
-    if seq.len() <= GRANULARITY {
-        for i in 0..seq.len() {
-            if mapped[i] == 1 {
-                ret[x[i]-idx] = seq[i];
-            }
-        }
-    } else {
-        let half: usize = seq.len()/2;
-        let (seq_l, seq_r) = seq.split_at(half);
-        let (mapped_l, mapped_r) = mapped.split_at(half);
-        let (x_l, x_r) = x.split_at(half);
-        let x_half = x_r[0];
-        let (ret_l, ret_r) = ret.split_at_mut(x_half-idx);
-
-        rayon::join(
-            || { par_filter_util_v2(seq_l, ret_l, mapped_l, x_l, idx); },
-            || { par_filter_util_v2(seq_r, ret_r, mapped_r, x_r,x_half); }
-        );
     }
 }
 
