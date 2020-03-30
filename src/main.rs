@@ -137,8 +137,7 @@ fn main() {
         // Map
         for d in files_1d.iter() {
             println!("Running map file: {}", d);
-            let v: Vec<u128> = read_csv(&d);
-            let res = run_map_benchmark(d, v, rounds, tn);
+            let res = run_map_benchmark(&size.to_string(), size, rounds, tn);
             map_res.extend(res);
         }
         println!("Writing map result");
@@ -155,19 +154,17 @@ fn main() {
         println!("Writing sort result");
         write_output(&"sort".to_string(), sort_res, rounds, tn);
     }
-//    if t == "all" || t == "flatten" {
-//        let mut flat_res: HashMap<String, Duration> = HashMap::new();
-//        // Flatten
-//        for d in files_2d.iter() {
-//            println!("Running flatten file: {}", d);
-//            let v: Vec<Vec<u32>> = read_nested::<u32>(&d);
-//            // let v_r: Vec<&Vec<u128>> = v.iter().map(|f| f).collect();
-//            let res = run_flatten_benchmark(d, &v, rounds, tn);
-//            flat_res.extend(res);
-//        }
-//        println!("Writing flatten result");
-//        write_output(&t,flat_res, rounds, tn);
-//    }
+
+    if t == "all" || t == "flatten" {
+        let mut flat_res: HashMap<String, Duration> = HashMap::new();
+        for d in files_2d.iter() {
+            println!("Running flatten size: {}", size);
+            let res = run_flatten_benchmark(&size.to_string(), size, rounds, tn);
+            flat_res.extend(res);
+        }
+        println!("Writing flatten result");
+        write_output(&t,flat_res, rounds, tn);
+    }
     if t == "big_map" || t == "bm" {
         let bm_res = big_map_seq(rounds as usize, tn);
         println!("Writing big_map result");
