@@ -11,7 +11,7 @@ use crate::primitive::vec_no_init;
 #[allow(dead_code)]
 pub fn random_list_generator(size: u64, min: i32, max: i32) -> Vec<String>{
     let mut rng = rand::thread_rng();
-    ((0..size).into_iter().map(|_|rng.gen_range(min, max).to_string()).collect())
+    (0..size).into_iter().map(|_|rng.gen_range(min, max).to_string()).collect()
 }
 
 #[allow(dead_code)]
