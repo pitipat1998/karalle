@@ -113,16 +113,6 @@ fn main() {
     }
     let _ = fs::create_dir("output/");
 
-    if t == "all" || t == "ms" || t == "mergesort" {
-        let mut ms_res: HashMap<String, Duration> = HashMap::new();
-        for size in &sizes {
-            println!("Running ms size: {}", size);
-            let res = run_merge_sort_benchmark(&size.to_string(), *size, rounds, tn);
-            ms_res.extend(res);
-        }
-        println!("Writing merge_sort result");
-        write_output(&"merge_sort".to_string(), ms_res, rounds, tn);
-    }
     if t == "all" || t == "map" {
         let mut map_res: HashMap<String, Duration> = HashMap::new();
         // Map
@@ -134,6 +124,17 @@ fn main() {
         }
         println!("Writing map result");
         write_output(&"map".to_string(), map_res, rounds, tn);
+    }
+
+    if t == "all" || t == "sort" {
+        let mut sort_res: HashMap<String, Duration> = HashMap::new();
+        for size in &sizes {
+            println!("Running sorting size: {}", size);
+            let res = run_sorting_benchmark(&size.to_string(), *size, rounds, tn);
+            sort_res.extend(res);
+        }
+        println!("Writing sort result");
+        write_output(&"sort".to_string(), sort_res, rounds, tn);
     }
 //    if t == "all" || t == "flatten" {
 //        let mut flat_res: HashMap<String, Duration> = HashMap::new();
@@ -148,17 +149,10 @@ fn main() {
 //        println!("Writing flatten result");
 //        write_output(&t,flat_res, rounds, tn);
 //    }
-
-    if t == "all" || t == "qs" || t == "quick_sort" {
-        let mut qs_res: HashMap<String, Duration> = HashMap::new();
-        // Quick_sort
-        for size in &sizes {
-            println!("Running qs size: {}", size);
-            let res = run_quick_sort_benchmark(&size.to_string(), *size, rounds, tn);
-            qs_res.extend(res);
-        }
-        println!("Writing qs result");
-        write_output(&"qs".to_string(), qs_res, rounds, tn);
+    if t == "big_map" || t == "bm" {
+        let bm_res = big_map_seq(rounds as usize, tn);
+        println!("Writing big_map result");
+        write_output(&"big_map".to_string(), bm_res, rounds, tn);
     }
 
     if t == "all" || t == "scan" {
@@ -174,7 +168,19 @@ fn main() {
         write_output(&"scan".to_string(), scan_res, rounds, tn);
     }
 
-    if t == "all" || t == "sample_sort" || t == "ss" {
+    if t == "qs" || t == "quick_sort" {
+        let mut qs_res: HashMap<String, Duration> = HashMap::new();
+        // Quick_sort
+        for size in &sizes {
+            println!("Running qs size: {}", size);
+            let res = run_quick_sort_benchmark(&size.to_string(), *size, rounds, tn);
+            qs_res.extend(res);
+        }
+        println!("Writing qs result");
+        write_output(&"qs".to_string(), qs_res, rounds, tn);
+    }
+
+    if t == "sample_sort" || t == "ss" {
         let mut ss_res: HashMap<String, Duration> = HashMap::new();
         for size in &sizes {
             println!("Running sample sort size: {}", size);
@@ -185,10 +191,15 @@ fn main() {
         write_output(&"sample_sort".to_string(), ss_res, rounds, tn);
     }
 
-    if t == "big_map" || t == "bm" {
-        let bm_res = big_map_seq(rounds as usize, tn);
-        println!("Writing big_map result");
-        write_output(&"big_map".to_string(), bm_res, rounds, tn);
+    if t == "ms" || t == "mergesort" {
+        let mut ms_res: HashMap<String, Duration> = HashMap::new();
+        for size in &sizes {
+            println!("Running ms size: {}", size);
+            let res = run_merge_sort_benchmark(&size.to_string(), *size, rounds, tn);
+            ms_res.extend(res);
+        }
+        println!("Writing merge_sort result");
+        write_output(&"merge_sort".to_string(), ms_res, rounds, tn);
     }
 
     // if t == "fronk" {
