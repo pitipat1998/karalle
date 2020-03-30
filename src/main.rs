@@ -110,13 +110,13 @@ fn main() {
 
     let t: String = envmnt::get_or("KTYPE", "ALL").to_lowercase();
 
-    // let files_1d: Vec<String> = get_files("data/map");
+    let files_1d: Vec<String> = get_files("data/map");
     // let files_2d: Vec<String> = get_files("data/flatten");
-    // if files_1d.is_empty() && files_2d.is_empty() {
-    //     println!("No data to be testing on, put .csv files in data/");
-    //     exit(-1);
-    // }
-    
+    if files_1d.is_empty()  {
+        println!("No data to be testing on, put .csv files in data/");
+        exit(-1);
+    }
+
     let _ = fs::create_dir("output/");
 
     if t == "all" || t == "filter" {
