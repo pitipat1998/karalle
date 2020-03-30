@@ -34,11 +34,11 @@ fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U, cut_size: usize) -> Vec<T>
         let ((lt, eq), gt) = rayon::join(
             || {
                 rayon::join(
-                    || par_filter_v3(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 }),
-                    || par_filter_v3(&seq, &|_i: usize, elt: &T| -> bool { func(elt, p) == 0 })
+                    || par_filter_v2(&seq, &|_i:usize, elt: &T| -> bool { func(elt, p) < 0 }),
+                    || par_filter_v2(&seq, &|_i: usize, elt: &T| -> bool { func(elt, p) == 0 })
                 )
             },
-            || par_filter_v3(&seq, &|_i: usize, elt: &T| -> bool { func(elt, p) > 0 })
+            || par_filter_v2(&seq, &|_i: usize, elt: &T| -> bool { func(elt, p) > 0 })
         );
         let (left , right) = rayon::join(
             || par_quick_sort_utils(&lt, func, cut_size),
