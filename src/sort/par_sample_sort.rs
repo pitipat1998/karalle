@@ -1,17 +1,16 @@
 extern crate rayon;
 
 use rand::{Rng};
-use crate::primitive::{vec_zeroes, vec_init, vec_no_init, par_for, double_sliced_for};
+use crate::primitive::{vec_zeroes, vec_init, vec_random_init, vec_no_init, par_for, double_sliced_for};
 use crate::sort::{par_quick_sort_v2};
 use crate::primitive::par_buckets_transpose;
 use crate::primitive::par_copy;
-use serde::export::fmt::{Display, Debug};
 use crate::sort::par_quick_sort_slice;
 use crate::constant::*;
 use std::cmp::min;
 
 fn merge_seq<T, U>(sa: &[T], sb: &[T], sc: &mut [usize], func: &U)
-    where T: Sync + Send + Copy + Display + Debug + Display + Debug,
+    where T: Sync + Send + Copy  ,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     if sa.len() == 0 || sb.len() == 0 { return; }
@@ -42,7 +41,7 @@ fn merge_seq<T, U>(sa: &[T], sb: &[T], sc: &mut [usize], func: &U)
 }
 
 fn par_sample_sort_util<T, U>(seq: &mut [T], aux: &mut [T], func: &U)
-    where T: Copy + Sync + Send + Display + Debug,
+    where T: Copy + Sync + Send ,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     let n = seq.len();
@@ -56,9 +55,9 @@ fn par_sample_sort_util<T, U>(seq: &mut [T], aux: &mut [T], func: &U)
         let sample_set_size = num_buckets * OVER_SAMPLE;
         let m = num_blocks * num_buckets;
         let pivots = {
-            let mut samples: Vec<T> = vec_init(sample_set_size, &|_, rng| seq[rng.gen_range(0, seq.len())], GRANULARITY);
+            let mut samples: Vec<T> = vec_random_init(sample_set_size, &|_, rng| seq[rng.gen_range(0, seq.len())], GRANULARITY);
             par_quick_sort_v2(&mut samples, func);
-            vec_init(num_buckets - 1, &|i, _| samples[i * OVER_SAMPLE], GRANULARITY)
+            vec_init(num_buckets - 1, &|i| samples[i * OVER_SAMPLE], GRANULARITY)
         };
 
         let counts: &mut [usize] = &mut vec_zeroes(m + 1);
@@ -85,7 +84,7 @@ fn par_sample_sort_util<T, U>(seq: &mut [T], aux: &mut [T], func: &U)
 
 #[allow(dead_code)]
 pub fn par_sample_sort<T, U>(seq: &mut Vec<T>, func: &U)
-    where T: Copy + Sync + Send + Display + Debug,
+    where T: Copy + Sync + Send ,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     let n = seq.len();

@@ -4,10 +4,9 @@ use super::vec::*;
 use super::scan::*;
 use super::reduce::*;
 use std::cmp::min;
-use serde::export::fmt::{Display, Debug};
 
 fn par_scan_util<T, U>(seq: &mut [T], ret: &mut [T], func: &U, offset: &T) -> T
-    where T: Sync + Send + Copy + Display + Debug + Display + Debug,
+    where T: Sync + Send + Copy  ,
           U: Sync + Send + Fn(&T, &T) -> T
 {
     let n: usize = seq.len();
@@ -15,7 +14,7 @@ fn par_scan_util<T, U>(seq: &mut [T], ret: &mut [T], func: &U, offset: &T) -> T
     if l <= 2 {
         return scan(seq, ret, func, offset);
     }
-    let sums: &mut [T] = &mut vec_init(l, &|i: usize, _| {
+    let sums: &mut [T] = &mut vec_init(l, &|i: usize| {
         let s = i * BLOCK_SIZE;
         let e = min((i+1) * BLOCK_SIZE, seq.len());
         reduce(&seq[s..e], func)
@@ -30,7 +29,7 @@ fn par_scan_util<T, U>(seq: &mut [T], ret: &mut [T], func: &U, offset: &T) -> T
 }
 
 pub fn par_scan<T, U>(seq: &mut [T], func: U , offset: &T) -> (Vec<T>, T)
-    where T: Sync + Send + Copy + Display + Debug + Display + Debug,
+    where T: Sync + Send + Copy  ,
           U: Sync + Send + Fn(&T, &T) -> T
 {
     let mut ret = vec_no_init(seq.len());
@@ -39,7 +38,7 @@ pub fn par_scan<T, U>(seq: &mut [T], func: U , offset: &T) -> (Vec<T>, T)
 }
 
 pub fn par_scan_inplace<T, U>(seq: &mut [T], func: U , offset: &T) -> T
-    where T: Sync + Send + Copy + Display + Debug,
+    where T: Sync + Send + Copy ,
           U: Sync + Send + Fn(&T, &T) -> T
 {
     let (seq1, seq2) = no_split(seq);

@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 use crate::primitive::*;
-use serde::export::fmt::{Display, Debug};
 
 // par_flatten<T>(seqs: &Vec<&Vec<T>>) -> Vec<T>
 #[allow(dead_code)]
@@ -26,7 +25,7 @@ pub fn run_flatten_benchmark<T>(
     rounds: u128,
     threads: usize
 ) -> HashMap<String, Duration>
-where T: Copy + Sync + Send + Display + Debug
+where T: Copy + Sync + Send
 {
     let mut result: HashMap<String, Duration> = HashMap::new();
 

@@ -1,9 +1,8 @@
-use serde::export::fmt::{Debug, Display};
 use crate::primitive::{no_split, par_for};
 use crate::constant::*;
 
 fn par_block_transpose_util<T>(from: &[T], to: &mut [T], source_offsets: &[usize], dest_offsets: &[usize], rs: usize, rc: usize, rl: usize, cs: usize, cc: usize, cl: usize)
-    where T: Send + Sync + Copy + Display + Debug
+    where T: Send + Sync + Copy
 {
     if cc * rc < TRANS_THRESHOLD * 16 {
         par_for(to, rs, rs + rc, &|ts, i| {
@@ -37,7 +36,7 @@ fn par_block_transpose_util<T>(from: &[T], to: &mut [T], source_offsets: &[usize
 }
 
 pub fn par_block_transpose<T>(from: &[T], to: &mut[T], source_offsets: &[usize], dest_offsets: &[usize], rc: usize, cc: usize)
-    where T: Send + Sync + Copy + Display + Debug
+    where T: Send + Sync + Copy
 {
     par_block_transpose_util(from , to, source_offsets, dest_offsets, 0, rc, cc, 0, cc, rc);
 }

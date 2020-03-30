@@ -1,18 +1,17 @@
 use crate::constant::*;
 use rayon::prelude::*;
-use serde::export::fmt::{Display, Debug};
 
 // using rayon's par_iter
 #[allow(dead_code)]
 pub fn par_flatten_v2<T>(seqs: &Vec<Vec<T>>) -> Vec<T>
-    where T: Sync + Send + Copy + Display + Debug
+    where T: Sync + Send + Copy
 {
     (&seqs).into_par_iter().cloned().flatten().collect()
 }
 
 #[allow(dead_code)]
 pub fn par_flatten<T>(seqs: &Vec<Vec<T>>) -> Vec<T>
-    where T: Sync + Send + Copy + Display + Debug
+    where T: Sync + Send + Copy
 {
 //    let sizes: Vec<usize> = par_map_v3(&seqs, &|_i, elt| -> usize { elt.len() });
 //    let (_x, tot): (Vec<usize>, usize) = par_scan(&sizes,

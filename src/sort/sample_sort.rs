@@ -4,11 +4,10 @@ use num::{PrimInt};
 use rand::{distributions::Uniform, Rng};
 use crate::primitive::*;
 use crate::constant::*;
-use serde::export::fmt::{Display, Debug};
 
 
 fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end: usize) -> Vec<T>
-    where T: Copy + PrimInt + Sync + Send + Display + Debug
+    where T: Copy + PrimInt + Sync + Send
 {
     let n = end - start;
     if (n / k) < QS_THRESHOLD {
@@ -56,7 +55,7 @@ fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end:
 
 #[allow(dead_code)]
 pub fn seq_sample_sort<T>(seq: &mut [T], k: usize, p: usize) -> Vec<T>
-    where T: Copy + PrimInt + Sync + Send + Display + Debug
+    where T: Copy + PrimInt + Sync + Send
 {
     seq_sample_sort_util(seq, k, p, 0, seq.len())
 }
