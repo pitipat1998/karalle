@@ -148,14 +148,21 @@ mod tests {
     #[test]
     fn par_flatten() {
         use crate::primitive::*;
-        let arr: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
-        let arr2: Vec<i32> = vec![15, 16];
-        let arr3: Vec<i32> = vec![1, 2];
-        let arr4: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8];
-        let arr5: Vec<i32> = vec![1, 2, 10, 20];
-        let actual: Vec<i32> = par_flatten(&vec![arr, arr2, arr3, arr4, arr5]);
+        let arr1: Vec<i32> = random_i32_list_generator(LENGTH/2, -1000, 1001);
+        let arr2: Vec<i32> = random_i32_list_generator(LENGTH/2, -1000, 1001);
+        let arr3: Vec<i32> = random_i32_list_generator(LENGTH/2, -1000, 1001);
+        let arr4: Vec<i32> = random_i32_list_generator(LENGTH/2, -1000, 1001);
+        let arr5: Vec<i32> = random_i32_list_generator(LENGTH/2, -1000, 1001);
 
-        let expected: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1, 2, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 10, 20];
+        let arr6: Vec<i32> = arr1.clone();
+        let arr7: Vec<i32> = arr2.clone();
+        let arr8: Vec<i32> = arr3.clone();
+        let arr9: Vec<i32> = arr4.clone();
+        let arr10: Vec<i32> = arr5.clone();
+
+        let actual: Vec<i32> = par_flatten(&vec![arr1, arr2, arr3, arr4, arr5]);
+
+        let expected: Vec<i32> = par_flatten_v2(&vec![arr6, arr7, arr8, arr9, arr10]);
 
         assert_eq!(actual, expected);
     }
