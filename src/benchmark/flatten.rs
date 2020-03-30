@@ -17,7 +17,7 @@ fn benchmark_flatten_v1(size: u128, rounds: u128) -> Duration
     let mut tot_time = Duration::new(0, 0);
     for _ in 0..rounds {
         let mut arr: Vec<Vec<i16>> = Vec::new();
-        for i in 0..size {
+        while c_size > 0 {
             let s = rng.gen_range(1, min(c_size, 1000001));
             arr.push(random_i16_list_generator(s as u64, -1000, 1001));
             c_size -= s;
@@ -37,7 +37,7 @@ fn benchmark_flatten_v2(size: u128, rounds: u128) -> Duration
     let mut tot_time = Duration::new(0, 0);
     for _ in 0..rounds {
         let mut arr: Vec<Vec<i16>> = Vec::new();
-        for i in 0..size {
+        while c_size > 0 {
             let s = rng.gen_range(1, min(c_size, 1000001));
             arr.push(random_i16_list_generator(s as u64, -1000, 1001));
             c_size -= s;
