@@ -16,3 +16,4 @@ pub use self::sample_sort::run_sample_sort_benchmark;
 pub use self::merge_sort::run_merge_sort_benchmark;
 pub use self::big_map::big_map_seq;
 pub use self::sort::run_sorting_benchmark;
+pub use self::filter::run_filter_benchmark;

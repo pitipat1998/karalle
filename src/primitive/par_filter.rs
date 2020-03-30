@@ -3,7 +3,6 @@ extern crate rayon;
 use crate::primitive::*;
 use crate::constant::*;
 use rayon::prelude::*;
-use std::cmp::min;
 
 
 // TODO: more versions of filter

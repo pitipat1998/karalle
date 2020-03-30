@@ -1,6 +1,5 @@
-use crate::constant::*;
 use rayon::prelude::*;
-use crate::primitive::{par_map_v3, par_scan, vec_no_init, single_sliced_for, par_for};
+use crate::primitive::{par_scan, vec_no_init, par_for};
 
 #[allow(dead_code)]
 pub fn par_flatten<T>(seqs: &Vec<Vec<T>>) -> Vec<T>

@@ -1,7 +1,7 @@
 use rand::prelude::ThreadRng;
 use crate::constant::*;
 use std::slice;
-use crate::primitive::{single_sliced_for, double_sliced_for};
+use crate::primitive::{single_sliced_for};
 
 pub fn vec_no_init<T>(n: usize) -> Vec<T> {
     let mut v: Vec<T> = Vec::with_capacity(n);
@@ -40,12 +40,12 @@ pub fn vec_random_init<T, U>(n: usize, f: &U, granularity: usize) -> Vec<T>
 }
 
 
-pub fn vec_init<T, U>(n: usize, f: &U, granularity: usize) -> Vec<T>
+pub fn vec_init<T, U>(n: usize, f: &U, _granularity: usize) -> Vec<T>
     where T: Sync + Send + Copy,
           U: Sync + Send + Fn(usize) -> T,
 {
     let mut v: Vec<T> = vec_no_init::<T>(n);
-    single_sliced_for(&mut v, n, BLOCK_SIZE, &|seq, i, s, e| {
+    single_sliced_for(&mut v, n, BLOCK_SIZE, &|seq, _i, s, e| {
         for j in s..e {
             seq[j] = f(j)
         }

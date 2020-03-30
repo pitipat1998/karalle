@@ -1,10 +1,11 @@
+use std::cmp::min;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
+use rand::Rng;
+
 use crate::primitive::*;
 use crate::util::data_generator::*;
-use rand::Rng;
-use std::cmp::min;
 
 #[allow(dead_code)]
 type FlattenFunc<T> = dyn Sync + Send + Fn(&Vec<&Vec<T>>) -> Vec<T>;
@@ -12,14 +13,17 @@ type FlattenFunc<T> = dyn Sync + Send + Fn(&Vec<&Vec<T>>) -> Vec<T>;
 #[allow(dead_code)]
 fn benchmark_flatten_v1(size: u64, rounds: u128) -> Duration
 {
-    let mut c_size = size;
     let mut rng = rand::thread_rng();
     let mut tot_time = Duration::new(0, 0);
     for _ in 0..rounds {
-        let mut arr: Vec<Vec<i16>> = Vec::new();
+        let mut c_size = size;
+        let mut arr: Vec<Vec<i16>> = Vec::with_capacity(size as usize);
         while c_size > 0 {
-            let s = rng.gen_range(1, min(c_size, 1000001));
-            arr.push(random_i16_list_generator(s, -1000, 1001));
+            let s: u64 = if c_size == 1 { 1 } else {
+                rng.gen_range(1, min(c_size, 1000001))
+            };
+            let tmp = random_i16_list_generator(s, -1000, 1001);
+            arr.push(tmp);
             c_size -= s;
         }
         let now = Instant::now();
@@ -32,14 +36,17 @@ fn benchmark_flatten_v1(size: u64, rounds: u128) -> Duration
 #[allow(dead_code)]
 fn benchmark_flatten_v2(size: u64, rounds: u128) -> Duration
 {
-    let mut c_size = size;
     let mut rng = rand::thread_rng();
     let mut tot_time = Duration::new(0, 0);
     for _ in 0..rounds {
-        let mut arr: Vec<Vec<i16>> = Vec::new();
+        let mut c_size = size;
+        let mut arr: Vec<Vec<i16>> = Vec::with_capacity(size as usize);
         while c_size > 0 {
-            let s = rng.gen_range(1, min(c_size, 1000001));
-            arr.push(random_i16_list_generator(s, -1000, 1001));
+            let s: u64 = if c_size == 1 { 1 } else {
+                rng.gen_range(1, min(c_size, 1000001))
+            };
+            let tmp = random_i16_list_generator(s, -1000, 1001);
+            arr.push(tmp);
             c_size -= s;
         }
         let now = Instant::now();
@@ -50,13 +57,12 @@ fn benchmark_flatten_v2(size: u64, rounds: u128) -> Duration
 }
 
 #[allow(dead_code)]
-pub fn run_flatten_benchmark<T>(
+pub fn run_flatten_benchmark(
     d: &String,
     size: u64,
     rounds: u128,
-    threads: usize
+    threads: usize,
 ) -> HashMap<String, Duration>
-where T: Copy + Sync + Send
 {
     let mut result: HashMap<String, Duration> = HashMap::new();
 

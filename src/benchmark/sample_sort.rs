@@ -39,13 +39,11 @@ pub fn run_sample_sort_benchmark(
 ) -> HashMap<String, Duration>
 {
     let mut result: HashMap<String, Duration> = HashMap::new();
-    println!("Seq");
     let key = format!("{}, {}, sample_sort seq", &d, threads);
     let d1 = benchmark_sample_sort(size, rounds);
     println!("{}: {:?}", key, d1);
     result.entry(key).or_insert(d1);
 
-    println!("Par");
     let key = format!("{}, {}, sample_sort par", &d, threads);
     let d2 = benchmark_par_sample_sort( size,  rounds);
     println!("{}: {:?}", key, d2);

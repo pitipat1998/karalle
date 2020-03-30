@@ -1,5 +1,3 @@
-use rand::prelude::ThreadRng;
-use rand::seq::SliceRandom;
 use rayon::prelude::*;
 
 use crate::primitive::*;

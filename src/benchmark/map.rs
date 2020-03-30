@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 use crate::primitive::*;
 use crate::util::data_generator::*;
 
-type MapFunc = (dyn Sync + Send + (Fn(usize, &u16) -> u16));
+// type MapFunc = (dyn Sync + Send + (Fn(usize, &u16) -> u16));
 
 #[allow(dead_code)]
 fn fac(i: &u16) -> u16 {
@@ -21,7 +21,7 @@ fn benchmark_map_v1(size: u64, rounds: u128) -> Duration
 {
     let mut tot_time = Duration::new(0, 0);
     for _ in 0..rounds {
-        let mut arr: Vec<i16> = random_i16_list_generator(size, -100, 100);
+        let arr: Vec<i16> = random_i16_list_generator(size, -100, 100);
         let now = Instant::now();
         let _ = par_map_v1(&arr, &|_, x| { *x * *x });
         tot_time += now.elapsed()
@@ -34,7 +34,7 @@ fn benchmark_map_v3(size: u64, rounds: u128) -> Duration
 {
     let mut tot_time = Duration::new(0, 0);
     for _ in 0..rounds {
-        let mut arr: Vec<i16> = random_i16_list_generator(size, -100, 100);
+        let arr: Vec<i16> = random_i16_list_generator(size, -100, 100);
         let now = Instant::now();
         let _ = par_map_v3(&arr, &|_, x| { *x * *x });
         tot_time += now.elapsed()
@@ -47,7 +47,7 @@ fn benchmark_map_v5(size: u64, rounds: u128) -> Duration
 {
     let mut tot_time = Duration::new(0, 0);
     for _ in 0..rounds {
-        let mut arr: Vec<i16> = random_i16_list_generator(size, -100, 100);
+        let arr: Vec<i16> = random_i16_list_generator(size, -100, 100);
         let now = Instant::now();
         let _ = par_map_v5(&arr, &|_, x| { *x * *x });
         tot_time += now.elapsed()

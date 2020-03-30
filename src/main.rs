@@ -11,12 +11,11 @@ use std::time::Duration;
 use rayon::prelude::*;
 use serde_json::*;
 
-use project_k::primitive::{vec_init, par_map_v5};
+use project_k::primitive::{vec_init};
 use util::data_generator::*;
 use util::file_reader::*;
 
 use crate::benchmark::*;
-use crate::primitive::par_map_v3;
 
 pub mod util;
 pub mod benchmark;
@@ -90,7 +89,7 @@ fn write_output(func: &String, result: HashMap<String, Duration>,
 }
 
 fn main() {
-    let mut max_size: usize = envmnt::get_or("KSIZE", "27").parse().unwrap();
+    let max_size: usize = envmnt::get_or("KSIZE", "27").parse().unwrap();
     let sizes: Vec<u64> = vec_init(max_size, &|i| { (1 << (i + 1)) as u64 }, 2000);
     let make_type = envmnt::get_or("KMAKE", "none").to_lowercase();
 
@@ -122,10 +121,9 @@ fn main() {
     if t == "all" || t == "filter" {
         let mut filter_res: HashMap<String, Duration> = HashMap::new();
         // Map
-        for d in files_1d.iter() {
-            println!("Running filter file: {}", d);
-            let v: Vec<u128> = read_csv(&d);
-            let res = (d, v, rounds, tn);
+        for size in &sizes {
+            println!("Running filter file: {}", &size);
+            let res = run_filter_benchmark(&size.to_string(), *size , rounds, tn);
             filter_res.extend(res);
         }
         println!("Writing filter result");
@@ -135,9 +133,9 @@ fn main() {
     if t == "all" || t == "map" {
         let mut map_res: HashMap<String, Duration> = HashMap::new();
         // Map
-        for d in files_1d.iter() {
-            println!("Running map file: {}", d);
-            let res = run_map_benchmark(&size.to_string(), size, rounds, tn);
+        for size in &sizes {
+            println!("Running map size: {:?}", &size);
+            let res = run_map_benchmark(&size.to_string(), *size, rounds, tn);
             map_res.extend(res);
         }
         println!("Writing map result");
@@ -157,13 +155,13 @@ fn main() {
 
     if t == "all" || t == "flatten" {
         let mut flat_res: HashMap<String, Duration> = HashMap::new();
-        for d in files_2d.iter() {
+        for size in &sizes {
             println!("Running flatten size: {}", size);
-            let res = run_flatten_benchmark(&size.to_string(), size, rounds, tn);
+            let res = run_flatten_benchmark(&size.to_string(), *size, rounds, tn);
             flat_res.extend(res);
         }
         println!("Writing flatten result");
-        write_output(&t,flat_res, rounds, tn);
+        write_output(&"flatten".to_string(),flat_res, rounds, tn);
     }
     if t == "big_map" || t == "bm" {
         let bm_res = big_map_seq(rounds as usize, tn);
