@@ -6,6 +6,7 @@ mod scan;
 mod sample_sort;
 mod merge_sort;
 mod sort;
+mod filter;
 
 pub use self::map::run_map_benchmark;
 pub use self::flatten::run_flatten_benchmark;

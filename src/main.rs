@@ -78,7 +78,7 @@ fn make_file(make_type: &String) {
                 });
             return;
         }
-        _ => println!("Usage: KGEN=<map|filter|flatten|all>")
+        _ => println!("Usage: KMAKE=<map|filter|flatten|all>")
     }
 }
 
@@ -118,6 +118,19 @@ fn main() {
         exit(-1);
     }
     let _ = fs::create_dir("output/");
+
+    if t == "all" || t == "filter" {
+        let mut filter_res: HashMap<String, Duration> = HashMap::new();
+        // Map
+        for d in files_1d.iter() {
+            println!("Running filter file: {}", d);
+            let v: Vec<u128> = read_csv(&d);
+            let res = (d, v, rounds, tn);
+            filter_res.extend(res);
+        }
+        println!("Writing filter result");
+        write_output(&"filter".to_string(), filter_res, rounds, tn);
+    }
 
     if t == "all" || t == "map" {
         let mut map_res: HashMap<String, Duration> = HashMap::new();
