@@ -24,13 +24,14 @@ fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U, cut_size: usize) -> Vec<T>
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     if seq.len() <= cut_size {
-        let mut ret = seq.clone();
+        let mut ret = seq.clone(); // passing mutable instead
         ret.sort_unstable_by(|a, b| func(a, b).cmp(&0));
         ret
     }
     else {
-        let mut rng: ThreadRng = rand::thread_rng();
-        let p: &T = seq.choose(&mut rng).unwrap_or(&seq[seq.len() / 2]);
+        // let mut rng: ThreadRng = rand::thread_rng();
+        // let p: &T = seq.choose(&mut rng).unwrap_or(&seq[seq.len() / 2]);
+        let p: &T = &seq[seq.len()/2]; // try this first
         let ((lt, eq), gt) = rayon::join(
             || {
                 rayon::join(
@@ -44,7 +45,7 @@ fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U, cut_size: usize) -> Vec<T>
             || par_quick_sort_utils(&lt, func, cut_size),
                 || par_quick_sort_utils(&gt, func, cut_size)
         );
-        vec![left, eq, right].par_iter().flatten().map(|x| *x).collect()
+        vec![left, eq, right].par_iter().flatten().map(|x| *x).collect() // try removing this line
     }
 }
 
