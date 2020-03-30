@@ -11,11 +11,13 @@ use std::time::Duration;
 use rayon::prelude::*;
 use serde_json::*;
 
-use project_k::primitive::vec_init;
+use project_k::primitive::{vec_init, par_map_v5};
 use util::data_generator::*;
 use util::file_reader::*;
 
 use crate::benchmark::*;
+use crate::primitive::par_map_v3;
+
 pub mod util;
 pub mod benchmark;
 pub mod primitive;
@@ -88,7 +90,7 @@ fn write_output(func: &String, result: HashMap<String, Duration>,
 }
 
 fn main() {
-    let sizes: Vec<u64> = vec_init(29, &|i, _| { (1 << (i + 1)) as u64 }, 2000);
+    let sizes: Vec<u64> = vec_init(28, &|i| { (1 << (i + 1)) as u64 }, 2000);
     let make_type = envmnt::get_or("KMAKE", "none").to_lowercase();
     make_file(&make_type);
     if &make_type != "none" { return; }
@@ -201,38 +203,38 @@ fn main() {
         println!("Writing merge_sort result");
         write_output(&"merge_sort".to_string(), ms_res, rounds, tn);
     }
-
-    // if t == "fronk" {
-    //     use std::time::*;
-    //     use crate::sort::*;
-    //     for size in sizes {
-    //         println!("size={}", size);
-    //         let mut tot_time = Duration::new(0, 0);
-    //         for _ in 0..rounds {
-    //             let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
-    //             let t = Instant::now();
-    //             par_quick_sort_v2(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
-    //             tot_time += t.elapsed();
-    //         }
-    //         println!("par qs in-place: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
-    //         let mut tot_time = Duration::new(0, 0);
-    //         for _ in 0..rounds {
-    //             let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
-    //             let t = Instant::now();
-    //             par_sample_sort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
-    //             tot_time += t.elapsed();
-    //         }
-    //         println!("par ss in-place: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
-    //         let mut tot_time = Duration::new(0, 0);
-    //         for _ in 0..rounds {
-    //             let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
-    //             let t = Instant::now();
-    //             par_quick_sort_v3(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
-    //             tot_time += t.elapsed();
-    //         }
-    //         println!("par qs rayon: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
-    //         println!();
-    //     }
-    // }
+//
+//     if t == "fronk" {
+//         use std::time::*;
+//         use crate::sort::*;
+//         for size in sizes {
+//             println!("size={}", size);
+//             let mut tot_time = Duration::new(0, 0);
+//             for _ in 0..rounds {
+//                 let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
+//                 let t = Instant::now();
+//                 par_quick_sort_v2(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+//                 tot_time += t.elapsed();
+//             }
+//             println!("par qs in-place: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
+//             let mut tot_time = Duration::new(0, 0);
+//             for _ in 0..rounds {
+//                 let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
+//                 let t = Instant::now();
+//                 par_sample_sort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+//                 tot_time += t.elapsed();
+//             }
+//             println!("par ss in-place: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
+//             let mut tot_time = Duration::new(0, 0);
+//             for _ in 0..rounds {
+//                 let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
+//                 let t = Instant::now();
+//                 par_quick_sort_v3(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+//                 tot_time += t.elapsed();
+//             }
+//             println!("par qs rayon: {}", tot_time.div_f64(rounds as f64).as_secs_f64());
+//             println!();
+//         }
+//     }
 }
 

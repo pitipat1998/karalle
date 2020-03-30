@@ -1,4 +1,3 @@
-use serde::export::fmt::{Debug, Display};
 
 use crate::primitive::*;
 use crate::constant::*;
@@ -6,7 +5,7 @@ use crate::constant::*;
 fn par_oblivious_buckets_transpose<T>(from: &mut [T], to: &mut [T], counts: &[usize],
                                           n: usize, _block_size: usize, num_blocks: usize,
                                           num_buckets: usize) -> Vec<usize>
-    where T: Send + Sync + Copy + Display + Debug
+    where T: Send + Sync + Copy
 {
     let m = num_buckets * num_blocks;
     let source_offsets: &mut [usize] = &mut {
@@ -36,14 +35,14 @@ fn par_oblivious_buckets_transpose<T>(from: &mut [T], to: &mut [T], counts: &[us
 fn par_non_oblivious_buckets_transpose<T>(from: &mut [T], to: &mut [T], counts: &[usize],
                                           n: usize, block_size: usize, num_blocks: usize,
                                           num_buckets: usize) -> Vec<usize>
-    where T: Send + Sync + Copy + Display + Debug
+    where T: Send + Sync + Copy
 {
     let m = num_blocks * num_buckets;
     let block_bits = ((num_blocks as f64).log2().ceil()) as usize;
     let block_mask = num_blocks - 1;
     assert_eq!(1 << block_bits, num_blocks);
 
-    let dest_offsets: &mut [usize] = &mut vec_init(m, &|i, _| counts[(i >> block_bits) + num_buckets * (i & block_mask)], GRANULARITY);
+    let dest_offsets: &mut [usize] = &mut vec_init(m, &|i| counts[(i >> block_bits) + num_buckets * (i & block_mask)], GRANULARITY);
     let sum = par_scan_inplace(dest_offsets, |a: &usize, b: &usize| { *a + *b }, &0);
     assert_eq!(sum, n);
 
@@ -71,7 +70,7 @@ fn par_non_oblivious_buckets_transpose<T>(from: &mut [T], to: &mut [T], counts: 
 pub fn par_buckets_transpose<T>(from: &mut [T], to: &mut [T], counts: &[usize],
                             n: usize, block_size: usize, num_blocks: usize,
                             num_buckets: usize) -> Vec<usize>
-    where T: Send + Sync + Copy + Display + Debug
+    where T: Send + Sync + Copy
 {
     if n < (1 << 22) || num_buckets <= 512 || num_blocks <= 512 {
         par_non_oblivious_buckets_transpose(from ,to, counts, n, block_size, num_blocks, num_buckets)

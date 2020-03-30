@@ -3,14 +3,13 @@ use rand::seq::SliceRandom;
 use rayon::prelude::*;
 
 use crate::primitive::*;
-use serde::export::fmt::{Display, Debug};
 use crate::constant::*;
 use num_cpus::get;
 use std::cmp::max;
 
 #[allow(dead_code)]
 pub fn par_quick_sort<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
-    where T: Sync + Send + Copy + Display + Debug,
+    where T: Sync + Send + Copy ,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
 //    println!("non-inplace parallel quick sort of size {}", seq.len());
@@ -20,7 +19,7 @@ pub fn par_quick_sort<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
 
 #[allow(dead_code)]
 fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U, cut_size: usize) -> Vec<T>
-    where T: Sync + Send + Copy + Display + Debug,
+    where T: Sync + Send + Copy ,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     if seq.len() <= cut_size {
@@ -51,7 +50,7 @@ fn par_quick_sort_utils<T, U>(seq: &Vec<T>, func: &U, cut_size: usize) -> Vec<T>
 
 #[allow(dead_code)]
 pub fn par_quick_sort_v2<T, U>(seq: &mut Vec<T>, func: &U)
-    where T: Sync + Send + Copy + Display + Debug,
+    where T: Sync + Send + Copy ,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
 //    println!("inplace parallel quick sort of size {}", seq.len());
@@ -61,7 +60,7 @@ pub fn par_quick_sort_v2<T, U>(seq: &mut Vec<T>, func: &U)
 }
 
 pub fn par_quick_sort_slice<T, U>(seq: &mut [T], func: U)
-    where T: Sync + Send + Copy + Display + Debug,
+    where T: Sync + Send + Copy ,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     let mut aux = vec_no_init(seq.len());
@@ -71,7 +70,7 @@ pub fn par_quick_sort_slice<T, U>(seq: &mut [T], func: U)
 
 #[allow(dead_code, unused_variables)]
 fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes: usize, cut_size: usize)
-    where T: Sync + Send + Copy + Display + Debug,
+    where T: Sync + Send + Copy ,
           U: Sync + Send + Fn(&T, &T) -> i32
 {
     if seq.len() <= cut_size {
@@ -106,7 +105,7 @@ fn par_quick_sort_utils_v2<T, U>(seq: &mut [T], aux: &mut [T], func: &U, passes:
 
 #[allow(dead_code)]
 pub fn par_quick_sort_v3<T, U>(seq: &mut Vec<T>, func: &U)
-where T: Sync + Send + Copy + Display + Debug,
+where T: Sync + Send + Copy ,
 U: Sync + Send + Fn(&T, &T) -> i32
 {
 //    println!("rayon parallel quick sort of size {}", seq.len());

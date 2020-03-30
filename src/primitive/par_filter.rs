@@ -3,13 +3,12 @@ extern crate rayon;
 use crate::primitive::*;
 use crate::constant::*;
 use rayon::prelude::*;
-use serde::export::fmt::{Display, Debug};
 
 
 // TODO: more versions of filter
 #[allow(dead_code)]
 pub fn par_filter_v1<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
-    where T: Sync + Send + Copy + Display + Debug,
+    where T: Sync + Send + Copy ,
           U: Sync + Send + Fn(usize, &T) -> bool
 {
     let mapped: Vec<i32> = par_map_v5(seq, &|i: usize, elt: &T| -> i32 { if func(i, elt) {1} else {0}});
@@ -17,7 +16,7 @@ pub fn par_filter_v1<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
 }
 
 pub fn par_filter_v2<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
-    where T: Sync + Send + Copy + Display + Debug,
+    where T: Sync + Send + Copy ,
           U: Sync + Send + (Fn(usize, &T) -> bool)
 {
     let mapped: &mut [usize] = &mut par_map_v3(seq, &|i: usize, elt: &T| -> usize { if func(i, elt) {1} else {0}});
@@ -32,7 +31,7 @@ pub fn par_filter_v2<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
 
 #[allow(dead_code)]
 pub fn par_filter_v3<T, U>(seq: &[T], func: &U) -> Vec<T>
-    where T: Sync + Send + Copy + Display + Debug,
+    where T: Sync + Send + Copy ,
           U: Sync + Send + (Fn(usize, &T) -> bool)
 {
     seq.par_iter().filter_map(|x| if func(1, x) {Some(*x)} else {None}).collect()
@@ -40,7 +39,7 @@ pub fn par_filter_v3<T, U>(seq: &[T], func: &U) -> Vec<T>
 
 
 fn par_filter_util_v1<T, U>(seq: &[T], mapped: &[i32], func: &U) -> Vec<T>
-    where T: Sync + Send + Copy + Display + Debug,
+    where T: Sync + Send + Copy ,
           U: Sync + Send + Fn(usize, &T) -> bool
 {
     if seq.len() <= GRANULARITY {
@@ -68,7 +67,7 @@ fn par_filter_util_v1<T, U>(seq: &[T], mapped: &[i32], func: &U) -> Vec<T>
 }
 
 pub fn par_filter_util_v2<T>(seq: &[T], ret: &mut [T], mapped: &[usize], x: &[usize], idx: usize)
-    where T: Sync + Send + Copy + Display + Debug
+    where T: Sync + Send + Copy
 {
     if seq.len() <= GRANULARITY {
         for i in 0..seq.len() {

@@ -30,11 +30,11 @@ pub fn par_map_v2<T, U, V>(seq: &Vec<T>, func: &V) -> Vec<U>
 
 // Version half split
 pub fn par_map_v3<T, U, V>(seq: &Vec<T>, func: &V) -> Vec<U>
-    where T: Sync + Send,
-          U: Sync + Send,
+    where T: Sync + Send + Copy,
+          U: Sync + Send + Copy,
           V: Sync + Send + (Fn(usize, &T) -> U)
 {
-    vec_init(seq.len(), &|i, _| func(i, &seq[i]), GRANULARITY)
+    vec_init(seq.len(), &|i| func(i, &seq[i]), GRANULARITY)
 }
 
 // Version rayon
