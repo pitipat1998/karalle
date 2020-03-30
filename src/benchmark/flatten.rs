@@ -10,7 +10,7 @@ use std::cmp::min;
 type FlattenFunc<T> = dyn Sync + Send + Fn(&Vec<&Vec<T>>) -> Vec<T>;
 
 #[allow(dead_code)]
-fn benchmark_flatten_v1(size: u128, rounds: u128) -> Duration
+fn benchmark_flatten_v1(size: u64, rounds: u128) -> Duration
 {
     let mut c_size = size;
     let mut rng = rand::thread_rng();
@@ -19,7 +19,7 @@ fn benchmark_flatten_v1(size: u128, rounds: u128) -> Duration
         let mut arr: Vec<Vec<i16>> = Vec::new();
         while c_size > 0 {
             let s = rng.gen_range(1, min(c_size, 1000001));
-            arr.push(random_i16_list_generator(s as u64, -1000, 1001));
+            arr.push(random_i16_list_generator(s, -1000, 1001));
             c_size -= s;
         }
         let now = Instant::now();
@@ -30,7 +30,7 @@ fn benchmark_flatten_v1(size: u128, rounds: u128) -> Duration
 }
 
 #[allow(dead_code)]
-fn benchmark_flatten_v2(size: u128, rounds: u128) -> Duration
+fn benchmark_flatten_v2(size: u64, rounds: u128) -> Duration
 {
     let mut c_size = size;
     let mut rng = rand::thread_rng();
@@ -39,7 +39,7 @@ fn benchmark_flatten_v2(size: u128, rounds: u128) -> Duration
         let mut arr: Vec<Vec<i16>> = Vec::new();
         while c_size > 0 {
             let s = rng.gen_range(1, min(c_size, 1000001));
-            arr.push(random_i16_list_generator(s as u64, -1000, 1001));
+            arr.push(random_i16_list_generator(s, -1000, 1001));
             c_size -= s;
         }
         let now = Instant::now();
@@ -52,7 +52,7 @@ fn benchmark_flatten_v2(size: u128, rounds: u128) -> Duration
 #[allow(dead_code)]
 pub fn run_flatten_benchmark<T>(
     d: &String,
-    size: u128,
+    size: u64,
     rounds: u128,
     threads: usize
 ) -> HashMap<String, Duration>

@@ -2,9 +2,12 @@ use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 use crate::primitive::*;
+use crate::util::data_generator::*;
+
+type MapFunc = (dyn Sync + Send + (Fn(usize, &u16) -> u16));
 
 #[allow(dead_code)]
-fn fac(i: &u128) -> u128 {
+fn fac(i: &u16) -> u16 {
     if (*i) <= 1 {
         1
     } else {
@@ -13,45 +16,64 @@ fn fac(i: &u128) -> u128 {
     }
 }
 
-// fn huge_compute(i: usize, e: &u128) -> u128 {
-//     fac(e)
-// }
-
 #[allow(dead_code)]
-fn benchmark_map<T, V, K>(vec: &Vec<T>, func: V, map: K, rounds: u128) -> Duration
-    where V: Sync + Send + Copy + (Fn(usize, &u128) -> u128),
-          K: Sync + Send + (Fn(&Vec<T>, V) -> Vec<T>)
+fn benchmark_map_v1(size: u64, rounds: u128) -> Duration
 {
-    let now = Instant::now();
+    let mut tot_time = Duration::new(0, 0);
     for _ in 0..rounds {
-        map(&vec, func.clone());
+        let mut arr: Vec<i16> = random_i16_list_generator(size, -100, 100);
+        let now = Instant::now();
+        let _ = par_map_v1(&arr, &|_, x| { *x * *x });
+        tot_time += now.elapsed()
     }
-    now.elapsed().div_f32(rounds as f32)
+    tot_time.div_f64(rounds as f64)
 }
 
-type MapFunc = (dyn Sync + Send + Fn(usize, &u128) -> u128);
+#[allow(dead_code)]
+fn benchmark_map_v3(size: u64, rounds: u128) -> Duration
+{
+    let mut tot_time = Duration::new(0, 0);
+    for _ in 0..rounds {
+        let mut arr: Vec<i16> = random_i16_list_generator(size, -100, 100);
+        let now = Instant::now();
+        let _ = par_map_v3(&arr, &|_, x| { *x * *x });
+        tot_time += now.elapsed()
+    }
+    tot_time.div_f64(rounds as f64)
+}
 
 #[allow(dead_code)]
-pub fn run_map_benchmark(d: &String, v: Vec<u128>, rounds: u128, threads: usize) -> HashMap<String, Duration> {
-    let mut func: HashMap<&str, &MapFunc> = HashMap::new();
-    func.insert("Multiply", &|_, x| { *x * *x });
+fn benchmark_map_v5(size: u64, rounds: u128) -> Duration
+{
+    let mut tot_time = Duration::new(0, 0);
+    for _ in 0..rounds {
+        let mut arr: Vec<i16> = random_i16_list_generator(size, -100, 100);
+        let now = Instant::now();
+        let _ = par_map_v5(&arr, &|_, x| { *x * *x });
+        tot_time += now.elapsed()
+    }
+    tot_time.div_f64(rounds as f64)
+}
+
+
+#[allow(dead_code)]
+pub fn run_map_benchmark(d: &String, size: u64, rounds: u128, threads: usize) -> HashMap<String, Duration> {
     let mut result: HashMap<String, Duration> = HashMap::new();
 
-    for (&fname, &f) in &func {
-        let key = format!("{}, {}, sqrt_n_{}", &d, threads, fname);
-        println!("map V1: {} {}", fname, &d);
-        let duration = benchmark_map(&v, &f, par_map_v1, rounds);
-        result.entry(key).or_insert(duration);
+    let key = format!("{}, {}, sqrt_n_{}", &d, threads, "Multiply");
+    println!("map v1: {} {}", "Multiply", &d);
+    let duration = benchmark_map_v1(size, rounds);
+    result.entry(key).or_insert(duration);
 
-        println!("map V2: {} {}", fname, &d);
-        let key = format!("{}, {}, half_split_{}", &d, threads, fname);
-        let duration = benchmark_map(&v, &f, par_map_v3, rounds);
-        result.entry(key).or_insert(duration);
+    println!("map v3: {} {}", "Multiply", &d);
+    let key = format!("{}, {}, half_split_{}", &d, threads, "Multiply");
+    let duration = benchmark_map_v3(size, rounds);
+    result.entry(key).or_insert(duration);
 
-        println!("map V3: {} {}", fname, &d);
-        let key = format!("{}, {}, rayon_par_iter_{}", &d, threads, fname);
-        let duration = benchmark_map(&v, &f, par_map_v5, rounds);
-        result.entry(key).or_insert(duration);
-    }
+    println!("rayon map: {} {}", "Multiply", &d);
+    let key = format!("{}, {}, rayon_par_iter_{}", &d, threads, "Multiply");
+    let duration = benchmark_map_v5(size, rounds);
+    result.entry(key).or_insert(duration);
+
     result
 }

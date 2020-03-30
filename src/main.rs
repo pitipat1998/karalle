@@ -124,8 +124,7 @@ fn main() {
         // Map
         for d in files_1d.iter() {
             println!("Running map file: {}", d);
-            let v: Vec<u128> = read_csv(&d);
-            let res = run_map_benchmark(d, v, rounds, tn);
+            let res = run_map_benchmark(&size.to_string(), size, rounds, tn);
             map_res.extend(res);
         }
         println!("Writing map result");
