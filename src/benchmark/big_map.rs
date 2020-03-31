@@ -8,7 +8,7 @@ use chrono::{NaiveDate, NaiveTime};
 use rayon::prelude::*;
 use serde::export::Formatter;
 
-use crate::primitive::par_map_v1;
+use crate::primitive::sqrt_splits_par_map;
 
 struct Record {
     date: NaiveDate,
@@ -82,7 +82,7 @@ fn run_par(rounds: usize, buffer_vec: &mut Vec<String>) -> Duration {
     println!("Running bm_par");
     let par_now = Instant::now();
     for _ in 0..rounds {
-        let _r: Vec<Record> = par_map_v1(
+        let _r: Vec<Record> = sqrt_splits_par_map(
             &buffer_vec,
             &|_, line_st: &String| {
                 let line: Vec<&str> = line_st.split_whitespace().collect();

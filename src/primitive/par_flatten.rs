@@ -19,7 +19,7 @@ pub fn par_flatten<T>(seqs: &Vec<Vec<T>>) -> Vec<T>
 
 // using rayon's par_iter
 #[allow(dead_code)]
-pub fn par_flatten_v2<T>(seqs: &Vec<Vec<T>>) -> Vec<T>
+pub fn rayon_par_flatten<T>(seqs: &Vec<Vec<T>>) -> Vec<T>
     where T: Sync + Send + Copy
 {
     (&seqs).into_par_iter().cloned().flatten().collect()

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
-use crate::primitive::{par_filter_v2, par_filter_v3};
+use crate::primitive::{par_filter, rayon_par_filter};
 use crate::util::random_i16_list_generator;
 
 #[allow(dead_code)]
@@ -10,7 +10,7 @@ fn run_par_filter(size: u64, rounds: u128) -> Duration {
     for _ in 0..rounds {
         let vec: Vec<i16> = random_i16_list_generator(size, -100, 100);
         let now = Instant::now();
-        let _r: Vec<i16> = par_filter_v2(&vec, &|_i: usize, a: &i16| -> bool { *a < 3 });
+        let _r: Vec<i16> = par_filter(&vec, &|_i: usize, a: &i16| -> bool { *a < 3 });
         tot_time += now.elapsed();
     }
     tot_time.div_f64(rounds as f64)
@@ -22,7 +22,7 @@ fn run_rayon_filter(size: u64, rounds: u128) -> Duration {
     for _ in 0..rounds {
         let vec: Vec<i16> = random_i16_list_generator(size, -100, 100);
         let now = Instant::now();
-        let _r: Vec<i16> = par_filter_v3(&vec, &|_i: usize, a: &i16| -> bool { *a < 3 });
+        let _r: Vec<i16> = rayon_par_filter(&vec, &|_i: usize, a: &i16| -> bool { *a < 3 });
         tot_time += now.elapsed();
     }
     tot_time.div_f64(rounds as f64)

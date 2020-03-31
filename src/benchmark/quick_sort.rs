@@ -6,39 +6,39 @@ use crate::util::data_generator::*;
 use super::sample_sort::benchmark_par_sample_sort;
 
 #[allow(dead_code)]
-fn benchmark_quick_sort(size: u64, rounds: u128) -> Duration
+fn benchmark_non_inplace_par_quicksort(size: u64, rounds: u128) -> Duration
 {
     let mut tot_time = Duration::new(0, 0);
     for _ in 0..rounds {
         let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
         let t = Instant::now();
-        par_quick_sort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+        non_inplace_par_quicksort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
         tot_time += t.elapsed();
     }
     tot_time.div_f64(rounds as f64)
 }
 
 #[allow(dead_code)]
-fn benchmark_quick_sort_v2(size: u64, rounds: u128) -> Duration
+fn benchmark_par_quicksort(size: u64, rounds: u128) -> Duration
 {
     let mut tot_time = Duration::new(0, 0);
     for _ in 0..rounds {
         let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
         let t = Instant::now();
-        par_quick_sort_v2(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+        par_quicksort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
         tot_time += t.elapsed();
     }
     tot_time.div_f64(rounds as f64)
 }
 
 #[allow(dead_code)]
-fn benchmark_quick_sort_v3(size: u64, rounds: u128) -> Duration
+fn benchmark_rayon_par_quicksort(size: u64, rounds: u128) -> Duration
 {
     let mut tot_time = Duration::new(0, 0);
     for _ in 0..rounds {
         let mut arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
         let t = Instant::now();
-        par_quick_sort_v3(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+        rayon_par_quicksort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
         tot_time += t.elapsed();
     }
     tot_time.div_f64(rounds as f64)
@@ -55,15 +55,15 @@ pub fn run_quick_sort_benchmark(
     let mut result: HashMap<String, Duration> = HashMap::new();
 
     let key = format!("{}, {}, par_quick_sort (non-in-place)", &d, threads);
-    let duration = benchmark_quick_sort(size, rounds);
+    let duration = benchmark_non_inplace_par_quicksort(size, rounds);
     result.entry(key).or_insert(duration);
 
     let key = format!("{}, {}, par_quick_sort (in-place)", &d, threads);
-    let duration = benchmark_quick_sort_v2(size, rounds);
+    let duration = benchmark_par_quicksort(size, rounds);
     result.entry(key).or_insert(duration);
 
     let key = format!("{}, {}, par_quick_sort (rayon)", &d, threads);
-    let duration = benchmark_quick_sort_v3(size, rounds);
+    let duration = benchmark_rayon_par_quicksort(size, rounds);
     result.entry(key).or_insert(duration);
 
     let key = format!("{}, {}, par_sample_sort (in-place)", &d, threads);
