@@ -90,7 +90,7 @@ fn write_output(func: &String, result: HashMap<String, Duration>,
 
 fn main() {
     let mut max_size: usize = envmnt::get_or("KSIZE", "27").parse().unwrap();
-    if max_size > 32 {
+    if max_size >= 32 {
         println!("Can't go more than 31 sorry,automatically using KSIZE=31");
         max_size = 31;
     }
