@@ -1,10 +1,10 @@
 # Karalle
 
-A collection of parallel algorithms written in [rust](rust-lang.org) with [rayon](https://github.com/rayon-rs/rayon) as underlying thread-pool
+A collection of parallel algorithms written in [rust](rust-lang.org) with [rayon](https://github.com/rayon-rs/rayon) as underlying thread-pool. Algorithms inspired by [Introduction to Parallel Algorithm](https://ldhulipala.github.io/notes/parallel.pdf?fbclid=IwAR2G9v8SgBawI93MvSo3ZFNjkOMQ2U5SyKgEvQpVVQBsWBmWeppWDVdE4pM), [Low Depth Cache-Oblivious Algorithms](https://kilthub.cmu.edu/articles/Low_Depth_Cache-Oblivious_Algorithms/6607052/1?fbclid=IwAR0h2mUKS5U6vh7yddDDs5hOF8iKqDhjxxqmTV8mfosK4cqnF7qRcC_bbFg), and [pbbs](https://github.com/cmuparlay/pbbslib)
 
 ## Motivation
 
-Improves performance of rayon's current state of the art from the knowledge learned from Contemporay Algorithm and Organization of Programming Language classes.
+Improves performance of rayon's current state of the art from the knowledge learned from Contemporary Algorithm and Organization of Programming Language classes.
 
 ## Project Structure
 
