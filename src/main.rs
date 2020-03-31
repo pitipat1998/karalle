@@ -89,9 +89,12 @@ fn write_output(func: &String, result: HashMap<String, Duration>,
 }
 
 fn main() {
-    let max_size: usize = envmnt::get_or("KSIZE", "27").parse().unwrap();
-    // let sizes: Vec<u64> = vec_init(max_size, &|i| { (1 << (i + 1)) as u64 }, 2000);
-    let sizes = vec![1<<29, 1<<30, 1<<31, 1<<32];
+    let mut max_size: usize = envmnt::get_or("KSIZE", "27").parse().unwrap();
+    if max_size > 32 {
+        println!("Can't go more than 31 sorry,automatically using KSIZE=31");
+        max_size = 31;
+    }
+    let sizes: Vec<u64> = vec_init(max_size, &|i| { (1 << (i + 1)) as u64 }, 2000);
     let make_type = envmnt::get_or("KMAKE", "none").to_lowercase();
 
     if &make_type != "none" {

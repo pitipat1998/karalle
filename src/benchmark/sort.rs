@@ -12,8 +12,11 @@ pub fn run_sorting_benchmark(d: &String,
     -> HashMap<String, Duration>
 {
     let mut m : HashMap<String, Duration> = HashMap::new();
+    println!("Running quick sort size: {:?}", size);
     let qs = run_quick_sort_benchmark(d, size, rounds, threads);
+    println!("Running merge sort size: {:?}", size);
     let ms = run_merge_sort_benchmark(d, size, rounds, threads);
+    println!("Running sample sort size: {:?}", size);
     let ss = run_sample_sort_benchmark(d, size, rounds, threads);
     m.extend(qs);
     m.extend(ms);
