@@ -3,6 +3,8 @@ run_all.sh
 .idea
 data/**
 !data/.gitkeep
+log/**
+!log/.gitkeep
 *.iml
 /target
 **/*.rs.bk
