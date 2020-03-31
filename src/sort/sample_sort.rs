@@ -17,9 +17,10 @@ fn seq_sample_sort_util<T>(seq: &mut [T], k: usize, p: usize, start: usize, end:
         let mut rng = rand::thread_rng();
         let range = Uniform::new(0, seq.len());
 
-        let mut result: Vec<Vec<T>> = Vec::with_capacity(n*(p + 2));
+        // let mut result: Vec<Vec<T>> = Vec::with_capacity(n*(p + 2));
+        let mut result= Vec::new();
         for _ in 0..(p+2) {
-            result.push(Vec::with_capacity(n));
+            result.push(Vec::new());
         }
         // let samp: &mut Vec<usize> = &mut (0..(p * k) as i32).map(|_| rng.sample(&range)).collect();
         let samp: &mut Vec<&T> = &mut (0..(p*k) as i32).map(|_| {
