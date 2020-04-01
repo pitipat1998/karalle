@@ -7,6 +7,7 @@ mod sample_sort;
 mod merge_sort;
 mod sort;
 mod filter;
+mod forloop;
 
 pub use self::map::run_map_benchmark;
 pub use self::flatten::run_flatten_benchmark;
@@ -17,3 +18,4 @@ pub use self::merge_sort::run_merge_sort_benchmark;
 pub use self::big_map::big_map_seq;
 pub use self::sort::run_sorting_benchmark;
 pub use self::filter::run_filter_benchmark;
+pub use self::forloop::run_loop_benchmark;
