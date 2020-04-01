@@ -11,7 +11,7 @@ use crate::util::data_generator::*;
 type FlattenFunc<T> = dyn Sync + Send + Fn(&Vec<&Vec<T>>) -> Vec<T>;
 
 #[allow(dead_code)]
-fn benchmark_flatten_v1(size: u64, rounds: u128) -> Duration
+fn benchmark_par_flatten(size: u64, rounds: u128) -> Duration
 {
     let mut rng = rand::thread_rng();
     let mut tot_time = Duration::new(0, 0);
@@ -34,7 +34,7 @@ fn benchmark_flatten_v1(size: u64, rounds: u128) -> Duration
 }
 
 #[allow(dead_code)]
-fn benchmark_flatten_v2(size: u64, rounds: u128) -> Duration
+fn benchmark_rayon_par_flatten(size: u64, rounds: u128) -> Duration
 {
     let mut rng = rand::thread_rng();
     let mut tot_time = Duration::new(0, 0);
@@ -50,7 +50,7 @@ fn benchmark_flatten_v2(size: u64, rounds: u128) -> Duration
             c_size -= s;
         }
         let now = Instant::now();
-        let _ = par_flatten_v2(&arr);
+        let _ = rayon_par_flatten(&arr);
         tot_time += now.elapsed()
     }
     tot_time.div_f64(rounds as f64)
@@ -67,11 +67,11 @@ pub fn run_flatten_benchmark(
     let mut result: HashMap<String, Duration> = HashMap::new();
 
     let key = format!("{}, {}, par_flatten", &d, threads);
-    let duration = benchmark_flatten_v1(size, rounds);
+    let duration = benchmark_par_flatten(size, rounds);
     result.entry(key).or_insert(duration);
 
     let key = format!("{}, {}, rayon_par_iter", &d, threads);
-    let duration = benchmark_flatten_v2(size, rounds);
+    let duration = benchmark_rayon_par_flatten(size, rounds);
     result.entry(key).or_insert(duration);
     result
 }

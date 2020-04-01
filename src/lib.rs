@@ -10,7 +10,7 @@ mod tests {
     use crate::util::*;
     use crate::constant::*;
     use std::process::exit;
-    use crate::primitive::par_filter_v3;
+    use crate::primitive::rayon_par_filter;
     use rayon::prelude::*;
     use crate::util::data_generator::random_i32_list_generator;
 
@@ -98,11 +98,11 @@ mod tests {
         use crate::primitive::*;
         let arr: &mut Vec<i32> = &mut random_i32_list_generator(LENGTH, -1000, 1001);
 
-        let actual: Vec<i32> = par_map_v1(&arr, &|_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
-        let actual2: Vec<i32> = par_map_v2(&arr, &|_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
-        let actual3: Vec<i32> = par_map_v3(&arr, &|_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
+        let actual: Vec<i32> = sqrt_splits_par_map(&arr, &|_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
+        let actual2: Vec<i32> = n_splits_par_map(&arr, &|_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
+        let actual3: Vec<i32> = par_map(&arr, &|_i: usize, a: &i32| -> i32 { if *a <= 90 { 1 } else { 0 } });
 //
-        let expected: Vec<i32> = par_map_v5(&arr, &|_i, x| { if *x <= 90 {1} else {0}});
+        let expected: Vec<i32> = rayon_par_map(&arr, &|_i, x| { if *x <= 90 {1} else {0}});
 
         assert_eq!(actual, expected);
         assert_eq!(actual2, expected);
@@ -115,7 +115,7 @@ mod tests {
         let arr: &mut Vec<i32> = &mut random_i32_list_generator(LENGTH, -1000, 1001);
         let actual: Vec<i32> = filter(&arr, |_i: usize, a: &i32| -> bool { *a < 3 });
 
-        let expected: Vec<i32> = par_filter_v3(arr, &|x, a| { *a < 3 });
+        let expected: Vec<i32> = rayon_par_filter(arr, &|x, a| { *a < 3 });
 
         assert_eq!(actual, expected);
     }
@@ -124,10 +124,10 @@ mod tests {
     fn par_filter() {
         use crate::primitive::*;
         let arr: &mut Vec<i32> = &mut random_i32_list_generator(LENGTH, -1000, 1001);
-        let actual: Vec<i32> = par_filter_v1(&arr, &|_i: usize, a: &i32| -> bool { *a < 3 });
-        let actual2: Vec<i32> = par_filter_v2(&arr, &|_i: usize, a: &i32| -> bool { *a < 3 });
+        let actual: Vec<i32> = non_inplace_par_filter(&arr, &|_i: usize, a: &i32| -> bool { *a < 3 });
+        let actual2: Vec<i32> = par_filter(&arr, &|_i: usize, a: &i32| -> bool { *a < 3 });
 
-        let expected: Vec<i32> = par_filter_v3(&arr, &|_i: usize, a: &i32| -> bool { *a < 3 });
+        let expected: Vec<i32> = rayon_par_filter(&arr, &|_i: usize, a: &i32| -> bool { *a < 3 });
         assert_eq!(actual, expected);
         assert_eq!(actual2, expected);
     }
@@ -162,7 +162,7 @@ mod tests {
 
         let actual: Vec<i32> = par_flatten(&vec![arr1, arr2, arr3, arr4, arr5]);
 
-        let expected: Vec<i32> = par_flatten_v2(&vec![arr6, arr7, arr8, arr9, arr10]);
+        let expected: Vec<i32> = rayon_par_flatten(&vec![arr6, arr7, arr8, arr9, arr10]);
 
         assert_eq!(actual, expected);
     }
@@ -173,7 +173,7 @@ mod tests {
         let mut arr: &mut Vec<i32> = &mut random_i32_list_generator(LENGTH, -1000, 1001);
         let mut actual = &mut quick_sort(&arr, |a: &i32, b: &i32| -> i32 { *a - *b });
 
-        par_quick_sort_v3(arr, &|a: &i32, b: &i32| -> i32 { *a - *b });
+        rayon_par_quicksort(arr, &|a: &i32, b: &i32| -> i32 { *a - *b });
 
         assert_eq!(actual, arr);
     }
@@ -185,9 +185,9 @@ mod tests {
         let mut arr3: Vec<i32> = arr.clone();
         let mut arr5: Vec<i32> = arr.clone();
         let mut arr7: Vec<i32> = arr.clone();
-        let actual = par_quick_sort(&arr, &|a: &i32, b: &i32| -> i32 { *a - *b });
-        par_quick_sort_v2(&mut arr3, &|a: &i32, b: &i32| -> i32 { *a - *b });
-        par_quick_sort_v3(&mut arr5, &|a: &i32, b: &i32| -> i32 { *a - *b });
+        let actual = non_inplace_par_quicksort(&arr, &|a: &i32, b: &i32| -> i32 { *a - *b });
+        par_quicksort(&mut arr3, &|a: &i32, b: &i32| -> i32 { *a - *b });
+        rayon_par_quicksort(&mut arr5, &|a: &i32, b: &i32| -> i32 { *a - *b });
         par_sample_sort(&mut arr7, &|a: &i32, b: &i32| -> i32 { *a - *b });
 
         assert_eq!(actual, arr5);

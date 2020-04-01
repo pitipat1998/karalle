@@ -2,7 +2,7 @@ extern crate rayon;
 
 use rand::{Rng};
 use crate::primitive::{vec_zeroes, vec_init, vec_random_init, vec_no_init, par_for, double_sliced_for};
-use crate::sort::{par_quick_sort_v2};
+use crate::sort::{par_quicksort};
 use crate::primitive::par_buckets_transpose;
 use crate::primitive::par_copy;
 use crate::sort::par_quick_sort_slice;
@@ -56,7 +56,7 @@ fn par_sample_sort_util<T, U>(seq: &mut [T], aux: &mut [T], func: &U)
         let m = num_blocks * num_buckets;
         let pivots = {
             let mut samples: Vec<T> = vec_random_init(sample_set_size, &|_, rng| seq[rng.gen_range(0, seq.len())], GRANULARITY);
-            par_quick_sort_v2(&mut samples, func);
+            par_quicksort(&mut samples, func);
             vec_init(num_buckets - 1, &|i| samples[i * OVER_SAMPLE], GRANULARITY)
         };
 

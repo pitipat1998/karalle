@@ -7,15 +7,15 @@ use rayon::prelude::*;
 
 // TODO: more versions of filter
 #[allow(dead_code)]
-pub fn par_filter_v1<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
+pub fn non_inplace_par_filter<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
     where T: Sync + Send + Copy ,
           U: Sync + Send + Fn(usize, &T) -> bool
 {
-    let mapped: Vec<i32> = par_map_v5(seq, &|i: usize, elt: &T| -> i32 { if func(i, elt) {1} else {0}});
+    let mapped: Vec<i32> = rayon_par_map(seq, &|i: usize, elt: &T| -> i32 { if func(i, elt) {1} else {0}});
     par_filter_util_v1(seq, &mapped, &func)
 }
 
-pub fn par_filter_v2<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
+pub fn par_filter<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
     where T: Sync + Send + Copy ,
           U: Sync + Send + (Fn(usize, &T) -> bool)
 {
@@ -51,7 +51,7 @@ pub fn par_filter_v2<T, U>(seq: &Vec<T>, func: &U) -> Vec<T>
 }
 
 #[allow(dead_code)]
-pub fn par_filter_v3<T, U>(seq: &[T], func: &U) -> Vec<T>
+pub fn rayon_par_filter<T, U>(seq: &[T], func: &U) -> Vec<T>
     where T: Sync + Send + Copy ,
           U: Sync + Send + (Fn(usize, &T) -> bool)
 {

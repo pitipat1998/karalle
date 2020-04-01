@@ -7,29 +7,29 @@ use crate::constant::*;
 
 
 // Version sqrt(n) splits
-pub fn par_map_v1<T, U, V>(seq: &Vec<T>, func: &V) -> Vec<U>
+pub fn sqrt_splits_par_map<T, U, V>(seq: &Vec<T>, func: &V) -> Vec<U>
     where T: Sync + Send,
           U: Sync + Send,
           V: Sync + Send + (Fn(usize, &T) -> U)
 {
     let mut ret: Vec<U> = vec_no_init(seq.len());
-    par_map_util_v1(seq, &mut ret, func, 0, seq.len());
+    sqrt_splits_par_map_util(seq, &mut ret, func, 0, seq.len());
     ret
 }
 
 // Version n splits
-pub fn par_map_v2<T, U, V>(seq: &Vec<T>, func: &V) -> Vec<U>
+pub fn n_splits_par_map<T, U, V>(seq: &Vec<T>, func: &V) -> Vec<U>
     where T: Sync + Send,
           U: Sync + Send,
           V: Sync + Send + (Fn(usize, &T) -> U)
 {
     let mut ret: Vec<U> = vec_no_init(seq.len());
-    par_map_util_v2(seq, &mut ret, func);
+    n_splits_par_map_utils(seq, &mut ret, func);
     ret
 }
 
 // Version half split
-pub fn par_map_v3<T, U, V>(seq: &Vec<T>, func: &V) -> Vec<U>
+pub fn par_map<T, U, V>(seq: &Vec<T>, func: &V) -> Vec<U>
     where T: Sync + Send + Copy,
           U: Sync + Send + Copy,
           V: Sync + Send + (Fn(usize, &T) -> U)
@@ -39,7 +39,7 @@ pub fn par_map_v3<T, U, V>(seq: &Vec<T>, func: &V) -> Vec<U>
 
 // Version rayon
 #[allow(dead_code)]
-pub fn par_map_v5<T, U, V>(seq: &Vec<T>, func: &V) -> Vec<U>
+pub fn rayon_par_map<T, U, V>(seq: &Vec<T>, func: &V) -> Vec<U>
     where T: Sync + Send,
           U: Sync + Send,
           V: Sync + Send + (Fn(usize, &T) -> U)
@@ -48,7 +48,7 @@ pub fn par_map_v5<T, U, V>(seq: &Vec<T>, func: &V) -> Vec<U>
 }
 
 
-fn par_map_util_v1<T, U, V>(
+fn sqrt_splits_par_map_util<T, U, V>(
     seq: &[T], ret: &mut [U],
     func: &V, s: usize, e: usize,
 )
@@ -71,7 +71,7 @@ fn par_map_util_v1<T, U, V>(
                 for (i, chunk) in ret.chunks_mut(sqrt).enumerate() {
                     if i < num_chunks - 1 {
                         s.spawn(move |_| {
-                            par_map_util_v1(
+                            sqrt_splits_par_map_util(
                                 seq,
                                 chunk,
                                 func,
@@ -82,7 +82,7 @@ fn par_map_util_v1<T, U, V>(
                     } else {
                         let x = i * sqrt;
                         s.spawn(move |_| {
-                            par_map_util_v1(
+                            sqrt_splits_par_map_util(
                                 seq,
                                 chunk,
                                 func,
@@ -97,7 +97,7 @@ fn par_map_util_v1<T, U, V>(
     };
 }
 
-fn par_map_util_v2<T, U, V>(seq: &[T], ret: &mut [U], func: &V)
+fn n_splits_par_map_utils<T, U, V>(seq: &[T], ret: &mut [U], func: &V)
     where T: Sync + Send,
           U: Sync + Send,
           V: Sync + Send + (Fn(usize, &T) -> U)
@@ -111,50 +111,3 @@ fn par_map_util_v2<T, U, V>(seq: &[T], ret: &mut [U], func: &V)
     })
 }
 
-// fn par_map_utils_v4<T, U, V>(
-//     seq: &[T], ret: &mut [U],
-//     func: &V, _s: usize, _e: usize,
-//     cpu: usize,
-// )
-//     where T: Sync + Send,
-//           U: Sync + Send,
-//           V: Sync + Send + (Fn(usize, &T) -> U)
-// {
-//     let n = _e - _s;
-//     if n <= QS_THRESHOLD {
-//         for i in _s.._e {
-//             ret[i - _s] = func(i, &seq[i]);
-//         }
-//     } else {
-//         let size: usize = (n as f64 / (4 * cpu) as f64).ceil() as usize;
-//
-//         rayon::scope(|s| {
-//             for (i, chunk) in ret.chunks_mut(size).enumerate() {
-//                 if i < size - 1 {
-//                     s.spawn(move |_| {
-//                         par_map_utils_v4(
-//                             seq,
-//                             chunk,
-//                             func,
-//                             i * size,
-//                             (i + 1) * size,
-//                             cpu,
-//                         );
-//                     });
-//                 } else {
-//                     let x = i * size;
-//                     s.spawn(move |_| {
-//                         par_map_utils_v4(
-//                             seq,
-//                             chunk,
-//                             func,
-//                             x,
-//                             _s + chunk.len(),
-//                             cpu,
-//                         );
-//                     });
-//                 }
-//             }
-//         })
-//     }
-// }
