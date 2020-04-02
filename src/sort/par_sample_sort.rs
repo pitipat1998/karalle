@@ -83,7 +83,7 @@ fn par_sample_sort_util<T, U>(seq: &mut [T], aux: &mut [T], func: &U)
 }
 
 #[allow(dead_code)]
-pub fn par_sample_sort<T, U>(seq: &mut Vec<T>, func: &U)
+pub fn par_samplesort<T, U>(seq: &mut Vec<T>, func: &U)
     where T: Copy + Sync + Send ,
           U: Sync + Send + Fn(&T, &T) -> i32
 {

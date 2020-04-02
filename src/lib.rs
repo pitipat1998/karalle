@@ -188,7 +188,7 @@ mod tests {
         let actual = non_inplace_par_quicksort(&arr, &|a: &i32, b: &i32| -> i32 { *a - *b });
         par_quicksort(&mut arr3, &|a: &i32, b: &i32| -> i32 { *a - *b });
         rayon_par_quicksort(&mut arr5, &|a: &i32, b: &i32| -> i32 { *a - *b });
-        par_sample_sort(&mut arr7, &|a: &i32, b: &i32| -> i32 { *a - *b });
+        par_samplesort(&mut arr7, &|a: &i32, b: &i32| -> i32 { *a - *b });
 
         assert_eq!(actual, arr5);
         assert_eq!(arr3, arr5);

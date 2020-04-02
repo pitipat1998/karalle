@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
-use crate::sort::par_sample_sort;
+use crate::sort::par_samplesort;
 use crate::sort::seq_sample_sort;
 use crate::util::data_generator::*;
 
@@ -24,7 +24,7 @@ pub fn benchmark_par_sample_sort(size: u64, rounds: u128) -> Duration
     for _ in 0..rounds {
         let mut arr: Vec<i16> = random_i16_list_generator(size, -10, 11);
         let t = Instant::now();
-        par_sample_sort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
+        par_samplesort(&mut arr, &|a: &i16, b: &i16| -> i32 { (*a - *b) as i32 });
         tot_time += t.elapsed();
     }
     tot_time.div_f64(rounds as f64)
