@@ -123,6 +123,17 @@ fn main() {
 
     let _ = fs::create_dir("output/");
 
+    if t == "loop" {
+        let mut for_res: HashMap<String, Duration> = HashMap::new();
+        for size in &sizes {
+            println!("Running loop size: {}", &size);
+            let res = run_loop_benchmark(&size.to_string(), *size, rounds, tn);
+            for_res.extend(res);
+        }
+        println!("Writing loop result");
+        write_output(&"loop".to_string(), for_res, rounds, tn);
+    }
+
     if t == "all" || t == "filter" {
         let mut filter_res: HashMap<String, Duration> = HashMap::new();
         // Map
