@@ -13,8 +13,6 @@ use serde_json::*;
 
 use project_k::primitive::{vec_init};
 use util::data_generator::*;
-use util::file_reader::*;
-
 use crate::benchmark::*;
 
 pub mod util;
@@ -131,7 +129,7 @@ fn main() {
             for_res.extend(res);
         }
         println!("Writing loop result");
-        write_output(&"loop_map".to_string(), for_res, rounds, tn);
+        write_output(&"loop".to_string(), for_res, rounds, tn);
     }
 
     if t == "all" || t == "filter" {
@@ -188,10 +186,9 @@ fn main() {
     if t == "all" || t == "scan" {
         let mut scan_res: HashMap<String, Duration> = HashMap::new();
         // Scan
-        for d in files_1d.iter() {
-            println!("Running scan file: {}", d);
-            let mut v: Vec<i32> = read_csv::<i32>(&d);
-            let res = run_scan_benchmark(d, &mut v, rounds, tn);
+        for size in &sizes {
+            println!("Running scan file: {}", size);
+            let res = run_scan_benchmark(&size.to_string(), *size, rounds, tn);
             scan_res.extend(res);
         }
         println!("Writing scan result");
