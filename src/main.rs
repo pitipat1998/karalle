@@ -131,7 +131,7 @@ fn main() {
             for_res.extend(res);
         }
         println!("Writing loop result");
-        write_output(&"loop".to_string(), for_res, rounds, tn);
+        write_output(&"loop_map".to_string(), for_res, rounds, tn);
     }
 
     if t == "all" || t == "filter" {
