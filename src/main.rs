@@ -112,7 +112,7 @@ fn main() {
     let rounds: u128 = r.parse().unwrap();
     println!("Running with {} threads and {} rounds", tn, rounds);
 
-    let t: String = envmnt::get_or("KTYPE", "ALL").to_lowercase();
+    let t: String = envmnt::get_or("KTYPE", "all").to_lowercase();
 
     let files_1d: Vec<String> = get_files("data/map");
     // let files_2d: Vec<String> = get_files("data/flatten");
