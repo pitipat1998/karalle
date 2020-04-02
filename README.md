@@ -20,11 +20,24 @@ All the codes for algorithms are located in `src` directory. list of project's d
 
 ## Methodology
 
-For unit testing, we run our algorithms along side with rust's standard algorithms to check the correctness. We benchmark our algorithms against rayon's algorithms to compare the performance and the scalability. We run benchmark on 24 threads CPU and 12GB RAM VM. Our test data size is ranged from $2^1$ to $2^28$ of `i16` integer. 
+For unit testing, we run our algorithms along side with rust's standard algorithms to check the correctness. We benchmark our algorithms against rayon's algorithms to compare the performance and the scalability. We run benchmark on AWS instance with 36 vCPU of 2.9 GHz Intel Xeon E5-2666 v3 Processor and 60GB RAM. Our test data size is ranged from $2^{10}$ to $2^{29}$ of `i16` integer. 
 
 ## Result
 
-We mostly win most of the case for each algorithm!! (comparison graphs are in the slides)
+* Performance 
+  * Scan: No comparable function in rayon
+  * Map: 25.4% faster than rayon 
+  * Filter: 51.2% faster than rayon
+  * Flatten: 25.8% faster than rayon
+  * Samplesort: 7.1% faster than rayon's quicksor
+* Scalability
+  * Scan: No comparable function in rayon
+  * Map: More scalable
+  * Filter: More scalable
+  * Flatten: More scalable
+  * Samplesort: More scalable
+
+Remark: these results are calculated on average for all input sizes
 
 ## Lesson Learned
 
@@ -127,7 +140,7 @@ KTYPE=<all|map|bm|filter|flatten|scan|qs|ss|ms|sort> cargo run --release
 
 * KTHREAD: number of threads will be using in the benchmark
 * KROUND: number of rounds for each input size
-* KSIZE: maximum data size `x` (ranged from `2^1` to  `2^x` increment `x` by `1`)
+* KSIZE: maximum data size `x` (ranged from $2^{10}$ to  $2^x$ increment `x` by `1`)
 * KTYPE: type of bechmark to be run
   * all: run every benchmark
   * map: map benchmark (`sort_splits_par_map`, `par_map`, `rayon_par_map`)
