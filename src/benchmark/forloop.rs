@@ -64,5 +64,15 @@ pub fn run_loop_benchmark(
         tot_time += t.elapsed();
     }
     res.entry(key).or_insert(tot_time.div_f64(rounds as f64));
+
+    let key = format!("{}, {}, map", &d, threads);
+    let mut tot_time = Duration::new(0, 0);
+    for _ in 0..rounds {
+        let arr: Vec<i16> = random_i16_list_generator(size, -1000, 1001);
+        let t = Instant::now();
+        let _: Vec<i16> = arr.iter().map(|x|{ x+1}).collect();
+        tot_time += t.elapsed();
+    }
+    res.entry(key).or_insert(tot_time.div_f64(rounds as f64));
     res
 }

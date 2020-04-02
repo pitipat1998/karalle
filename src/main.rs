@@ -13,8 +13,6 @@ use serde_json::*;
 
 use project_k::primitive::{vec_init};
 use util::data_generator::*;
-use util::file_reader::*;
-
 use crate::benchmark::*;
 
 pub mod util;
@@ -114,12 +112,12 @@ fn main() {
 
     let t: String = envmnt::get_or("KTYPE", "all").to_lowercase();
 
-    let files_1d: Vec<String> = get_files("data/map");
+    // let files_1d: Vec<String> = get_files("data/map");
     // let files_2d: Vec<String> = get_files("data/flatten");
-    if files_1d.is_empty()  {
-        println!("No data to be testing on, run `KMAKE=<type> cargo run --release`");
-        exit(-1);
-    }
+    // if files_1d.is_empty()  {
+    //     println!("No data to be testing on, run `KMAKE=<type> cargo run --release`");
+    //     exit(-1);
+    // }
 
     let _ = fs::create_dir("output/");
 
@@ -188,10 +186,9 @@ fn main() {
     if t == "all" || t == "scan" {
         let mut scan_res: HashMap<String, Duration> = HashMap::new();
         // Scan
-        for d in files_1d.iter() {
-            println!("Running scan file: {}", d);
-            let mut v: Vec<i32> = read_csv::<i32>(&d);
-            let res = run_scan_benchmark(d, &mut v, rounds, tn);
+        for size in &sizes {
+            println!("Running scan file: {}", size);
+            let res = run_scan_benchmark(&size.to_string(), *size, rounds, tn);
             scan_res.extend(res);
         }
         println!("Writing scan result");
